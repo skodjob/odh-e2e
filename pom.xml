@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.opendatahub</groupId>
+    <artifactId>odh-e2e</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <fabric8.version>6.9.2</fabric8.version>
+        <sundrio.version>0.101.3</sundrio.version>
+        <lobbok.version>1.18.30</lobbok.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>openshift-client</artifactId>
+            <version>${fabric8.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-model</artifactId>
+            <version>${fabric8.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>generator-annotations</artifactId>
+            <version>${fabric8.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.sundr</groupId>
+            <artifactId>builder-annotations</artifactId>
+            <version>${sundrio.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lobbok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>java-generator-maven-plugin</artifactId>
+                <version>${fabric8.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <urls>
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/install/crds.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-codeflare-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-dashboard-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-data-science-pipelines-operator-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-kserve-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-model-mesh-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-model-mesh-overlays-odh-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-odh-model-controller-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-odh-notebook-controller-kf-notebook-controller-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-ray-crd.yaml,
+                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-trustyai-service-operator-crd.yaml
+                    </urls>
+                    <downloadTarget>${basedir}/target</downloadTarget>
+                    <extraAnnotations>true</extraAnnotations>
+                    <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
