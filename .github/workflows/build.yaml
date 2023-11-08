@@ -27,5 +27,5 @@ jobs:
 
       - name: Validate with Maven
         env:
-          MAVEN_OPTS: "-Xmx1024m -XX:MaxPermSize=128m"
+          MAVEN_OPTS: "-Xmx6144m"
         run: mvn install
