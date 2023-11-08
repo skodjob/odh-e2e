@@ -28,4 +28,4 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Validate with Maven
-        run: mvn install -Xmx1024m -XX:MaxPermSize=128m
+        run: export MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=128m" && mvn install
