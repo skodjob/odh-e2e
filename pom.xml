@@ -62,11 +62,13 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- Workaround for: https://github.com/fabric8io/kubernetes-client/issues/5580 -->
+                    <source>src/main/resources/crds/odh-manifests-data-science-pipelines-operator-crd.yaml</source>
                     <urls>
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/install/crds.yaml,
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-codeflare-crd.yaml,
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-dashboard-crd.yaml,
-                        https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-data-science-pipelines-operator-crd.yaml,
+                        <!-- https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-data-science-pipelines-operator-crd.yaml, -->
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-kserve-crd.yaml,
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-model-mesh-crd.yaml,
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-model-mesh-overlays-odh-crd.yaml,
@@ -75,7 +77,6 @@
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-ray-crd.yaml,
                         https://raw.githubusercontent.com/ExcelentProject/sokar/main/open-data-hub/client/odh-manifests-trustyai-service-operator-crd.yaml
                     </urls>
-                    <downloadTarget>${basedir}/target</downloadTarget>
                     <extraAnnotations>true</extraAnnotations>
                     <alwaysPreserveUnknown>true</alwaysPreserveUnknown>
                 </configuration>
