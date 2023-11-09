@@ -28,4 +28,4 @@ jobs:
       - name: Validate with Maven
         run: mvn test --settings settings.xml
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
