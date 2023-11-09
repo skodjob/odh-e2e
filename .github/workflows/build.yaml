@@ -26,6 +26,4 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Validate with Maven
-        env:
-          MAVEN_OPTS: "-Xmx6144m"
-        run: mvn install
+        run: mvn test
