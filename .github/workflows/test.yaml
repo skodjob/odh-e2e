@@ -1,4 +1,4 @@
-name: Build
+name: UnitTest
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,4 +26,6 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Validate with Maven
-        run: mvn test
+        run: mvn test --settings settings.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
