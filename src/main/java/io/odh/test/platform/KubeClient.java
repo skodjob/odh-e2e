@@ -1,3 +1,7 @@
+/*
+ * Copyright Tealc authors.
+ * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
+ */
 package io.odh.test.platform;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
@@ -12,12 +16,14 @@ import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobList;
 import io.fabric8.kubernetes.api.model.batch.v1.JobStatus;
 import io.fabric8.kubernetes.client.Config;
+import io.fabric8.kubernetes.client.ConfigBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
 import io.fabric8.openshift.client.OpenShiftClient;
+import io.odh.test.Environment;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +39,7 @@ public class KubeClient {
 
     public KubeClient(String namespace) {
         LOGGER.debug("Creating client in namespace: {}", namespace);
-        Config config = Config.autoConfigure(System.getenv().getOrDefault("KUBE_CONTEXT", null));
+        Config config = getConfig();
 
         this.client = new KubernetesClientBuilder()
                 .withConfig(config)
@@ -72,6 +78,31 @@ public class KubeClient {
         LOGGER.debug("Using namespace: {}", namespace);
         this.namespace = namespace;
         return this;
+    }
+
+    private Config getConfig() {
+        if (Environment.KUBE_PASSWORD != null &&
+                Environment.KUBE_PASSWORD != null &&
+                Environment.KUBE_URL != null) {
+            return new ConfigBuilder()
+                    .withUsername(Environment.KUBE_USERNAME)
+                    .withPassword(Environment.KUBE_PASSWORD)
+                    .withMasterUrl(Environment.KUBE_URL)
+                    .withDisableHostnameVerification(true)
+                    .withTrustCerts(true)
+                    .build();
+        } else if (Environment.KUBE_URL != null &&
+                Environment.KUBE_TOKEN != null) {
+            return new ConfigBuilder()
+                    .withOauthToken(Environment.KUBE_TOKEN)
+                    .withMasterUrl(Environment.KUBE_URL)
+                    .withDisableHostnameVerification(true)
+                    .withTrustCerts(true)
+                    .build();
+        } else {
+            return Config.autoConfigure(System.getenv()
+                    .getOrDefault("KUBE_CONTEXT", null));
+        }
     }
 
     public String getNamespace() {
@@ -123,6 +154,7 @@ public class KubeClient {
 
     /**
      * Returns list of pods by prefix in pod name
+     *
      * @param namespaceName Namespace name
      * @param podNamePrefix prefix with which the name should begin
      * @return List of pods
@@ -265,7 +297,7 @@ public class KubeClient {
                 .filter(job -> job.getMetadata().getName().startsWith(namePrefix)).collect(Collectors.toList());
     }
 
-    public MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>>  dataScienceClusterClient() {
+    public MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceClusterClient() {
         return client.resources(DataScienceCluster.class);
     }
 
