@@ -8,6 +8,35 @@
     <artifactId>odh-e2e</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <name>OpenDataHub e2e</name>
+    <url>https://github.com/ExcelentProject/odh-e2e</url>
+    <description>Test suite for testing opendatahub</description>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>kornys</id>
+            <name>David Kornel</name>
+            <email>kornys@outlook.com</email>
+        </developer>
+        <developer>
+            <id>Frawless</id>
+            <name>Jakub Stejskal</name>
+            <email>xstejs24@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/ExcelentProject/odh-e2e</url>
+    </scm>
+
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
