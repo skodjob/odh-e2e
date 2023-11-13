@@ -12,10 +12,6 @@ import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class Abstract implements TestSeparator {
-    protected KubeClient kubeClient;
+    protected KubeClient kubeClient = new KubeClient(TestConstants.ODH_NAMESPACE);
 
-    @BeforeAll
-    void init() {
-        kubeClient = new KubeClient(TestConstants.ODH_NAMESPACE);
-    }
 }
