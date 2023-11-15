@@ -38,6 +38,8 @@
     </scm>
 
     <properties>
+        <it.skip>true</it.skip>
+
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -186,6 +188,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <skipITs>${it.skip}</skipITs>
                     <forkCount>0</forkCount>
                     <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                     <includes>
@@ -203,5 +206,38 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+
+        <profile>
+            <id>none</id>
+            <properties>
+                <it.skip>true</it.skip>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+
+        <profile>
+            <id>continuous</id>
+            <properties>
+                <it.skip>false</it.skip>
+                <it.test>
+                    io.odh.test.e2e.continuous.*IT
+                </it.test>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>standard</id>
+            <properties>
+                <it.skip>false</it.skip>
+                <it.test>
+                    io.odh.test.e2e.standard.*IT
+                </it.test>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

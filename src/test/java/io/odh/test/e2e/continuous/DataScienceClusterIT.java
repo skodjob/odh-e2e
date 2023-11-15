@@ -57,11 +57,11 @@ public class DataScienceClusterIT extends Abstract {
         assertNull(cluster.getStatus().getErrorMessage());
 
         assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "dashboardReady").getStatus());
-        //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "workbenchesReady").getStatus());
-        //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "data-science-pipelines-operatorReady").getStatus());
-        //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "kserveReady").getStatus());
-        //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "codeflareReady").getStatus());
+        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "workbenchesReady").getStatus());
+        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "data-science-pipelines-operatorReady").getStatus());
+        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "kserveReady").getStatus());
+        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "codeflareReady").getStatus());
         //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "model-meshReady").getStatus());
-        //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "trustyaiReady").getStatus());
+        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "trustyaiReady").getStatus());
     }
 }
