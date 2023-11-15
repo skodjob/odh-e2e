@@ -16,10 +16,12 @@ import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.CodeflareBuilder;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Tag("unit")
 @EnableKubernetesMockClient(crud = true)
 public class UnitTests implements TestSeparator {
     private KubernetesClient kubernetesClient;

@@ -29,11 +29,13 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Wo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+@Tag("standard")
 public class DataScienceClusterIT extends Abstract {
 
     private final String DS_PROJECT_NAME = "test-dsp";
