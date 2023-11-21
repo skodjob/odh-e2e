@@ -19,27 +19,33 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Mo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
+import io.opendatahub.v1alpha.OdhDashboardConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("continuous")
 public class DataScienceClusterIT extends Abstract {
 
-    private final String DS_PROJECT_NAME = "default";
-    MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> cli;
+    private final String DS_CLUSTER_NAME = "default";
+    private final String DS_DASHBOARD_CONFIG_NAME = "odh-dashboard-config";
+    MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceProjectCli;
+    MixedOperation<OdhDashboardConfig, KubernetesResourceList<OdhDashboardConfig>, Resource<OdhDashboardConfig>> dashboardConfigCli;
 
     @BeforeAll
     void init() {
-        cli = kubeClient.dataScienceClusterClient();
+        dataScienceProjectCli = kubeClient.dataScienceClusterClient();
+        dashboardConfigCli  = kubeClient.dashboardConfigClient();
     }
 
     @Test
     void checkDataScienceClusterExists() {
-        DataScienceCluster cluster = cli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_PROJECT_NAME).get();
+        DataScienceCluster cluster = dataScienceProjectCli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_CLUSTER_NAME).get();
 
         assertEquals(Kserve.ManagementState.MANAGED, cluster.getSpec().getComponents().getKserve().getManagementState());
         assertEquals(Codeflare.ManagementState.MANAGED, cluster.getSpec().getComponents().getCodeflare().getManagementState());
@@ -53,7 +59,7 @@ public class DataScienceClusterIT extends Abstract {
 
     @Test
     void checkDataScienceClusterStatus() {
-        DataScienceCluster cluster = cli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_PROJECT_NAME).get();
+        DataScienceCluster cluster = dataScienceProjectCli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_CLUSTER_NAME).get();
 
         assertEquals("Ready", cluster.getStatus().getPhase());
         assertNull(cluster.getStatus().getErrorMessage());
@@ -66,5 +72,20 @@ public class DataScienceClusterIT extends Abstract {
         //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "codeflareReady").getStatus());
         //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "model-meshReady").getStatus());
         //assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "trustyaiReady").getStatus());
+    }
+
+    @Test
+    void checkDataScienceDashboard() {
+        OdhDashboardConfig dashboard = dashboardConfigCli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_DASHBOARD_CONFIG_NAME).get();
+
+        assertTrue(dashboard.getSpec().getNotebookController().getEnabled());
+
+        assertFalse(dashboard.getSpec().getDashboardConfig().getDisableInfo());
+        assertFalse(dashboard.getSpec().getDashboardConfig().getDisableBiasMetrics());
+        assertFalse(dashboard.getSpec().getDashboardConfig().getDisableClusterManager());
+        assertFalse(dashboard.getSpec().getDashboardConfig().getDisableCustomServingRuntimes());
+        assertFalse(dashboard.getSpec().getDashboardConfig().getDisableKServe());
+        assertFalse(dashboard.getSpec().getDashboardConfig().getDisablePipelines());
+        assertFalse(dashboard.getSpec().getDashboardConfig().getDisableProjects());
     }
 }

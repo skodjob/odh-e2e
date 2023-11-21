@@ -54,7 +54,7 @@ public class DataScienceClusterIT extends Abstract {
     }
 
     @Test
-    void checkDataScienceClusterExists() {
+    void createDataScienceCluster() {
         if (!kubeClient.namespaceExists(DS_PROJECT_NAMESPACE)) {
             kubeClient.getClient()
                     .namespaces()
