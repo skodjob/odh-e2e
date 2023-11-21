@@ -1,7 +1,7 @@
 # ODH-E2E
 E2e test suite for opendatahub using fabric8 kubernetes client
 
-[![UnitTest](https://github.com/ExcelentProject/odh-e2e/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/ExcelentProject/odh-e2e/actions/workflows/test.yaml)
+[![UnitTest](https://github.com/skodjob/odh-e2e/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/ExcelentProject/odh-e2e/actions/workflows/test.yaml)
 
 ## Run continuous suite
 ```commandline
