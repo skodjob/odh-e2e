@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <name>OpenDataHub e2e</name>
-    <url>https://github.com/ExcelentProject/odh-e2e</url>
+    <url>https://github.com/skodjob/odh-e2e</url>
     <description>Test suite for testing opendatahub</description>
 
     <licenses>
@@ -34,7 +34,7 @@
     </developers>
 
     <scm>
-        <url>https://github.com/ExcelentProject/odh-e2e</url>
+        <url>https://github.com/skodjob/odh-e2e</url>
     </scm>
 
     <properties>
@@ -60,7 +60,7 @@
         <repository>
             <id>github</id>
             <name>GitHub Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/ExcelentProject/opendatahub-crds</url>
+            <url>https://maven.pkg.github.com/skodjob/opendatahub-crds</url>
         </repository>
     </repositories>
 
