@@ -25,6 +25,8 @@ import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
+import io.opendatahub.v1alpha.OdhDashboardConfig;
+import org.kubeflow.v1.Notebook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -301,5 +303,12 @@ public class KubeClient {
         return client.resources(DataScienceCluster.class);
     }
 
+    public MixedOperation<OdhDashboardConfig, KubernetesResourceList<OdhDashboardConfig>, Resource<OdhDashboardConfig>> dashboardConfigClient() {
+        return client.resources(OdhDashboardConfig.class);
+    }
+
+    public MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookClient() {
+        return client.resources(Notebook.class);
+    }
 }
 
