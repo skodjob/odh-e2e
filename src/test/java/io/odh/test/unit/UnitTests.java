@@ -16,10 +16,14 @@ import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.CodeflareBuilder;
+import io.opendatahub.v1alpha.OdhDashboardConfig;
+import io.opendatahub.v1alpha.OdhDashboardConfigBuilder;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Tag("unit")
 @EnableKubernetesMockClient(crud = true)
@@ -28,7 +32,7 @@ public class UnitTests implements TestSeparator {
     private KubernetesMockServer server;
 
     @Test
-    void testCreateDataScienceCluster() {
+    void testCreateDeleteDataScienceCluster() {
         MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dsClient =
                 kubernetesClient.resources(DataScienceCluster.class);
 
@@ -51,5 +55,33 @@ public class UnitTests implements TestSeparator {
 
         DataScienceCluster returned = dsClient.withName(cluster.getMetadata().getName()).get();
         assertEquals(Codeflare.ManagementState.MANAGED, returned.getSpec().getComponents().getCodeflare().getManagementState());
+
+        dsClient.withName(cluster.getMetadata().getName()).delete();
+
+        assertNull(dsClient.withName(cluster.getMetadata().getName()).get());
+    }
+
+    @Test
+    void testDashBoardConfig() {
+        MixedOperation<OdhDashboardConfig, KubernetesResourceList<OdhDashboardConfig>, Resource<OdhDashboardConfig>> dashboardCli =
+                kubernetesClient.resources(OdhDashboardConfig.class);
+
+        OdhDashboardConfig dashboard = new OdhDashboardConfigBuilder()
+                .withNewMetadata()
+                .withName("test-config")
+                .endMetadata()
+                .withNewSpec()
+                .withNewDashboardConfig()
+                .withDisableClusterManager(false)
+                .withDisableCustomServingRuntimes(false)
+                .withDisableKServe(false)
+                .endDashboardConfig()
+                .endSpec()
+                .build();
+
+        dashboardCli.resource(dashboard).create();
+
+        OdhDashboardConfig returned = dashboardCli.withName(dashboard.getMetadata().getName()).get();
+        assertFalse(returned.getSpec().getDashboardConfig().getDisableKServe());
     }
 }
