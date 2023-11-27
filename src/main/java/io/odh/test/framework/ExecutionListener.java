@@ -1,5 +1,5 @@
 /*
- * Copyright Tealc authors.
+ * Copyright Skodjob authors.
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
 package io.odh.test.framework;
@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ExecutionListener implements TestExecutionListener {
-    Logger LOGGER = LoggerFactory.getLogger(TestSeparator.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(TestSeparator.class);
 
     public void testPlanExecutionStarted(TestPlan testPlan) {
         LOGGER.info("=======================================================================");

@@ -1,5 +1,5 @@
 /*
- * Copyright Tealc authors.
+ * Copyright Skodjob authors.
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
 package io.odh.test.e2e;
@@ -7,7 +7,6 @@ package io.odh.test.e2e;
 import io.odh.test.platform.KubeClient;
 import io.odh.test.TestConstants;
 import io.odh.test.framework.TestSeparator;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
