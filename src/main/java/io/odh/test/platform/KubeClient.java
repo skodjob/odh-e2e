@@ -1,5 +1,5 @@
 /*
- * Copyright Tealc authors.
+ * Copyright Skodjob authors.
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
 package io.odh.test.platform;
@@ -83,9 +83,9 @@ public class KubeClient {
     }
 
     private Config getConfig() {
-        if (Environment.KUBE_PASSWORD != null &&
-                Environment.KUBE_PASSWORD != null &&
-                Environment.KUBE_URL != null) {
+        if (Environment.KUBE_PASSWORD != null
+                && Environment.KUBE_PASSWORD != null
+                && Environment.KUBE_URL != null) {
             return new ConfigBuilder()
                     .withUsername(Environment.KUBE_USERNAME)
                     .withPassword(Environment.KUBE_PASSWORD)
@@ -93,8 +93,8 @@ public class KubeClient {
                     .withDisableHostnameVerification(true)
                     .withTrustCerts(true)
                     .build();
-        } else if (Environment.KUBE_URL != null &&
-                Environment.KUBE_TOKEN != null) {
+        } else if (Environment.KUBE_URL != null
+                && Environment.KUBE_TOKEN != null) {
             return new ConfigBuilder()
                     .withOauthToken(Environment.KUBE_TOKEN)
                     .withMasterUrl(Environment.KUBE_URL)
@@ -311,4 +311,3 @@ public class KubeClient {
         return client.resources(Notebook.class);
     }
 }
-

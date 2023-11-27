@@ -1,5 +1,5 @@
 /*
- * Copyright Tealc authors.
+ * Copyright Skodjob authors.
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
 package io.odh.test.e2e.continuous;
@@ -19,8 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("continuous")
 public class DataScienceProjectIT extends Abstract {
 
-    private final String DS_PROJECT_NAME = "test";
-    private final String DS_WORKBENCH_NAME = "test-workbench";
+    private static final String DS_PROJECT_NAME = "test";
+    private static final String DS_WORKBENCH_NAME = "test-workbench";
     MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookCli;
 
     @BeforeAll

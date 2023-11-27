@@ -1,5 +1,5 @@
 /*
- * Copyright Tealc authors.
+ * Copyright Skodjob authors.
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
 package io.odh.test.e2e.standard;
@@ -8,9 +8,7 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.odh.test.TestConstants;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.platform.KubeUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
@@ -22,9 +20,6 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Da
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.DatasciencepipelinesBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import org.junit.jupiter.api.AfterAll;
@@ -33,13 +28,12 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Tag("standard")
 public class DataScienceClusterIT extends Abstract {
 
-    private final String DS_PROJECT_NAME = "test-dsp";
-    private final String DS_PROJECT_NAMESPACE = "test-ns-ds";
+    private static final String DS_PROJECT_NAME = "test-dsp";
+    private static final String DS_PROJECT_NAMESPACE = "test-ns-ds";
     MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> cli;
 
     @BeforeAll

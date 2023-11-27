@@ -1,5 +1,5 @@
 /*
- * Copyright Tealc authors.
+ * Copyright Skodjob authors.
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
 package io.odh.test.e2e.continuous;
@@ -32,8 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("continuous")
 public class DataScienceClusterIT extends Abstract {
 
-    private final String DS_CLUSTER_NAME = "default";
-    private final String DS_DASHBOARD_CONFIG_NAME = "odh-dashboard-config";
+    private static final String DS_CLUSTER_NAME = "default";
+    private static final String DS_DASHBOARD_CONFIG_NAME = "odh-dashboard-config";
     MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceProjectCli;
     MixedOperation<OdhDashboardConfig, KubernetesResourceList<OdhDashboardConfig>, Resource<OdhDashboardConfig>> dashboardConfigCli;
 
