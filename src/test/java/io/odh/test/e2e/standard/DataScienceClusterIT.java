@@ -58,8 +58,8 @@ public class DataScienceClusterIT extends Abstract {
 
         DataScienceCluster c = new DataScienceClusterBuilder()
                 .withNewMetadata()
-                .withName("test-dsp")
-                .withNamespace("test-ns")
+                .withName(DS_PROJECT_NAME)
+                .withNamespace(DS_PROJECT_NAMESPACE)
                 .endMetadata()
                 .withNewSpec()
                 .withComponents(
