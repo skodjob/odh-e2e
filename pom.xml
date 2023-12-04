@@ -56,6 +56,7 @@
         <opedatahub-crds.version>1.0.6-SNAPSHOT</opedatahub-crds.version>
         <checkstyle.version>10.12.5</checkstyle.version>
         <maven.checkstyle.version>3.3.1</maven.checkstyle.version>
+        <maven.download.plugin.version>1.7.1</maven.download.plugin.version>
     </properties>
 
     <repositories>
@@ -236,6 +237,37 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>${maven.download.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>get-odh-latest</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://raw.githubusercontent.com/skodjob/deployment-hub/main/open-data-hub/install/deploy.yaml</url>
+                            <outputDirectory>${project.resources[0].directory}/install-files</outputDirectory>
+                            <outputFileName>latest.yaml</outputFileName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>get-odh-released</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>https://gist.githubusercontent.com/Frawless/51ab2d3b9fcdcf4348c0c46a4785dfaf/raw/b54e22385b455c0538c5bbc90fc221d68fcd4e09/odh</url>
+                            <outputDirectory>${project.resources[0].directory}/install-files</outputDirectory>
+                            <outputFileName>released.yaml</outputFileName>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
