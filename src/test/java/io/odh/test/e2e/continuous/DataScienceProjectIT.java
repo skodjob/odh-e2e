@@ -8,38 +8,58 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.e2e.Abstract;
+import io.odh.test.framework.TestSeparator;
+import io.odh.test.platform.KubeUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.kubeflow.v1.Notebook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("continuous")
 public class DataScienceProjectIT extends Abstract {
+    static final Logger LOGGER = LoggerFactory.getLogger(TestSeparator.class);
 
-    private static final String DS_PROJECT_NAME = "test";
-    private static final String DS_WORKBENCH_NAME = "test-workbench";
     MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookCli;
+
+    private static Stream<Arguments> getDsProjects() {
+        return Stream.of(
+                Arguments.of("project-sammons"),
+                Arguments.of("project-hughie"),
+                Arguments.of("project-homelander")
+        );
+    }
 
     @BeforeAll
     void init() {
         notebookCli = kubeClient.notebookClient();
     }
 
-    @Test
-    void checkDataScienceProject() {
-        assertTrue(kubeClient.namespaceExists(DS_PROJECT_NAME));
+    @ParameterizedTest(name = "checkDataScienceProjects-{0}")
+    @MethodSource("getDsProjects")
+    void checkDataScienceProjects(String dsProjectName) {
+        assertTrue(kubeClient.namespaceExists(dsProjectName));
 
         assertEquals("true",
-                kubeClient.getNamespace(DS_PROJECT_NAME).getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
+                kubeClient.getNamespace(dsProjectName).getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
 
-        Notebook testWorkbench = notebookCli.inNamespace(DS_PROJECT_NAME).withName(DS_WORKBENCH_NAME).get();
+        notebookCli.inNamespace(dsProjectName).list().getItems().forEach(notebook -> {
+            LOGGER.info("Found notebook {} in datascience project {}", notebook.getMetadata().getName(), dsProjectName);
+            assertEquals("true",
+                    notebook.getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
+            assertEquals("true",
+                    notebook.getMetadata().getLabels().getOrDefault("opendatahub.io/odh-managed", "false"));
 
-        assertEquals("true",
-                testWorkbench.getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
-        assertEquals("true",
-                testWorkbench.getMetadata().getLabels().getOrDefault("opendatahub.io/odh-managed", "false"));
+            assertEquals("True", KubeUtils.getNotebookConditionByType(notebook.getStatus().getConditions(), "ContainersReady").getStatus());
+            assertEquals("True", KubeUtils.getNotebookConditionByType(notebook.getStatus().getConditions(), "Ready").getStatus());
+        });
     }
 }
