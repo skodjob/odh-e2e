@@ -4,10 +4,12 @@
  */
 package io.odh.test.e2e;
 
+import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.TestExceptionCallbackListener;
 import io.odh.test.platform.KubeClient;
 import io.odh.test.TestConstants;
 import io.odh.test.framework.TestSeparator;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.TestInstance;
@@ -19,4 +21,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class Abstract implements TestSeparator {
     protected KubeClient kubeClient = new KubeClient(TestConstants.ODH_NAMESPACE);
 
+    static {
+        ResourceManager.getInstance();
+    }
+
+    @AfterAll
+    void teardownEnvironment() {
+        ResourceManager.getInstance().deleteResources();
+    }
 }
