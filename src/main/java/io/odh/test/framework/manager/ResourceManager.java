@@ -31,7 +31,10 @@ public class ResourceManager {
     private static ResourceManager instance;
     private static KubeClient client;
 
-    public static final Stack<ResourceItem> RESOURCE_STACK = new Stack<>();
+    static final Stack<ResourceItem> CLASS_RESOURCE_STACK = new Stack<>();
+    static final Stack<ResourceItem> METHOD_RESOURCE_STACK = new Stack<>();
+
+    static Stack<ResourceItem> resourceStackPointer = CLASS_RESOURCE_STACK;
 
     public static synchronized ResourceManager getInstance() {
         if (instance == null) {
@@ -49,6 +52,18 @@ public class ResourceManager {
         new SubscriptionResource(),
         new OperatorGroupResource(),
     };
+
+    public final void switchToTestResourceStack() {
+        resourceStackPointer = METHOD_RESOURCE_STACK;
+    }
+
+    public final void switchToClassResourceStack() {
+        resourceStackPointer = CLASS_RESOURCE_STACK;
+    }
+
+    public final void pushToStack(ResourceItem item) {
+        resourceStackPointer.push(item);
+    }
 
     @SafeVarargs
     public final <T extends HasMetadata> void createResourceWithoutWait(T... resources) {
@@ -95,7 +110,7 @@ public class ResourceManager {
             }
 
             synchronized (this) {
-                RESOURCE_STACK.push(
+                resourceStackPointer.push(
                         new ResourceItem<T>(
                                 () -> deleteResource(resource),
                                 resource
@@ -178,17 +193,19 @@ public class ResourceManager {
     }
 
     public void deleteResources() {
-        LOGGER.info(String.join("", Collections.nCopies(76, "#")));
+        if (!resourceStackPointer.isEmpty()) {
+            LOGGER.info(String.join("", Collections.nCopies(76, "#")));
 
-        while (!RESOURCE_STACK.empty()) {
-            try {
-                ResourceItem resourceItem = RESOURCE_STACK.pop();
-                resourceItem.getThrowableRunner().run();
-            } catch (Exception e) {
-                e.printStackTrace();
+            while (!resourceStackPointer.empty()) {
+                try {
+                    ResourceItem resourceItem = resourceStackPointer.pop();
+                    resourceItem.getThrowableRunner().run();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+            LOGGER.info(String.join("", Collections.nCopies(76, "#")));
         }
-        LOGGER.info(String.join("", Collections.nCopies(76, "#")));
     }
 
     private <T extends HasMetadata> ResourceType<T> findResourceType(T resource) {

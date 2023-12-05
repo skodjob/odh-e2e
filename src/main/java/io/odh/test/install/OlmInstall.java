@@ -35,7 +35,7 @@ public class OlmInstall {
 
     public void create() {
         createOperatorGroup();
-        ResourceManager.RESOURCE_STACK.push(new ResourceItem(this::deleteCSV));
+        ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
         createAndModifySubscription();
 
         // Wait for operator creation
@@ -68,8 +68,6 @@ public class OlmInstall {
         Subscription subscription = prepareSubscription();
 
         ResourceManager.getInstance().createResourceWithWait(subscription);
-//        ResourceManager.RESOURCE_STACK.push(new ResourceItem(this::deleteCSV));
-
     }
     public void updateSubscription() {
         Subscription subscription = prepareSubscription();
