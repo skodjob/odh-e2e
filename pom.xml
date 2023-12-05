@@ -192,7 +192,6 @@
                 </executions>
                 <configuration>
                     <skipITs>${it.skip}</skipITs>
-                    <skipTests>true</skipTests>
                     <forkCount>0</forkCount>
                     <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                     <includes>
