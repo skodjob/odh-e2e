@@ -8,7 +8,6 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.TestSeparator;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.KubeUtils;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("continuous")
 public class DataScienceProjectIT extends Abstract {
-    static final Logger LOGGER = LoggerFactory.getLogger(TestSeparator.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(DataScienceProjectIT.class);
 
     MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookCli;
 

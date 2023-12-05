@@ -4,10 +4,10 @@
  */
 package io.odh.test.e2e;
 
+import io.odh.test.framework.ExtensionContextParameterResolver;
+import io.odh.test.framework.TestCallbackListener;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.TestExceptionCallbackListener;
-import io.odh.test.framework.TestSeparator;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.TestInstance;
@@ -15,15 +15,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 @DisplayNameGeneration(DisplayNameGenerator.IndicativeSentences.class)
 @ExtendWith(TestExceptionCallbackListener.class)
+@ExtendWith(TestCallbackListener.class)
+@ExtendWith(ExtensionContextParameterResolver.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class Abstract implements TestSeparator {
+public class Abstract {
 
     static {
         ResourceManager.getInstance();
     }
 
-    @AfterAll
-    void teardownEnvironment() {
-        ResourceManager.getInstance().deleteResources();
-    }
 }

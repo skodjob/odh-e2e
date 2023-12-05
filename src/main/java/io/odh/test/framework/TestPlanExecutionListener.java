@@ -10,8 +10,8 @@ import org.junit.platform.launcher.TestPlan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ExecutionListener implements TestExecutionListener {
-    static final Logger LOGGER = LoggerFactory.getLogger(TestSeparator.class);
+public class TestPlanExecutionListener implements TestExecutionListener {
+    static final Logger LOGGER = LoggerFactory.getLogger(TestPlanExecutionListener.class);
 
     static {
         Environment.print();
