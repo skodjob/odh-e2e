@@ -185,6 +185,10 @@ public class KubeClient {
         return client.pods().inNamespace(namespaceName).list().getItems();
     }
 
+    public List<Pod> listPods(String namespaceName, LabelSelector selector) {
+        return client.pods().inNamespace(namespaceName).withLabelSelector(selector).list().getItems();
+    }
+
     /**
      * Returns list of pods by prefix in pod name
      *
