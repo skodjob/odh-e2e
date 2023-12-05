@@ -30,6 +30,9 @@ public class OdhInstall extends Abstract {
     void testInstallOdhBundle() throws IOException {
         BundleInstall bundle = new BundleInstall();
         bundle.printResources();
-        //TODO complete
+        bundle.installBundle();
+
+        Deployment dep = ResourceManager.getClient().getDeployment(bundle.getNamespace(), bundle.getDeploymentName());
+        assertNotNull(dep);
     }
 }

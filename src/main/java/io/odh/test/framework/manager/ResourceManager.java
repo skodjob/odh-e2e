@@ -95,11 +95,8 @@ public class ResourceManager {
                     if (waitReady) {
                         DeploymentUtils.waitForDeploymentReady(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                     }
-                    continue;
                 } else {
-                    LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
-                            resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
-                    continue;
+                    client.getClient().resource(resource).create();
                 }
             } else {
                 type.create(resource);
@@ -124,13 +121,14 @@ public class ResourceManager {
         for (T resource : resources) {
             ResourceType<T> type = findResourceType(resource);
             if (type == null) {
+                LOGGER.info("Deleting of {} {}",
+                        resource.getKind(), resource.getMetadata().getName());
                 if (resource instanceof Deployment) {
                     Deployment deployment = (Deployment) resource;
                     client.getClient().apps().deployments().resource(deployment).delete();
                     DeploymentUtils.waitForDeploymentDeletion(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                 } else {
-                    LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
-                            resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                    client.getClient().resource(resource).delete();
                 }
             } else {
                 if (resource.getMetadata().getNamespace() == null) {
