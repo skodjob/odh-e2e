@@ -158,7 +158,11 @@ public class ResourceManager {
     public final <T extends HasMetadata> void updateResource(T... resources) {
         for (T resource : resources) {
             ResourceType<T> type = findResourceType(resource);
-            type.update(resource);
+            if (type != null) {
+                type.update(resource);
+            } else {
+                client.getClient().resource(resource).update();
+            }
         }
     }
 
