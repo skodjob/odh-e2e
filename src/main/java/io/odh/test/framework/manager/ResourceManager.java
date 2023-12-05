@@ -7,6 +7,7 @@ package io.odh.test.framework.manager;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhookConfiguration;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRole;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.odh.test.TestConstants;
@@ -14,6 +15,7 @@ import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
 import io.odh.test.framework.manager.resources.SubscriptionResource;
 import io.odh.test.platform.KubeClient;
+import io.odh.test.utils.DeploymentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +73,27 @@ public class ResourceManager {
                         resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
             }
 
-            type.create(resource);
+            if (type == null) {
+                switch (resource.getKind()) {
+                    case TestConstants.DEPLOYMENT:
+                        Deployment deployment = (Deployment) resource;
+                        ResourceManager.getClient().getClient().apps().deployments().resource(deployment).create();
+                        if (waitReady) {
+                            DeploymentUtils.waitForDeploymentReady(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                        }
+                        break;
+                    default:
+                        LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
+                                resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                        continue;
+                }
+            } else {
+                type.create(resource);
+                if (waitReady) {
+                    assertTrue(waitResourceCondition(resource, ResourceCondition.readiness(type)),
+                            String.format("Timed out waiting for %s %s/%s to be ready", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));
+                }
+            }
 
             synchronized (this) {
                 RESOURCE_STACK.push(
@@ -81,15 +103,6 @@ public class ResourceManager {
                         ));
             }
         }
-
-        if (waitReady) {
-            for (T resource : resources) {
-                ResourceType<T> type = findResourceType(resource);
-
-                assertTrue(waitResourceCondition(resource, ResourceCondition.readiness(type)),
-                        String.format("Timed out waiting for %s %s/%s to be ready", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));
-            }
-        }
     }
 
     @SafeVarargs
@@ -97,30 +110,37 @@ public class ResourceManager {
         for (T resource : resources) {
             ResourceType<T> type = findResourceType(resource);
             if (type == null) {
-                LOGGER.warn("Can't find resource type, please delete it manually");
-                continue;
-            }
-
-            if (resource.getMetadata().getNamespace() == null) {
-                LOGGER.info("Deleting of {} {}",
-                        resource.getKind(), resource.getMetadata().getName());
+                switch (resource.getKind()) {
+                    case TestConstants.DEPLOYMENT:
+                        Deployment deployment = (Deployment) resource;
+                        ResourceManager.getClient().getClient().apps().deployments().resource(deployment).delete();
+                        DeploymentUtils.waitForDeploymentDeletion(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                        break;
+                    default:
+                        LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
+                                resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                }
             } else {
-                LOGGER.info("Deleting of {} {}/{}",
-                        resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
-            }
-
-            try {
-                type.delete(resource);
-                assertTrue(waitResourceCondition(resource, ResourceCondition.deletion()),
-                        String.format("Timed out deleting %s %s/%s", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));
-            } catch (Exception e)   {
                 if (resource.getMetadata().getNamespace() == null) {
-                    LOGGER.error("Failed to delete {} {}", resource.getKind(), resource.getMetadata().getName(), e);
+                    LOGGER.info("Deleting of {} {}",
+                            resource.getKind(), resource.getMetadata().getName());
                 } else {
-                    LOGGER.error("Failed to delete {} {}/{}", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName(), e);
+                    LOGGER.info("Deleting of {} {}/{}",
+                            resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                }
+
+                try {
+                    type.delete(resource);
+                    assertTrue(waitResourceCondition(resource, ResourceCondition.deletion()),
+                            String.format("Timed out deleting %s %s/%s", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));
+                } catch (Exception e)   {
+                    if (resource.getMetadata().getNamespace() == null) {
+                        LOGGER.error("Failed to delete {} {}", resource.getKind(), resource.getMetadata().getName(), e);
+                    } else {
+                        LOGGER.error("Failed to delete {} {}/{}", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName(), e);
+                    }
                 }
             }
-
         }
     }
 

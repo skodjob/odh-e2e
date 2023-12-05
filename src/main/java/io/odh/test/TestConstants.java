@@ -18,6 +18,11 @@ public class TestConstants {
     public static final long GLOBAL_POLL_INTERVAL_SHORT = Duration.ofSeconds(1).toMillis();
     public static final long GLOBAL_TIMEOUT = Duration.ofMinutes(5).toMillis();
 
+
+    /**
+     * Kube objects
+     */
+    public static final String DEPLOYMENT = "Deployment";
     private TestConstants() {
     }
 }
