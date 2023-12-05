@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.e2e.Abstract;
+import io.odh.test.framework.manager.ResourceManager;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
@@ -38,19 +39,19 @@ public class DataScienceClusterIT extends Abstract {
 
     @BeforeAll
     void init() {
-        cli = kubeClient.dataScienceClusterClient();
+        cli = ResourceManager.getClient().dataScienceClusterClient();
     }
 
     @AfterAll
     void clean() {
         cli.inNamespace(DS_PROJECT_NAMESPACE).withName(DS_PROJECT_NAME).delete();
-        kubeClient.getClient().namespaces().withName(DS_PROJECT_NAMESPACE).delete();
+        ResourceManager.getClient().getClient().namespaces().withName(DS_PROJECT_NAMESPACE).delete();
     }
 
     @Test
     void createDataScienceCluster() {
-        if (!kubeClient.namespaceExists(DS_PROJECT_NAMESPACE)) {
-            kubeClient.getClient()
+        if (!ResourceManager.getClient().namespaceExists(DS_PROJECT_NAMESPACE)) {
+            ResourceManager.getClient().getClient()
                     .namespaces()
                     .resource(new NamespaceBuilder().withNewMetadata().withName(DS_PROJECT_NAMESPACE).endMetadata().build())
                     .create();

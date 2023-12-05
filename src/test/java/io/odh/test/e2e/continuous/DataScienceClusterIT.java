@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.TestConstants;
 import io.odh.test.e2e.Abstract;
+import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.KubeUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
@@ -39,8 +40,8 @@ public class DataScienceClusterIT extends Abstract {
 
     @BeforeAll
     void init() {
-        dataScienceProjectCli = kubeClient.dataScienceClusterClient();
-        dashboardConfigCli  = kubeClient.dashboardConfigClient();
+        dataScienceProjectCli = ResourceManager.getClient().dataScienceClusterClient();
+        dashboardConfigCli  = ResourceManager.getClient().dashboardConfigClient();
     }
 
     @Test

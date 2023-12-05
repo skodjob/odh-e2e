@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.TestSeparator;
+import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.KubeUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -40,16 +41,16 @@ public class DataScienceProjectIT extends Abstract {
 
     @BeforeAll
     void init() {
-        notebookCli = kubeClient.notebookClient();
+        notebookCli = ResourceManager.getClient().notebookClient();
     }
 
     @ParameterizedTest(name = "checkDataScienceProjects-{0}")
     @MethodSource("getDsProjects")
     void checkDataScienceProjects(String dsProjectName) {
-        assertTrue(kubeClient.namespaceExists(dsProjectName));
+        assertTrue(ResourceManager.getClient().namespaceExists(dsProjectName));
 
         assertEquals("true",
-                kubeClient.getNamespace(dsProjectName).getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
+                ResourceManager.getClient().getNamespace(dsProjectName).getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
 
         notebookCli.inNamespace(dsProjectName).list().getItems().forEach(notebook -> {
             LOGGER.info("Found notebook {} in datascience project {}", notebook.getMetadata().getName(), dsProjectName);

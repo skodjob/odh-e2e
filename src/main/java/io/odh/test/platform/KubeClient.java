@@ -87,7 +87,7 @@ public class KubeClient {
     }
 
     private Config getConfig() {
-        if (Environment.KUBE_PASSWORD != null
+        if (Environment.KUBE_USERNAME != null
                 && Environment.KUBE_PASSWORD != null
                 && Environment.KUBE_URL != null) {
             return new ConfigBuilder()
@@ -117,13 +117,13 @@ public class KubeClient {
 
     public boolean namespaceExists(String namespace) {
         return client.namespaces().list().getItems().stream().map(n -> n.getMetadata().getName())
-                .collect(Collectors.toList()).contains(namespace);
+                .toList().contains(namespace);
     }
 
-    // =============================================
-    // ---------> Create multi-resoruces  <---------
-    // =============================================
-    public void apply(String namespace, InputStream is, Function<HasMetadata, HasMetadata> modifier) throws IOException {
+    // ==================================================
+    // ---------> Create/read multi-resoruces  <---------
+    // ==================================================
+    public void create(String namespace, InputStream is, Function<HasMetadata, HasMetadata> modifier) throws IOException {
         try (is) {
             client.load(is).get().forEach(i -> {
                 HasMetadata h = modifier.apply(i);
@@ -131,6 +131,23 @@ public class KubeClient {
                     client.resource(h).inNamespace(namespace).create();
                 }
             });
+        }
+    }
+
+    public void create(InputStream is, Function<HasMetadata, HasMetadata> modifier) throws IOException {
+        try (is) {
+            client.load(is).get().forEach(i -> {
+                HasMetadata h = modifier.apply(i);
+                if (h != null) {
+                    client.resource(h).create();
+                }
+            });
+        }
+    }
+
+    public List<HasMetadata> readResourcesFromYaml(InputStream is) throws IOException {
+        try (is) {
+            return client.load(is).items();
         }
     }
 
