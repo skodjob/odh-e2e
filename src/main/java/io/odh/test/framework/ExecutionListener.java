@@ -13,13 +13,16 @@ import org.slf4j.LoggerFactory;
 public class ExecutionListener implements TestExecutionListener {
     static final Logger LOGGER = LoggerFactory.getLogger(TestSeparator.class);
 
+    static {
+        Environment.print();
+    }
+
     public void testPlanExecutionStarted(TestPlan testPlan) {
         LOGGER.info("=======================================================================");
         LOGGER.info("=======================================================================");
         LOGGER.info("                        Test run started");
         LOGGER.info("=======================================================================");
         LOGGER.info("=======================================================================");
-        Environment.print();
     }
 
     public void testPlanExecutionFinished(TestPlan testPlan) {

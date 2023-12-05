@@ -5,6 +5,7 @@
 package io.odh.test.platform;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.Namespace;
@@ -30,7 +31,10 @@ import org.kubeflow.v1.Notebook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class KubeClient {
@@ -118,6 +122,20 @@ public class KubeClient {
     public boolean namespaceExists(String namespace) {
         return client.namespaces().list().getItems().stream().map(n -> n.getMetadata().getName())
                 .collect(Collectors.toList()).contains(namespace);
+    }
+
+    // =============================================
+    // ---------> Create multi-resoruces  <---------
+    // =============================================
+    public void apply(String namespace, InputStream is, Function<HasMetadata, HasMetadata> modifier) throws IOException {
+        try (is) {
+            client.load(is).get().forEach(i -> {
+                HasMetadata h = modifier.apply(i);
+                if (h != null) {
+                    client.resource(h).inNamespace(namespace).create();
+                }
+            });
+        }
     }
 
     /**
