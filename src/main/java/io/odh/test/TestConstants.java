@@ -13,6 +13,9 @@ public class TestConstants {
     public static final String SUBSCRIPTION = "Subscription";
     public static final String OPERATOR_GROUP = "OperatorGroup";
 
+    public static final String LATEST_BUNDLE_DEPLOY_FILE = "install-files/latest.yaml";
+    public static final String RELEASED_BUNDLE_DEPLOY_FILE = "install-files/released.yaml";
+
     public static final long GLOBAL_POLL_INTERVAL = Duration.ofSeconds(10).toMillis();
     public static final long GLOBAL_POLL_INTERVAL_MEDIUM = Duration.ofSeconds(5).toMillis();
     public static final long GLOBAL_POLL_INTERVAL_SHORT = Duration.ofSeconds(1).toMillis();

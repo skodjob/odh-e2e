@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collections;
 
 public class OlmInstall {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ResourceManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OlmInstall.class);
 
     private String namespace = Environment.OLM_OPERATOR_NAMESPACE;
     private String channel = Environment.OLM_OPERATOR_CHANNEL;

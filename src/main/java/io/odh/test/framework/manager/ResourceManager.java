@@ -76,7 +76,7 @@ public class ResourceManager {
             if (type == null) {
                 if (resource instanceof Deployment) {
                     Deployment deployment = (Deployment) resource;
-                    ResourceManager.getClient().getClient().apps().deployments().resource(deployment).create();
+                    client.getClient().apps().deployments().resource(deployment).create();
                     if (waitReady) {
                         DeploymentUtils.waitForDeploymentReady(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                     }
@@ -111,7 +111,7 @@ public class ResourceManager {
             if (type == null) {
                 if (resource instanceof Deployment) {
                     Deployment deployment = (Deployment) resource;
-                    ResourceManager.getClient().getClient().apps().deployments().resource(deployment).delete();
+                    client.getClient().apps().deployments().resource(deployment).delete();
                     DeploymentUtils.waitForDeploymentDeletion(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                 } else {
                     LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
@@ -130,7 +130,7 @@ public class ResourceManager {
                     type.delete(resource);
                     assertTrue(waitResourceCondition(resource, ResourceCondition.deletion()),
                             String.format("Timed out deleting %s %s/%s", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));
-                } catch (Exception e)   {
+                } catch (Exception e) {
                     if (resource.getMetadata().getNamespace() == null) {
                         LOGGER.error("Failed to delete {} {}", resource.getKind(), resource.getMetadata().getName(), e);
                     } else {
@@ -167,7 +167,7 @@ public class ResourceManager {
                 TestConstants.GLOBAL_POLL_INTERVAL, TestConstants.GLOBAL_TIMEOUT,
                 () -> {
                     T res = type.get(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
-                    resourceReady[0] =  condition.getPredicate().test(res);
+                    resourceReady[0] = condition.getPredicate().test(res);
                     if (!resourceReady[0]) {
                         type.delete(res);
                     }

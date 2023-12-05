@@ -20,10 +20,19 @@ public class Environment {
     private static final Logger LOGGER = LoggerFactory.getLogger(Environment.class);
     private static final Map<String, String> VALUES = new HashMap<>();
 
+    public static final String USER_PATH = System.getProperty("user.dir");
+
     private static final String USERNAME_ENV = "KUBE_USERNAME";
     private static final String PASSWORD_ENV = "KUBE_PASSWORD";
     private static final String TOKEN_ENV = "KUBE_TOKEN";
     private static final String URL_ENV = "KUBE_URL";
+
+    /**
+     * Install bundle files
+     */
+    private static final String INSTALL_FILE_ENV = "INSTALL_FILE";
+    private static final String INSTALL_FILE_RELEASED_ENV = "INSTALL_FILE_PREVIOUS";
+
     /**
      * OLM env variables
      */
@@ -55,6 +64,10 @@ public class Environment {
     public static final String KUBE_PASSWORD = getOrDefault(PASSWORD_ENV, null);
     public static final String KUBE_TOKEN = getOrDefault(TOKEN_ENV, null);
     public static final String KUBE_URL = getOrDefault(URL_ENV, null);
+
+    // Bundle
+    public static final String INSTALL_FILE_PATH = getOrDefault(INSTALL_FILE_ENV, TestConstants.LATEST_BUNDLE_DEPLOY_FILE);
+    public static final String INSTALL_FILE_PREVIOUS_PATH = getOrDefault(INSTALL_FILE_RELEASED_ENV, TestConstants.RELEASED_BUNDLE_DEPLOY_FILE);
 
     // OLM env variables
     public static final String OLM_OPERATOR_NAME = getOrDefault(OLM_OPERATOR_NAME_ENV, OLM_OPERATOR_NAME_DEFAULT);

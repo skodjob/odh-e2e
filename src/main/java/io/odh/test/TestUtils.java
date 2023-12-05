@@ -7,18 +7,24 @@ package io.odh.test;
 import io.odh.test.framework.WaitException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
 
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity"})
 public final class TestUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestUtils.class);
-
-    public static final String USER_PATH = System.getProperty("user.dir");
 
     /**
      * Default timeout for asynchronous tests.
@@ -37,9 +43,10 @@ public final class TestUtils {
     /**
      * Poll the given {@code ready} function every {@code pollIntervalMs} milliseconds until it returns true,
      * or throw a WaitException if it doesn't return true within {@code timeoutMs} milliseconds.
+     *
      * @return The remaining time left until timeout occurs
      * (helpful if you have several calls which need to share a common timeout),
-     * */
+     */
     public static long waitFor(String description, long pollIntervalMs, long timeoutMs, BooleanSupplier ready) {
         return waitFor(description, pollIntervalMs, timeoutMs, ready, () -> { });
     }
@@ -104,5 +111,67 @@ public final class TestUtils {
                 return deadline - System.currentTimeMillis();
             }
         }
+    }
+
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
+        final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread result = defaultThreadFactory.newThread(r);
+            result.setDaemon(true);
+            return result;
+        }
+    });
+
+    public static CompletableFuture<Void> asyncWaitFor(String description, long pollIntervalMs, long timeoutMs, BooleanSupplier ready) {
+        LOGGER.info("Waiting for {}", description);
+        long deadline = System.currentTimeMillis() + timeoutMs;
+        CompletableFuture<Void> future = new CompletableFuture<>();
+        Executor delayed = CompletableFuture.delayedExecutor(pollIntervalMs, TimeUnit.MILLISECONDS, EXECUTOR);
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                boolean result;
+                try {
+                    result = ready.getAsBoolean();
+                } catch (Exception e) {
+                    future.completeExceptionally(e);
+                    return;
+                }
+                long timeLeft = deadline - System.currentTimeMillis();
+                if (!future.isDone()) {
+                    if (!result) {
+                        if (timeLeft >= 0) {
+                            if (LOGGER.isTraceEnabled()) {
+                                LOGGER.trace("{} not ready, will try again ({}ms till timeout)", description, timeLeft);
+                            }
+                            delayed.execute(this);
+                        } else {
+                            future.completeExceptionally(new TimeoutException(String.format("Waiting for %s timeout %s exceeded", description, timeoutMs)));
+                        }
+                    } else {
+                        future.complete(null);
+                    }
+                }
+            }
+        };
+        r.run();
+        return future;
+    }
+
+    public static InputStream getFileFromResourceAsStream(String fileName) {
+
+        // The class loader that loaded the class
+        ClassLoader classLoader = TestUtils.class.getClassLoader();
+        InputStream inputStream = classLoader.getResourceAsStream(fileName);
+
+        // the stream holding the file content
+        if (inputStream == null) {
+            throw new IllegalArgumentException("file not found! " + fileName);
+        } else {
+            return inputStream;
+        }
+
     }
 }
