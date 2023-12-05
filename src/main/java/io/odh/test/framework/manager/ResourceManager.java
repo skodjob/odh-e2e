@@ -74,18 +74,17 @@ public class ResourceManager {
             }
 
             if (type == null) {
-                switch (resource.getKind()) {
-                    case TestConstants.DEPLOYMENT:
-                        Deployment deployment = (Deployment) resource;
-                        ResourceManager.getClient().getClient().apps().deployments().resource(deployment).create();
-                        if (waitReady) {
-                            DeploymentUtils.waitForDeploymentReady(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
-                        }
-                        break;
-                    default:
-                        LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
-                                resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
-                        continue;
+                if (resource instanceof Deployment) {
+                    Deployment deployment = (Deployment) resource;
+                    ResourceManager.getClient().getClient().apps().deployments().resource(deployment).create();
+                    if (waitReady) {
+                        DeploymentUtils.waitForDeploymentReady(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                    }
+                    continue;
+                } else {
+                    LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
+                            resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                    continue;
                 }
             } else {
                 type.create(resource);
@@ -110,15 +109,13 @@ public class ResourceManager {
         for (T resource : resources) {
             ResourceType<T> type = findResourceType(resource);
             if (type == null) {
-                switch (resource.getKind()) {
-                    case TestConstants.DEPLOYMENT:
-                        Deployment deployment = (Deployment) resource;
-                        ResourceManager.getClient().getClient().apps().deployments().resource(deployment).delete();
-                        DeploymentUtils.waitForDeploymentDeletion(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
-                        break;
-                    default:
-                        LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
-                                resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                if (resource instanceof Deployment) {
+                    Deployment deployment = (Deployment) resource;
+                    ResourceManager.getClient().getClient().apps().deployments().resource(deployment).delete();
+                    DeploymentUtils.waitForDeploymentDeletion(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                } else {
+                    LOGGER.error("Invalid resource {} {}/{}. Please implement it in ResourceManager",
+                            resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                 }
             } else {
                 if (resource.getMetadata().getNamespace() == null) {
