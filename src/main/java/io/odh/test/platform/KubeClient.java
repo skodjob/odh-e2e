@@ -111,10 +111,6 @@ public class KubeClient {
         }
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
     public Namespace getNamespace(String namespace) {
         return client.namespaces().withName(namespace).get();
     }
@@ -157,8 +153,8 @@ public class KubeClient {
     }
 
 
-    public boolean getConfigMapStatus(String configMapName) {
-        return client.configMaps().inNamespace(getNamespace()).withName(configMapName).isReady();
+    public boolean getConfigMapStatus(String namespace, String configMapName) {
+        return client.configMaps().inNamespace(namespace).withName(configMapName).isReady();
     }
 
     // =========================
@@ -287,8 +283,8 @@ public class KubeClient {
         return client.batch().v1().jobs().inNamespace(namespace).withName(jobName).get();
     }
 
-    public boolean checkSucceededJobStatus(String jobName) {
-        return checkSucceededJobStatus(getNamespace(), jobName, 1);
+    public boolean checkSucceededJobStatus(String namespace, String jobName) {
+        return checkSucceededJobStatus(namespace, jobName, 1);
     }
 
     public boolean checkSucceededJobStatus(String namespaceName, String jobName, int expectedSucceededPods) {
@@ -312,9 +308,20 @@ public class KubeClient {
         return client.batch().v1().jobs().inNamespace(namespace).list();
     }
 
-    public List<Job> listJobs(String namePrefix) {
-        return client.batch().v1().jobs().inNamespace(getNamespace()).list().getItems().stream()
+    public List<Job> listJobs(String namespace, String namePrefix) {
+        return client.batch().v1().jobs().inNamespace(namespace).list().getItems().stream()
                 .filter(job -> job.getMetadata().getName().startsWith(namePrefix)).collect(Collectors.toList());
+    }
+
+    public String getDeploymentNameByPrefix(String namespace, String namePrefix) {
+        List<Deployment> prefixDeployments = client.apps().deployments().inNamespace(namespace).list().getItems().stream().filter(
+                rs -> rs.getMetadata().getName().startsWith(namePrefix)).toList();
+
+        if (!prefixDeployments.isEmpty()) {
+            return prefixDeployments.get(0).getMetadata().getName();
+        } else {
+            return null;
+        }
     }
 
     public MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceClusterClient() {

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -23,6 +24,28 @@ public class Environment {
     private static final String PASSWORD_ENV = "KUBE_PASSWORD";
     private static final String TOKEN_ENV = "KUBE_TOKEN";
     private static final String URL_ENV = "KUBE_URL";
+    /**
+     * OLM env variables
+     */
+    private static final String OLM_OPERATOR_NAME_ENV = "OLM_OPERATOR_NAME";
+    private static final String OLM_OPERATOR_NAMESPACE_ENV = "OLM_OPERATOR_NAMESPACE";
+    private static final String OLM_OPERATOR_DEPLOYMENT_NAME_ENV = "OLM_OPERATOR_DEPLOYMENT_NAME";
+    private static final String OLM_SOURCE_NAME_ENV = "OLM_SOURCE_NAME";
+    private static final String OLM_SOURCE_NAMESPACE_ENV = "OLM_SOURCE_NAMESPACE";
+    private static final String OLM_APP_BUNDLE_PREFIX_ENV = "OLM_APP_BUNDLE_PREFIX";
+    private static final String OLM_OPERATOR_VERSION_ENV = "OLM_OPERATOR_VERSION";
+    private static final String OLM_OPERATOR_CHANNEL_ENV = "OLM_OPERATOR_CHANNEL";
+
+    /**
+     * Defaults
+     */
+    public static final String OLM_OPERATOR_NAME_DEFAULT = "opendatahub-operator";
+    public static final String OLM_OPERATOR_NAMESPACE_DEFAULT = "openshift-operators";
+    public static final String OLM_OPERATOR_DEPLOYMENT_NAME_DEFAULT = "opendatahub-operator-controller-manager";
+    public static final String OLM_SOURCE_NAME_DEFAULT = "community-operators";
+    public static final String OLM_APP_BUNDLE_PREFIX_DEFAULT = "opendatahub-operator";
+    public static final String OLM_OPERATOR_CHANNEL_DEFAULT = "fast";
+    public static final String OLM_OPERATOR_VERSION_DEFAULT = "2.4.0";
 
     /**
      * Set values
@@ -33,6 +56,15 @@ public class Environment {
     public static final String KUBE_TOKEN = getOrDefault(TOKEN_ENV, null);
     public static final String KUBE_URL = getOrDefault(URL_ENV, null);
 
+    // OLM env variables
+    public static final String OLM_OPERATOR_NAME = getOrDefault(OLM_OPERATOR_NAME_ENV, OLM_OPERATOR_NAME_DEFAULT);
+    public static final String OLM_OPERATOR_NAMESPACE = getOrDefault(OLM_OPERATOR_NAMESPACE_ENV, OLM_OPERATOR_NAMESPACE_DEFAULT);
+    public static final String OLM_OPERATOR_DEPLOYMENT_NAME = getOrDefault(OLM_OPERATOR_DEPLOYMENT_NAME_ENV, OLM_OPERATOR_DEPLOYMENT_NAME_DEFAULT);
+    public static final String OLM_SOURCE_NAME = getOrDefault(OLM_SOURCE_NAME_ENV, OLM_SOURCE_NAME_DEFAULT);
+    public static final String OLM_SOURCE_NAMESPACE = getOrDefault(OLM_SOURCE_NAMESPACE_ENV, "openshift-marketplace");
+    public static final String OLM_APP_BUNDLE_PREFIX = getOrDefault(OLM_APP_BUNDLE_PREFIX_ENV, OLM_APP_BUNDLE_PREFIX_DEFAULT);
+    public static final String OLM_OPERATOR_CHANNEL = getOrDefault(OLM_OPERATOR_CHANNEL_ENV, OLM_OPERATOR_CHANNEL_DEFAULT);
+    public static final String OLM_OPERATOR_VERSION = getOrDefault(OLM_OPERATOR_VERSION_ENV, OLM_OPERATOR_VERSION_DEFAULT);
     private Environment() { }
 
     static {
@@ -40,7 +72,11 @@ public class Environment {
         LOGGER.info("Used environment variables:");
         VALUES.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> LOGGER.info(debugFormat, entry.getKey(), entry.getValue()));
+                .forEach(entry -> {
+                    if (!Objects.equals(entry.getValue(), "null")) {
+                        LOGGER.info(debugFormat, entry.getKey(), entry.getValue());
+                    }
+                });
     }
 
     public static void print() { }
