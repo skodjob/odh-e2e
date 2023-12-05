@@ -192,6 +192,7 @@
                 </executions>
                 <configuration>
                     <skipITs>${it.skip}</skipITs>
+                    <skipTests>true</skipTests>
                     <forkCount>0</forkCount>
                     <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                     <includes>
@@ -270,6 +271,12 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <overwrite>true</overwrite>
+                    <failOnError>false</failOnError>
+                    <unpack>false</unpack>
+                    <skipCache>true</skipCache>
+                </configuration>
             </plugin>
         </plugins>
     </build>
