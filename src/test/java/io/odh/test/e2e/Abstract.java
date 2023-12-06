@@ -23,5 +23,4 @@ public class Abstract {
     static {
         ResourceManager.getInstance();
     }
-
 }

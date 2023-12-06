@@ -8,7 +8,6 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.manager.ResourceManager;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -31,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("standard")
-public class DataScienceClusterIT extends Abstract {
+public class DataScienceClusterIT extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-dsp";
     private static final String DS_PROJECT_NAMESPACE = "test-ns-ds";

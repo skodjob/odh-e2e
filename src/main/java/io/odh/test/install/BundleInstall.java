@@ -10,7 +10,9 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.odh.test.Environment;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
+import io.odh.test.framework.manager.ResourceItem;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.platform.KubeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +57,8 @@ public class BundleInstall {
         });
     }
 
-    public void installBundle() {
+    public void create() {
         ResourceManager.getInstance().createResourceWithWait(resources.toArray(new HasMetadata[0]));
+        ResourceManager.getInstance().pushToStack(new ResourceItem(KubeUtils::deleteDefaultDSCI, null));
     }
 }

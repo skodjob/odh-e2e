@@ -5,6 +5,7 @@
 package io.odh.test.framework;
 
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.platform.KubeUtils;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -41,6 +42,7 @@ public class TestCallbackListener implements BeforeAllCallback, BeforeEachCallba
     public void afterAll(ExtensionContext extensionContext) throws Exception {
         ResourceManager.getInstance().switchToClassResourceStack();
         ResourceManager.getInstance().deleteResources();
+        KubeUtils.clearOdhCRDs();
     }
 
     @Override
