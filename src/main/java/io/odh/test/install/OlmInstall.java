@@ -12,6 +12,7 @@ import io.odh.test.Environment;
 import io.odh.test.framework.manager.ResourceItem;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
+import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DeploymentUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +69,7 @@ public class OlmInstall {
         Subscription subscription = prepareSubscription();
 
         ResourceManager.getInstance().createResourceWithWait(subscription);
+        ResourceManager.getInstance().pushToStack(new ResourceItem(KubeUtils::deleteDefaultDSCI, null));
     }
     public void updateSubscription() {
         Subscription subscription = prepareSubscription();

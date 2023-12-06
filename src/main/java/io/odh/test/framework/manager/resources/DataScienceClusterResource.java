@@ -7,11 +7,18 @@ package io.odh.test.framework.manager.resources;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import io.odh.test.TestConstants;
+import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.ResourceType;
+import io.odh.test.platform.KubeUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataScienceClusterResource implements ResourceType<DataScienceCluster> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataScienceClusterResource.class);
     @Override
     public String getKind() {
         return "DataScienceCluster";
@@ -19,27 +26,43 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
 
     @Override
     public DataScienceCluster get(String namespace, String name) {
-        return dataScienceCLusterClient().inNamespace(namespace).withName(name).get();
+        return dataScienceCLusterClient().withName(name).get();
     }
 
     @Override
     public void create(DataScienceCluster resource) {
-        dataScienceCLusterClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
+        dataScienceCLusterClient().resource(resource).create();
     }
 
     @Override
     public void delete(DataScienceCluster resource) {
-        dataScienceCLusterClient().inNamespace(resource.getMetadata().getNamespace()).withName(resource.getMetadata().getName()).delete();
+        dataScienceCLusterClient().withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
     public void update(DataScienceCluster resource) {
-        dataScienceCLusterClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).update();
+        dataScienceCLusterClient().resource(resource).update();
     }
 
     @Override
     public boolean waitForReadiness(DataScienceCluster resource) {
-        return resource != null;
+        String message = String.format("DataScienceCluster %s readiness", resource.getMetadata().getName());
+        TestUtils.waitFor(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+            boolean dscReady;
+
+            DataScienceCluster dsc = dataScienceCLusterClient().withName(resource.getMetadata().getName()).get();
+
+            String dashboardStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "dashboardReady").getStatus();
+            LOGGER.debug("DataScienceCluster {} dashboard status: {}", resource.getMetadata().getName(), dashboardStatus);
+            dscReady = dashboardStatus.equals("True");
+
+            String workbenchesStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "workbenchesReady").getStatus();
+            LOGGER.debug("DataScienceCluster {} workbenches status: {}", resource.getMetadata().getName(), workbenchesStatus);
+            dscReady = dscReady && workbenchesStatus.equals("True");
+
+            return dscReady;
+        }, () -> { });
+        return true;
     }
 
     public static MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceCLusterClient() {

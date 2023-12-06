@@ -7,6 +7,7 @@ package io.odh.test.framework.manager;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhookConfiguration;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRole;
 import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.odh.test.TestConstants;
@@ -16,6 +17,10 @@ import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
 import io.odh.test.framework.manager.resources.SubscriptionResource;
 import io.odh.test.platform.KubeClient;
+import io.odh.test.platform.cmdClient.KubeCmdClient;
+import io.odh.test.platform.cmdClient.Oc;
+import io.odh.test.utils.DeploymentUtils;
+import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +35,7 @@ public class ResourceManager {
 
     private static ResourceManager instance;
     private static KubeClient client;
+    private static KubeCmdClient kubeCmdClient;
 
     static final Stack<ResourceItem> CLASS_RESOURCE_STACK = new Stack<>();
     static final Stack<ResourceItem> METHOD_RESOURCE_STACK = new Stack<>();
@@ -40,12 +46,17 @@ public class ResourceManager {
         if (instance == null) {
             instance = new ResourceManager();
             client = new KubeClient(TestConstants.DEFAULT_NAMESPACE);
+            kubeCmdClient = new Oc();
         }
         return instance;
     }
 
     public static KubeClient getClient() {
         return client;
+    }
+
+    public static KubeCmdClient getKubeCmdClient() {
+        return kubeCmdClient;
     }
 
     private final ResourceType<?>[] resourceTypes = new ResourceType[]{
@@ -82,6 +93,14 @@ public class ResourceManager {
         for (T resource : resources) {
             ResourceType<T> type = findResourceType(resource);
 
+            synchronized (this) {
+                resourceStackPointer.push(
+                    new ResourceItem<T>(
+                        () -> deleteResource(resource),
+                        resource
+                    ));
+            }
+
             if (resource.getMetadata().getNamespace() == null) {
                 LOGGER.info("Creating/Updating {} {}",
                         resource.getKind(), resource.getMetadata().getName());
@@ -93,12 +112,21 @@ public class ResourceManager {
             if (type == null) {
                 if (resource instanceof Deployment) {
                     Deployment deployment = (Deployment) resource;
-                    client.getClient().apps().deployments().resource(deployment).create();
+                    if (client.getClient().apps().deployments().resource(deployment).get() != null) {
+                        client.getClient().apps().deployments().resource(deployment).update();
+                    } else {
+                        client.getClient().apps().deployments().resource(deployment).create();
+                    }
                     if (waitReady) {
                         DeploymentUtils.waitForDeploymentReady(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                     }
                 } else {
-                    client.getClient().resource(resource).create();
+                    if (client.getClient().resource(resource).get() != null) {
+                        client.getClient().resource(resource).update();
+                    } else {
+                        client.getClient().resource(resource).create();
+                    }
+
                 }
             } else {
                 type.create(resource);
@@ -106,14 +134,6 @@ public class ResourceManager {
                     assertTrue(waitResourceCondition(resource, ResourceCondition.readiness(type)),
                             String.format("Timed out waiting for %s %s/%s to be ready", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));
                 }
-            }
-
-            synchronized (this) {
-                resourceStackPointer.push(
-                        new ResourceItem<T>(
-                                () -> deleteResource(resource),
-                                resource
-                        ));
             }
         }
     }
@@ -174,7 +194,7 @@ public class ResourceManager {
         assertNotNull(resource.getMetadata().getName());
 
         // cluster role binding and custom resource definition does not need namespace...
-        if (!(resource instanceof ClusterRoleBinding || resource instanceof CustomResourceDefinition || resource instanceof ClusterRole || resource instanceof ValidatingWebhookConfiguration)) {
+        if (!(resource instanceof ClusterRoleBinding || resource instanceof CustomResourceDefinition || resource instanceof ClusterRole || resource instanceof ValidatingWebhookConfiguration || resource instanceof DataScienceCluster)) {
             assertNotNull(resource.getMetadata().getNamespace());
         }
 

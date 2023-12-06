@@ -12,7 +12,6 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.OdhAnnotationsLabels;
-import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.utils.PodUtils;
@@ -35,8 +34,9 @@ import org.kubeflow.v1.Notebook;
 import org.kubeflow.v1.NotebookBuilder;
 
 import java.io.IOException;
+import java.util.Map;
 
-public class NotebookST extends Abstract {
+public class NotebookST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-notebooks";
     private static final String DS_PROJECT_NAMESPACE = "test-notebooks";
@@ -75,7 +75,7 @@ public class NotebookST extends Abstract {
         ResourceManager.getInstance().createResourceWithoutWait(notebook);
 
         LabelSelector lblSelector = new LabelSelectorBuilder()
-                .withMatchLabels(ResourceManager.getClient().listPods(NTB_NAMESPACE).get(0).getMetadata().getLabels())
+                .withMatchLabels(Map.of("app", NTB_NAME))
                 .build();
 
         PodUtils.waitForPodsReady(NTB_NAMESPACE, lblSelector, 1, true, () -> { });
@@ -92,7 +92,6 @@ public class NotebookST extends Abstract {
         DataScienceCluster dsc = new DataScienceClusterBuilder()
                 .withNewMetadata()
                 .withName(DS_PROJECT_NAME)
-                .withNamespace(DS_PROJECT_NAMESPACE)
                 .endMetadata()
                 .withNewSpec()
                 .withComponents(
@@ -117,6 +116,5 @@ public class NotebookST extends Abstract {
                 .build();
         // Deploy DSC
         ResourceManager.getInstance().createResourceWithWait(dsc);
-        // TODO - tady musi byt wait na DSC pody
     }
 }
