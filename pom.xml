@@ -304,9 +304,9 @@
             <id>continuous</id>
             <properties>
                 <it.skip>false</it.skip>
-                <it.test>
-                    io.odh.test.e2e.continuous.*IT
-                </it.test>
+                <groups>
+                    continuous
+                </groups>
             </properties>
         </profile>
 
@@ -315,8 +315,21 @@
             <properties>
                 <it.skip>false</it.skip>
                 <it.test>
-                    io.odh.test.e2e.standard.*IT
+                    io.odh.test.e2e.standard.*ST
                 </it.test>
+                <groups>
+                    !upgrade
+                </groups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>upgrade</id>
+            <properties>
+                <it.skip>false</it.skip>
+                <groups>
+                    upgrade
+                </groups>
             </properties>
         </profile>
     </profiles>

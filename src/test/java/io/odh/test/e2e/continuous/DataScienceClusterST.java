@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("continuous")
-public class DataScienceClusterIT extends Abstract {
+public class DataScienceClusterST extends Abstract {
 
     private static final String DS_CLUSTER_NAME = "default";
     private static final String DS_DASHBOARD_CONFIG_NAME = "odh-dashboard-config";

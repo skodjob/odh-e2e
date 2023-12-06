@@ -25,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("continuous")
-public class DataScienceProjectIT extends Abstract {
-    static final Logger LOGGER = LoggerFactory.getLogger(DataScienceProjectIT.class);
+public class DataScienceProjectST extends Abstract {
+    static final Logger LOGGER = LoggerFactory.getLogger(DataScienceProjectST.class);
 
     MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookCli;
 
