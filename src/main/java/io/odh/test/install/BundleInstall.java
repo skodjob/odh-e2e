@@ -5,6 +5,8 @@
 package io.odh.test.install;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
+import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.odh.test.Environment;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
@@ -39,6 +41,14 @@ public class BundleInstall {
         this(Environment.INSTALL_FILE_PATH);
     }
 
+    public String getNamespace() {
+        return resources.stream().filter(r -> r instanceof Namespace).findFirst().get().getMetadata().getName();
+    }
+
+    public String getDeploymentName() {
+        return resources.stream().filter(r -> r instanceof Deployment).findFirst().get().getMetadata().getName();
+    }
+
     public void printResources() {
         resources.forEach(r -> {
             LOGGER.info("Kind: {}, Name: {}", r.getKind(), r.getMetadata().getName());
@@ -46,6 +56,6 @@ public class BundleInstall {
     }
 
     public void installBundle() {
-        //TODO implement using RM
+        ResourceManager.getInstance().createResourceWithWait(resources.toArray(new HasMetadata[0]));
     }
 }
