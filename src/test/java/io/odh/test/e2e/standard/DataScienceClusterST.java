@@ -4,10 +4,6 @@
  */
 package io.odh.test.e2e.standard;
 
-import io.fabric8.kubernetes.api.model.KubernetesResourceList;
-import io.fabric8.kubernetes.api.model.NamespaceBuilder;
-import io.fabric8.kubernetes.client.dsl.MixedOperation;
-import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.framework.manager.ResourceManager;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -22,44 +18,21 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ks
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("standard")
-public class DataScienceClusterIT extends StandardAbstract {
+@Tag("smoke")
+public class DataScienceClusterST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-dsp";
-    private static final String DS_PROJECT_NAMESPACE = "test-ns-ds";
-    MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> cli;
-
-    @BeforeAll
-    void init() {
-        cli = ResourceManager.getClient().dataScienceClusterClient();
-    }
-
-    @AfterAll
-    void clean() {
-        cli.inNamespace(DS_PROJECT_NAMESPACE).withName(DS_PROJECT_NAME).delete();
-        ResourceManager.getClient().getClient().namespaces().withName(DS_PROJECT_NAMESPACE).delete();
-    }
 
     @Test
     void createDataScienceCluster() {
-        if (!ResourceManager.getClient().namespaceExists(DS_PROJECT_NAMESPACE)) {
-            ResourceManager.getClient().getClient()
-                    .namespaces()
-                    .resource(new NamespaceBuilder().withNewMetadata().withName(DS_PROJECT_NAMESPACE).endMetadata().build())
-                    .create();
-        }
-
         DataScienceCluster c = new DataScienceClusterBuilder()
                 .withNewMetadata()
                 .withName(DS_PROJECT_NAME)
-                .withNamespace(DS_PROJECT_NAMESPACE)
                 .endMetadata()
                 .withNewSpec()
                 .withComponents(
@@ -83,9 +56,9 @@ public class DataScienceClusterIT extends StandardAbstract {
                 .endSpec()
                 .build();
 
-        cli.resource(c).create();
+        ResourceManager.getInstance().createResourceWithWait(c);
 
-        DataScienceCluster cluster = cli.inNamespace(DS_PROJECT_NAMESPACE).withName(DS_PROJECT_NAME).get();
+        DataScienceCluster cluster = ResourceManager.getClient().dataScienceClusterClient().withName(DS_PROJECT_NAME).get();
 
         assertEquals(Kserve.ManagementState.MANAGED, cluster.getSpec().getComponents().getKserve().getManagementState());
         assertEquals(Codeflare.ManagementState.MANAGED, cluster.getSpec().getComponents().getCodeflare().getManagementState());
