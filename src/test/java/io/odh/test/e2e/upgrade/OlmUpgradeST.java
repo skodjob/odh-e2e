@@ -9,6 +9,9 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
+import io.odh.test.e2e.Abstract;
+import io.odh.test.framework.listeners.OdhResourceCleaner;
+import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.OlmInstall;
 import io.odh.test.utils.DeploymentUtils;
@@ -30,6 +33,7 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Wo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,7 +44,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Tag("upgrade")
-public class OlmUpgradeST extends UpgradeAbstract {
+@ExtendWith(OdhResourceCleaner.class)
+@ExtendWith(ResourceManagerDeleteHandler.class)
+public class OlmUpgradeST extends Abstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OlmUpgradeST.class);
     private static final String DS_PROJECT_NAME = "upgrade-dsc";
