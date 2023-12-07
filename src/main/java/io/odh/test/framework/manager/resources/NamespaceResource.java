@@ -23,7 +23,11 @@ public class NamespaceResource implements ResourceType<Namespace> {
 
     @Override
     public void create(Namespace resource) {
-        ResourceManager.getClient().getClient().resource(resource).create();
+        if (get("", resource.getMetadata().getName()) != null) {
+            ResourceManager.getClient().getClient().resource(resource).update();
+        } else {
+            ResourceManager.getClient().getClient().resource(resource).create();
+        }
     }
 
     @Override

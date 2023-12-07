@@ -16,6 +16,7 @@ import io.odh.test.platform.KubeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,13 +27,16 @@ public class BundleInstall {
     private static final Logger LOGGER = LoggerFactory.getLogger(BundleInstall.class);
 
     List<HasMetadata> resources;
+    File installFile;
 
     public BundleInstall(String installFilePath) throws IOException {
         InputStream is;
         if (installFilePath.equals(TestConstants.LATEST_BUNDLE_DEPLOY_FILE)
                 || installFilePath.equals(TestConstants.RELEASED_BUNDLE_DEPLOY_FILE)) {
+            installFile = new File("src/main/resources/" + installFilePath);
             is = TestUtils.getFileFromResourceAsStream(installFilePath);
         } else {
+            installFile = new File(installFilePath);
             is = new FileInputStream(installFilePath);
         }
         resources = ResourceManager.getClient().readResourcesFromYaml(is);
@@ -51,6 +55,12 @@ public class BundleInstall {
         return resources.stream().filter(r -> r instanceof Deployment).findFirst().get().getMetadata().getName();
     }
 
+    public String getDeploymentImage() {
+        return ((Deployment) resources.stream().filter(r -> r instanceof Deployment).findFirst().get())
+                .getSpec().getTemplate().getSpec().getContainers()
+                .stream().filter(c -> c.getName().equals("manager")).findFirst().get().getImage();
+    }
+
     public void printResources() {
         resources.forEach(r -> {
             LOGGER.info("Kind: {}, Name: {}", r.getKind(), r.getMetadata().getName());
@@ -60,5 +70,14 @@ public class BundleInstall {
     public void create() {
         ResourceManager.getInstance().createResourceWithWait(resources.toArray(new HasMetadata[0]));
         ResourceManager.getInstance().pushToStack(new ResourceItem(KubeUtils::deleteDefaultDSCI, null));
+    }
+
+    public void createWithoutResourceManager() throws IOException {
+        ResourceManager.getKubeCmdClient().namespace(getNamespace()).apply(installFile.getAbsolutePath());
+    }
+
+    public void deleteWithoutResourceManager() throws IOException {
+        KubeUtils.deleteDefaultDSCI();
+        ResourceManager.getKubeCmdClient().namespace(getNamespace()).delete(installFile.getAbsolutePath());
     }
 }
