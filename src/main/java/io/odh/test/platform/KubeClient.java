@@ -23,6 +23,8 @@ import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
+import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
+import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlanBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -343,6 +345,28 @@ public class KubeClient {
         } else {
             return null;
         }
+    }
+
+    public InstallPlan getInstallPlan(String namespaceName, String installPlanName) {
+        return client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).get();
+    }
+
+    public void approveInstallPlan(String namespaceName, String installPlanName) {
+        InstallPlan installPlan = new InstallPlanBuilder(this.getInstallPlan(namespaceName, installPlanName))
+            .editSpec()
+            .withApproved()
+            .endSpec()
+            .build();
+
+        LOGGER.debug("Approving {}", installPlanName);
+        client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).patch(installPlan);
+    }
+
+    public InstallPlan getNonApprovedInstallPlan(String namespaceName, String csvPrefix) {
+        return client.adapt(OpenShiftClient.class).operatorHub().installPlans()
+                .inNamespace(namespaceName).list().getItems().stream()
+                .filter(installPlan ->  !installPlan.getSpec().getApproved() && installPlan.getSpec().getClusterServiceVersionNames().toString().contains(csvPrefix))
+                .findFirst().get();
     }
 
     public MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceClusterClient() {

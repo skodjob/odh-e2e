@@ -34,6 +34,8 @@ public class OlmInstall {
     private String operatorVersion  = Environment.OLM_OPERATOR_VERSION;
     private String csvName = operatorName + ".v" + operatorVersion;
 
+    private String approval = "Automatic";
+
     public void create() {
         createOperatorGroup();
         ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
@@ -41,6 +43,12 @@ public class OlmInstall {
 
         // Wait for operator creation
         DeploymentUtils.waitForDeploymentReady(namespace, deploymentName);
+    }
+
+    public void createManual() {
+        createOperatorGroup();
+        ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
+        createAndModifySubscription();
     }
 
     /**
@@ -89,7 +97,7 @@ public class OlmInstall {
             .withSourceNamespace(sourceNamespace)
             .withChannel(channel)
             .withStartingCSV(startingCsv)
-            .withInstallPlanApproval("Automatic")
+            .withInstallPlanApproval(approval)
             .editOrNewConfig()
             .endConfig()
             .endSpec()
@@ -154,5 +162,13 @@ public class OlmInstall {
 
     public void setCsvName(String csvName) {
         this.csvName = csvName;
+    }
+
+    public String getApproval() {
+        return approval;
+    }
+
+    public void setApproval(String approval) {
+        this.approval = approval;
     }
 }
