@@ -4,6 +4,7 @@
  */
 package io.odh.test.utils;
 
+import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodCondition;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -16,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static java.util.Arrays.asList;
 
@@ -93,5 +96,47 @@ public class DeploymentUtils {
                 }
             });
         LOGGER.debug("Deployment: {}/{} was deleted", namespaceName, name);
+    }
+
+    /**
+     * Returns a map of pod name to resource version for the Pods currently in the given deployment.
+     * @param name The Deployment name.
+     * @return A map of pod name to resource version for Pods in the given Deployment.
+     */
+    public static Map<String, String> depSnapshot(String namespaceName, String name) {
+        Deployment deployment = ResourceManager.getClient().getDeployment(namespaceName, name);
+        LabelSelector selector = deployment.getSpec().getSelector();
+        return PodUtils.podSnapshot(namespaceName, selector);
+    }
+
+    /**
+     * Method to check that all Pods for expected Deployment were rolled
+     * @param namespaceName Namespace name
+     * @param name Deployment name
+     * @param snapshot Snapshot of Pods for Deployment before the rolling update
+     * @return true when the Pods for Deployment are recreated
+     */
+    public static boolean depHasRolled(String namespaceName, String name, Map<String, String> snapshot) {
+        LOGGER.debug("Existing snapshot: {}/{}", namespaceName, new TreeMap<>(snapshot));
+        Map<String, String> map = PodUtils.podSnapshot(namespaceName, ResourceManager.getClient().getDeployment(namespaceName, name).getSpec().getSelector());
+        LOGGER.debug("Current  snapshot: {}/{}", namespaceName, new TreeMap<>(map));
+        int current = map.size();
+        map.keySet().retainAll(snapshot.keySet());
+        if (current == snapshot.size() && map.isEmpty()) {
+            LOGGER.debug("All Pods seem to have rolled");
+            return true;
+        } else {
+            LOGGER.debug("Some Pods still need to roll: {}/{}", namespaceName, map);
+            return false;
+        }
+    }
+
+    public static Map<String, String> waitTillDepHasRolled(String namespaceName, String deploymentName, Map<String, String> snapshot) {
+        LOGGER.info("Waiting for Deployment: {}/{} rolling update", namespaceName, deploymentName);
+        TestUtils.waitFor("rolling update of Deployment " + namespaceName + "/" + deploymentName,
+                TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, TestConstants.GLOBAL_TIMEOUT,
+                () -> depHasRolled(namespaceName, deploymentName, snapshot));
+
+        return depSnapshot(namespaceName, deploymentName);
     }
 }

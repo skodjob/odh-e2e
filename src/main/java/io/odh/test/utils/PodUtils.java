@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class PodUtils {
 
@@ -60,5 +62,49 @@ public class PodUtils {
                 LOGGER.info("Pods matching: {}/{} are ready", namespaceName, selector);
                 return true;
             }, onTimeout);
+    }
+
+    /**
+     * Returns a map of resource name to resource version for all the pods in the given {@code namespace}
+     * matching the given {@code selector}.
+     */
+    public static Map<String, String> podSnapshot(String namespaceName, LabelSelector selector) {
+        List<Pod> pods = ResourceManager.getClient().listPods(namespaceName, selector);
+        return pods.stream()
+                .collect(
+                        Collectors.toMap(pod -> pod.getMetadata().getName(),
+                                pod -> pod.getMetadata().getUid()));
+    }
+
+    public static void verifyThatPodsAreStable(String namespaceName, LabelSelector labelSelector) {
+        int[] stabilityCounter = {0};
+        String phase = "Running";
+
+        List<Pod> runningPods = ResourceManager.getClient().listPods(namespaceName, labelSelector);
+
+        TestUtils.waitFor(String.format("Pods in namespace '%s' with LabelSelector %s stability in phase %s", namespaceName, labelSelector, phase), TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT,
+                () -> {
+                    List<Pod> actualPods = runningPods.stream().map(p -> ResourceManager.getClient().getPod(namespaceName, p.getMetadata().getName())).toList();
+
+                    for (Pod pod : actualPods) {
+                        if (pod.getStatus().getPhase().equals(phase)) {
+                            LOGGER.info("Pod: {}/{} is in the {} state. Remaining seconds Pod to be stable {}",
+                                    namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(),
+                                    TestConstants.GLOBAL_STABILITY_TIME - stabilityCounter[0]);
+                        } else {
+                            LOGGER.info("Pod: {}/{} is not stable in phase following phase {} reset the stability counter from {} to {}",
+                                    namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(), stabilityCounter[0], 0);
+                            stabilityCounter[0] = 0;
+                            return false;
+                        }
+                    }
+                    stabilityCounter[0]++;
+
+                    if (stabilityCounter[0] == TestConstants.GLOBAL_STABILITY_TIME) {
+                        LOGGER.info("All Pods are stable {}", actualPods.stream().map(p -> p.getMetadata().getName()).collect(Collectors.joining(" ,")));
+                        return true;
+                    }
+                    return false;
+                });
     }
 }

@@ -20,6 +20,7 @@ public class TestConstants {
     public static final long GLOBAL_POLL_INTERVAL_MEDIUM = Duration.ofSeconds(5).toMillis();
     public static final long GLOBAL_POLL_INTERVAL_SHORT = Duration.ofSeconds(1).toMillis();
     public static final long GLOBAL_TIMEOUT = Duration.ofMinutes(5).toMillis();
+    public static final long GLOBAL_STABILITY_TIME = Duration.ofSeconds(10).toSeconds();
 
     private TestConstants() {
     }

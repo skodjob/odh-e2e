@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @ExtendWith(ResourceManagerDeleteHandler.class)
 public class StandardAbstract extends Abstract {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Abstract.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StandardAbstract.class);
 
     @BeforeAll
     void setupEnvironment() throws IOException {
