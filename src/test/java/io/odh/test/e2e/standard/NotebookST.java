@@ -39,7 +39,6 @@ import java.util.Map;
 public class NotebookST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-notebooks";
-    private static final String DS_PROJECT_NAMESPACE = "test-notebooks";
 
     private static final String NTB_NAME = "test-odh-notebook";
     private static final String NTB_NAMESPACE = "test-odh-notebook";
@@ -84,10 +83,6 @@ public class NotebookST extends StandardAbstract {
 
     @BeforeAll
     void deployDataScienceCluster() {
-        // Create namespace
-        Namespace ns = new NamespaceBuilder().withNewMetadata().withName(DS_PROJECT_NAMESPACE).endMetadata().build();
-        ResourceManager.getInstance().createResourceWithoutWait(ns);
-
         // Create DSC
         DataScienceCluster dsc = new DataScienceClusterBuilder()
                 .withNewMetadata()

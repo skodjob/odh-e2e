@@ -1,1 +1,1 @@
-io.odh.test.framework.TestPlanExecutionListener
+io.odh.test.framework.listeners.TestPlanExecutionListener

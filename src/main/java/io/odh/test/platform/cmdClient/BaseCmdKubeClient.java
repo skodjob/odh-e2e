@@ -169,7 +169,7 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
 
     @Override
     @SuppressWarnings("unchecked")
-    public K applyContent(String yamlContent) {
+    public K applyContentInNamespace(String yamlContent) {
         try (Context context = defaultContext()) {
             Exec.exec(yamlContent, namespacedCommand(APPLY, "-f", "-"));
             return (K) this;
@@ -178,9 +178,27 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
 
     @Override
     @SuppressWarnings("unchecked")
-    public K deleteContent(String yamlContent) {
+    public K deleteContentInNamespace(String yamlContent) {
         try (Context context = defaultContext()) {
             Exec.exec(yamlContent, namespacedCommand(DELETE, "-f", "-"), 0, true, false);
+            return (K) this;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public K applyContent(String yamlContent) {
+        try (Context context = defaultContext()) {
+            Exec.exec(yamlContent, command(Arrays.asList(APPLY, "-f", "-"), false), 0, true, true);
+            return (K) this;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public K deleteContent(String yamlContent) {
+        try (Context context = defaultContext()) {
+            Exec.exec(yamlContent, command(Arrays.asList(DELETE, "-f", "-"), false), 0, true, false);
             return (K) this;
         }
     }
@@ -297,7 +315,7 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
         }
 
         String yaml = Exec.exec(cmd).out();
-        applyContent(yaml);
+        applyContentInNamespace(yaml);
     }
 
     @Override

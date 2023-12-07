@@ -6,7 +6,8 @@ package io.odh.test.e2e.standard;
 
 import io.odh.test.Environment;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.OdhResourceCleaner;
+import io.odh.test.framework.listeners.OdhResourceCleaner;
+import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.install.InstallTypes;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(OdhResourceCleaner.class)
+@ExtendWith(ResourceManagerDeleteHandler.class)
 public class StandardAbstract extends Abstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Abstract.class);

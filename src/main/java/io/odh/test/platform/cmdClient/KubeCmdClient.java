@@ -70,6 +70,10 @@ public interface KubeCmdClient<K extends KubeCmdClient<K>> {
      */
     K replace(File... files);
 
+    K applyContentInNamespace(String yamlContent);
+
+    K deleteContentInNamespace(String yamlContent);
+
     K applyContent(String yamlContent);
 
     K deleteContent(String yamlContent);

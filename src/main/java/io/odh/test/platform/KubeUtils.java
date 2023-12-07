@@ -36,7 +36,7 @@ public class KubeUtils {
      */
     public static void deleteDefaultDSCI() {
         LOGGER.info("Clearing DSCI ...");
-        ResourceManager.getKubeCmdClient().exec("delete", "dsci", "--all");
+        ResourceManager.getKubeCmdClient().exec(false, "delete", "dsci", "--all");
     }
 
     private KubeUtils() {
