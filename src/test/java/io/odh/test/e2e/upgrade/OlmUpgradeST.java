@@ -8,12 +8,12 @@ import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
-import io.odh.test.TestUtils;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.OlmInstall;
+import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -41,7 +41,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.IsNot.not;
 
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 @Tag("upgrade")
 @ExtendWith(OdhResourceCleaner.class)
@@ -102,16 +101,7 @@ public class OlmUpgradeST extends Abstract {
         ResourceManager.getInstance().createResourceWithWait(dsc);
 
         // Approve upgrade to newer version
-        // TODO - add dynamic wait
-        TestUtils.waitFor("Install paln with new version", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
-            try {
-                ResourceManager.getClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
-                return true;
-            } catch (NoSuchElementException ex) {
-                LOGGER.debug("No new install plan available. Checking again ...");
-                return false;
-            }
-        }, () -> { });
+        KubeUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
 
         ip = ResourceManager.getClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
         ResourceManager.getClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());

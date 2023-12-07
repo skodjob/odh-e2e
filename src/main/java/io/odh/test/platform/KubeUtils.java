@@ -4,11 +4,14 @@
  */
 package io.odh.test.platform;
 
+import io.odh.test.TestConstants;
+import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class KubeUtils {
 
@@ -37,6 +40,18 @@ public class KubeUtils {
     public static void deleteDefaultDSCI() {
         LOGGER.info("Clearing DSCI ...");
         ResourceManager.getKubeCmdClient().exec(false, "delete", "dsci", "--all");
+    }
+
+    public static void waitForInstallPlan(String namespace, String csvName) {
+        TestUtils.waitFor("Install paln with new version", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+            try {
+                ResourceManager.getClient().getNonApprovedInstallPlan(namespace, csvName);
+                return true;
+            } catch (NoSuchElementException ex) {
+                LOGGER.debug("No new install plan available. Checking again ...");
+                return false;
+            }
+        }, () -> { });
     }
 
     private KubeUtils() {
