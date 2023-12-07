@@ -6,12 +6,14 @@ package io.odh.test.e2e.standard;
 
 import io.odh.test.Environment;
 import io.odh.test.e2e.Abstract;
+import io.odh.test.framework.OdhResourceCleaner;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.install.InstallTypes;
 import io.odh.test.install.OlmInstall;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+@ExtendWith(OdhResourceCleaner.class)
 public class StandardAbstract extends Abstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Abstract.class);
