@@ -13,12 +13,15 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
+import io.odh.test.OdhConstants;
+import io.odh.test.TestConstants;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.install.BundleInstall;
+import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -45,6 +48,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.core.IsNot.not;
+
 @Tag("upgrade")
 @ExtendWith(OdhResourceCleaner.class)
 @ExtendWith(ResourceManagerDeleteHandler.class)
@@ -67,6 +74,8 @@ public class BundleUpgradeST extends Abstract {
         LOGGER.info("Install base version");
         baseBundle = new BundleInstall(Environment.INSTALL_FILE_PREVIOUS_PATH);
         baseBundle.createWithoutResourceManager();
+
+        Map<String, String> operatorSnapshot = DeploymentUtils.depSnapshot(baseBundle.getNamespace(), baseBundle.getDeploymentName());
 
         String dsProjectName = "test-notebooks-upgrade";
         String ntbName = "test-odh-notebook";
@@ -138,6 +147,17 @@ public class BundleUpgradeST extends Abstract {
         upgradeBundle = new BundleInstall(Environment.INSTALL_FILE_PATH);
         upgradeBundle.createWithoutResourceManager();
 
-        PodUtils.waitForPodsReady(ntbNamespace, lblSelector, 1, true, () -> { });
+        DeploymentUtils.waitTillDepHasRolled(baseBundle.getNamespace(), baseBundle.getDeploymentName(), operatorSnapshot);
+
+        LabelSelector labelSelector = ResourceManager.getClient().getDeployment(TestConstants.ODH_NAMESPACE, OdhConstants.ODH_DASHBOARD).getSpec().getSelector();
+        PodUtils.verifyThatPodsAreStable(TestConstants.ODH_NAMESPACE, labelSelector);
+
+        // Check that operator doesn't contain errors in logs
+        String operatorLog = ResourceManager.getClient().getClient().apps().deployments()
+                .inNamespace(baseBundle.getNamespace()).withName(baseBundle.getDeploymentName()).getLog();
+
+        assertThat(operatorLog, not(containsString("error")));
+        assertThat(operatorLog, not(containsString("Error")));
+        assertThat(operatorLog, not(containsString("ERROR")));
     }
 }

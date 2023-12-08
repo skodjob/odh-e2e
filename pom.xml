@@ -332,6 +332,17 @@
                 </groups>
             </properties>
         </profile>
+
+        <profile>
+            <id>all</id>
+            <properties>
+                <it.skip>false</it.skip>
+                <groups>
+                    standard,
+                    upgrade
+                </groups>
+            </properties>
+        </profile>
     </profiles>
 
 </project>
