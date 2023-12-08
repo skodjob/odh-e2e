@@ -27,6 +27,7 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlanBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
+import io.odh.test.platform.executor.Exec;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
 import org.kubeflow.v1.Notebook;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
 public class KubeClient {
     protected final KubernetesClient client;
     protected String namespace;
+    private String kubeconfigPath;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KubeClient.class);
 
@@ -92,6 +95,12 @@ public class KubeClient {
         if (Environment.KUBE_USERNAME != null
                 && Environment.KUBE_PASSWORD != null
                 && Environment.KUBE_URL != null) {
+            Exec.exec(Arrays.asList("oc", "login", "-u", Environment.KUBE_USERNAME,
+                    "-p", Environment.KUBE_PASSWORD,
+                    "--insecure-skip-tls-verify",
+                    "--kubeconfig", Environment.USER_PATH + "/test.kubeconfig",
+                    Environment.KUBE_URL));
+            kubeconfigPath = Environment.USER_PATH + "/test.kubeconfig";
             return new ConfigBuilder()
                     .withUsername(Environment.KUBE_USERNAME)
                     .withPassword(Environment.KUBE_PASSWORD)
@@ -101,6 +110,11 @@ public class KubeClient {
                     .build();
         } else if (Environment.KUBE_URL != null
                 && Environment.KUBE_TOKEN != null) {
+            Exec.exec(Arrays.asList("oc", "login", "--token", Environment.KUBE_TOKEN,
+                    "--insecure-skip-tls-verify",
+                    "--kubeconfig", Environment.USER_PATH + "/test.kubeconfig",
+                    Environment.KUBE_URL));
+            kubeconfigPath = Environment.USER_PATH + "/test.kubeconfig";
             return new ConfigBuilder()
                     .withOauthToken(Environment.KUBE_TOKEN)
                     .withMasterUrl(Environment.KUBE_URL)
@@ -120,6 +134,10 @@ public class KubeClient {
     public boolean namespaceExists(String namespace) {
         return client.namespaces().list().getItems().stream().map(n -> n.getMetadata().getName())
                 .toList().contains(namespace);
+    }
+
+    public String getKubeconfigPath() {
+        return kubeconfigPath;
     }
 
     // ==================================================
