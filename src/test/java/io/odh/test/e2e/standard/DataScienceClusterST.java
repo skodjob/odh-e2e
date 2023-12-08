@@ -5,6 +5,7 @@
 package io.odh.test.e2e.standard;
 
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.framework.manager.resources.DataScienceClusterResource;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
@@ -58,7 +59,7 @@ public class DataScienceClusterST extends StandardAbstract {
 
         ResourceManager.getInstance().createResourceWithWait(c);
 
-        DataScienceCluster cluster = ResourceManager.getClient().dataScienceClusterClient().withName(DS_PROJECT_NAME).get();
+        DataScienceCluster cluster = DataScienceClusterResource.dataScienceCLusterClient().withName(DS_PROJECT_NAME).get();
 
         assertEquals(Kserve.ManagementState.MANAGED, cluster.getSpec().getComponents().getKserve().getManagementState());
         assertEquals(Codeflare.ManagementState.MANAGED, cluster.getSpec().getComponents().getCodeflare().getManagementState());

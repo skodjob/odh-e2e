@@ -106,7 +106,12 @@ public class OlmInstall {
 
     public void deleteCSV() {
         LOGGER.info("Deleting CSV {}/{}", namespace, olmAppBundlePrefix);
-        ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().inNamespace(namespace).withName(csvName).delete();
+        ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().inNamespace(namespace)
+            .list().getItems().stream().filter(csv -> csv.getMetadata().getName().contains(olmAppBundlePrefix)).toList()
+            .forEach(csv -> {
+                LOGGER.info("Deleting CSV {}", csv.getMetadata().getName());
+                ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().resource(csv).delete();
+            });
     }
 
     /**

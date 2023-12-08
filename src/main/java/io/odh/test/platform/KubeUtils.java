@@ -4,6 +4,7 @@
  */
 package io.odh.test.platform;
 
+import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
@@ -45,7 +46,8 @@ public class KubeUtils {
     public static void waitForInstallPlan(String namespace, String csvName) {
         TestUtils.waitFor("Install paln with new version", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             try {
-                ResourceManager.getClient().getNonApprovedInstallPlan(namespace, csvName);
+                InstallPlan ip = ResourceManager.getClient().getNonApprovedInstallPlan(namespace, csvName);
+                LOGGER.debug("Found InstallPlan {} - {}", ip.getMetadata().getName(), ip.getSpec().getClusterServiceVersionNames());
                 return true;
             } catch (NoSuchElementException ex) {
                 LOGGER.debug("No new install plan available. Checking again ...");

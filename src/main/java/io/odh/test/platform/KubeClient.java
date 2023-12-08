@@ -30,7 +30,6 @@ import io.odh.test.Environment;
 import io.odh.test.platform.executor.Exec;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
-import org.kubeflow.v1.Notebook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -376,7 +375,7 @@ public class KubeClient {
             .endSpec()
             .build();
 
-        LOGGER.debug("Approving {}", installPlanName);
+        LOGGER.debug("Approving InstallPlan {}", installPlanName);
         client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).patch(installPlan);
     }
 
@@ -387,15 +386,7 @@ public class KubeClient {
                 .findFirst().get();
     }
 
-    public MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceClusterClient() {
-        return client.resources(DataScienceCluster.class);
-    }
-
     public MixedOperation<OdhDashboardConfig, KubernetesResourceList<OdhDashboardConfig>, Resource<OdhDashboardConfig>> dashboardConfigClient() {
         return client.resources(OdhDashboardConfig.class);
-    }
-
-    public MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookClient() {
-        return client.resources(Notebook.class);
     }
 }
