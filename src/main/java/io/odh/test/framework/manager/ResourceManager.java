@@ -48,7 +48,7 @@ public class ResourceManager {
         if (instance == null) {
             instance = new ResourceManager();
             client = new KubeClient(TestConstants.DEFAULT_NAMESPACE);
-            kubeCmdClient = new Oc();
+            kubeCmdClient = new Oc(client.getKubeconfigPath());
         }
         return instance;
     }

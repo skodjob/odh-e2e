@@ -68,7 +68,7 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
     }
 
     // Admin context is not implemented now, because it's not needed
-    // In case it will be neded in future, we should change the kubeconfig and apply it for both oc and kubectl
+    // In case it will be needed in the future, we should change the kubeconfig and apply it for both oc and kubectl
     protected Context adminContext() {
         return defaultContext();
     }
@@ -288,7 +288,8 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
 
     @Override
     public List<String> list(String resourceType) {
-        return asList(Exec.exec(namespacedCommand("get", resourceType, "-o", "jsonpath={range .items[*]}{.metadata.name} ")).out().trim().split(" +")).stream().filter(s -> !s.trim().isEmpty()).collect(Collectors.toList());
+        return Arrays.stream(Exec.exec(namespacedCommand("get", resourceType, "-o", "jsonpath={range .items[*]}{.metadata.name} ")).out().trim().split(" +"))
+                .filter(s -> !s.trim().isEmpty()).collect(Collectors.toList());
     }
 
     @Override
@@ -388,7 +389,7 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
     @SuppressWarnings("unchecked")
     public K process(Map<String, String> parameters, String file, Consumer<String> c) {
         List<String> command = command(asList(PROCESS, "-f", file), false);
-        command.addAll(parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.toList()));
+        command.addAll(parameters.entrySet().stream().map(e -> e.getKey() + "=" + e.getValue()).toList());
         ExecResult exec = Exec.builder()
                 .throwErrors(true)
                 .withCommand(command)
