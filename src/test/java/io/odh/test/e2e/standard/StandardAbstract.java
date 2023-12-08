@@ -14,6 +14,7 @@ import io.odh.test.install.InstallTypes;
 import io.odh.test.install.OlmInstall;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
+@Tag("standard")
 @ExtendWith(OdhResourceCleaner.class)
 @ExtendWith(ResourceManagerDeleteHandler.class)
 public class StandardAbstract extends Abstract {
