@@ -32,7 +32,7 @@ public class OlmUpgradeST extends UpgradeAbstract {
     private final String startingVersion = "2.3.0";
 
     @Test
-    void testUpgradeOlm() throws IOException {
+    void testUpgradeOlm() throws IOException, InterruptedException {
         String ntbName = "test-odh-notebook";
         String ntbNamespace = "test-odh-notebook-upgrade";
 

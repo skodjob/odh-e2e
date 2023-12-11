@@ -105,12 +105,21 @@ public class OlmInstall {
     }
 
     public void deleteCSV() {
-        LOGGER.info("Deleting CSV {}/{}", namespace, olmAppBundlePrefix);
         ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().inNamespace(namespace)
             .list().getItems().stream().filter(csv -> csv.getMetadata().getName().contains(olmAppBundlePrefix)).toList()
             .forEach(csv -> {
                 LOGGER.info("Deleting CSV {}", csv.getMetadata().getName());
                 ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().resource(csv).delete();
+            });
+        deleteInstallPlans();
+    }
+
+    public void deleteInstallPlans() {
+        ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespace)
+            .list().getItems().stream().filter(ip -> ip.getSpec().getClusterServiceVersionNames().stream().toList().toString().contains(olmAppBundlePrefix)).toList()
+            .forEach(ip -> {
+                LOGGER.info("Deleting InstallPlan {}", ip.getMetadata().getName());
+                ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().installPlans().resource(ip).delete();
             });
     }
 

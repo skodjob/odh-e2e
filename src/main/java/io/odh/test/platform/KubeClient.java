@@ -27,8 +27,9 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlanBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
+import io.odh.test.TestConstants;
+import io.odh.test.TestUtils;
 import io.odh.test.platform.executor.Exec;
-import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -368,7 +369,7 @@ public class KubeClient {
         return client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).get();
     }
 
-    public void approveInstallPlan(String namespaceName, String installPlanName) {
+    public void approveInstallPlan(String namespaceName, String installPlanName) throws InterruptedException {
         InstallPlan installPlan = new InstallPlanBuilder(this.getInstallPlan(namespaceName, installPlanName))
             .editSpec()
             .withApproved()
@@ -376,7 +377,15 @@ public class KubeClient {
             .build();
 
         LOGGER.debug("Approving InstallPlan {}", installPlanName);
-        client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).patch(installPlan);
+        TestUtils.waitFor("InstallPlan approval", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, 15_000, () -> {
+            try {
+                client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).patch(installPlan);
+                return true;
+            } catch (Exception ex) {
+                LOGGER.error(String.valueOf(ex));
+                return false;
+            }
+        });
     }
 
     public InstallPlan getNonApprovedInstallPlan(String namespaceName, String csvPrefix) {
