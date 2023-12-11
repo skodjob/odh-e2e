@@ -72,11 +72,11 @@ public class BundleInstall {
         ResourceManager.getInstance().pushToStack(new ResourceItem(KubeUtils::deleteDefaultDSCI, null));
     }
 
-    public void createWithoutResourceManager() throws IOException {
+    public void createWithoutResourceManager() {
         ResourceManager.getKubeCmdClient().namespace(getNamespace()).apply(installFile.getAbsolutePath());
     }
 
-    public void deleteWithoutResourceManager() throws IOException {
+    public void deleteWithoutResourceManager() {
         KubeUtils.deleteDefaultDSCI();
         ResourceManager.getKubeCmdClient().namespace(getNamespace()).delete(installFile.getAbsolutePath());
     }

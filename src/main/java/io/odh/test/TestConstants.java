@@ -8,6 +8,7 @@ import java.time.Duration;
 
 public class TestConstants {
     public static final String ODH_NAMESPACE = "opendatahub";
+    public static final String ODH_DASHBOARD_ROUTE_NAME = "odh-dashboard";
     public static final String DEFAULT_NAMESPACE = "default";
 
     public static final String SUBSCRIPTION = "Subscription";
@@ -20,7 +21,7 @@ public class TestConstants {
     public static final long GLOBAL_POLL_INTERVAL_MEDIUM = Duration.ofSeconds(5).toMillis();
     public static final long GLOBAL_POLL_INTERVAL_SHORT = Duration.ofSeconds(1).toMillis();
     public static final long GLOBAL_TIMEOUT = Duration.ofMinutes(5).toMillis();
-    public static final long GLOBAL_STABILITY_TIME = Duration.ofSeconds(10).toSeconds();
+    public static final long GLOBAL_STABILITY_TIME = Duration.ofMinutes(1).toSeconds();
 
     private TestConstants() {
     }

@@ -72,4 +72,9 @@ public class Oc extends BaseCmdKubeClient<Oc> {
     public String cmd() {
         return OC;
     }
+
+    @Override
+    public String getUsername() {
+        return Exec.exec(cmd(), "whoami").out();
+    }
 }

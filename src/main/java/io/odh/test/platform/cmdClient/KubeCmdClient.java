@@ -202,4 +202,6 @@ public interface KubeCmdClient<K extends KubeCmdClient<K>> {
     String cmd();
 
     K process(Map<String, String> domain, String file, Consumer<String> c);
+
+    String getUsername();
 }

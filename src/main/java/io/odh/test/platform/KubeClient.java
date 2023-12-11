@@ -27,10 +27,10 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlanBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
+import io.odh.test.TestConstants;
+import io.odh.test.TestUtils;
 import io.odh.test.platform.executor.Exec;
-import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
-import org.kubeflow.v1.Notebook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -369,15 +369,23 @@ public class KubeClient {
         return client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).get();
     }
 
-    public void approveInstallPlan(String namespaceName, String installPlanName) {
-        InstallPlan installPlan = new InstallPlanBuilder(this.getInstallPlan(namespaceName, installPlanName))
-            .editSpec()
-            .withApproved()
-            .endSpec()
-            .build();
+    public void approveInstallPlan(String namespaceName, String installPlanName) throws InterruptedException {
+        LOGGER.debug("Approving InstallPlan {}", installPlanName);
+        TestUtils.waitFor("InstallPlan approval", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, 15_000, () -> {
+            try {
+                InstallPlan installPlan = new InstallPlanBuilder(this.getInstallPlan(namespaceName, installPlanName))
+                        .editSpec()
+                        .withApproved()
+                        .endSpec()
+                        .build();
 
-        LOGGER.debug("Approving {}", installPlanName);
-        client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).patch(installPlan);
+                client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).patch(installPlan);
+                return true;
+            } catch (Exception ex) {
+                LOGGER.error(String.valueOf(ex));
+                return false;
+            }
+        });
     }
 
     public InstallPlan getNonApprovedInstallPlan(String namespaceName, String csvPrefix) {
@@ -387,15 +395,7 @@ public class KubeClient {
                 .findFirst().get();
     }
 
-    public MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceClusterClient() {
-        return client.resources(DataScienceCluster.class);
-    }
-
     public MixedOperation<OdhDashboardConfig, KubernetesResourceList<OdhDashboardConfig>, Resource<OdhDashboardConfig>> dashboardConfigClient() {
         return client.resources(OdhDashboardConfig.class);
-    }
-
-    public MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookClient() {
-        return client.resources(Notebook.class);
     }
 }
