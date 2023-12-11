@@ -26,13 +26,14 @@ public class KubeUtils {
         return conditions.stream().filter(c -> c.getType().equals(type)).findFirst().orElseGet(null);
     }
 
-    public static void clearOdhCRDs() {
+    public static void clearOdhRemainingResources() {
         ResourceManager.getClient().getClient().apiextensions().v1().customResourceDefinitions().list().getItems()
             .stream().filter(crd -> crd.getMetadata().getName().contains("opendatahub.io")).toList()
             .forEach(crd -> {
                 LOGGER.info("Deleting CRD {}", crd.getMetadata().getName());
                 ResourceManager.getClient().getClient().resource(crd).delete();
             });
+        ResourceManager.getClient().getClient().namespaces().withName("opendatahub").delete();
     }
 
     /**

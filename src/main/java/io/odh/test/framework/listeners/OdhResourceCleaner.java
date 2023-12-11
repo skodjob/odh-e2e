@@ -12,6 +12,6 @@ public class OdhResourceCleaner implements AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext extensionContext) {
-        KubeUtils.clearOdhCRDs();
+        KubeUtils.clearOdhRemainingResources();
     }
 }
