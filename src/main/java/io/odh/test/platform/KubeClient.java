@@ -370,15 +370,15 @@ public class KubeClient {
     }
 
     public void approveInstallPlan(String namespaceName, String installPlanName) throws InterruptedException {
-        InstallPlan installPlan = new InstallPlanBuilder(this.getInstallPlan(namespaceName, installPlanName))
-            .editSpec()
-            .withApproved()
-            .endSpec()
-            .build();
-
         LOGGER.debug("Approving InstallPlan {}", installPlanName);
         TestUtils.waitFor("InstallPlan approval", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, 15_000, () -> {
             try {
+                InstallPlan installPlan = new InstallPlanBuilder(this.getInstallPlan(namespaceName, installPlanName))
+                        .editSpec()
+                        .withApproved()
+                        .endSpec()
+                        .build();
+
                 client.adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespaceName).withName(installPlanName).patch(installPlan);
                 return true;
             } catch (Exception ex) {

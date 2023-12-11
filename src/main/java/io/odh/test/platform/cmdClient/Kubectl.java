@@ -48,4 +48,10 @@ public class Kubectl extends BaseCmdKubeClient<Kubectl> {
     public String cmd() {
         return KUBECTL;
     }
+
+    @Override
+    public String getUsername() {
+        // TODO - implement this!
+        return null;
+    }
 }

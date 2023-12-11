@@ -25,7 +25,7 @@ spec:
                                   --ServerApp.password=''
                                   --ServerApp.base_url=/notebook/my-project/my-workbench
                                   --ServerApp.quit_button=False
-                                  --ServerApp.tornado_settings={"user":"","hub_host":"odh_dashboard_route","hub_prefix":"/projects/my-project"}
+                                  --ServerApp.tornado_settings={"user":"odh_user","hub_host":"odh_dashboard_route","hub_prefix":"/projects/my-project"}
             - name: JUPYTER_IMAGE
               value: image-registry.openshift-image-registry.svc:5000/opendatahub/jupyter-pytorch-notebook:2023.2
           image: image-registry.openshift-image-registry.svc:5000/opendatahub/jupyter-pytorch-notebook:2023.2

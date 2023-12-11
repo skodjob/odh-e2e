@@ -80,20 +80,23 @@ public class PodUtils {
         int[] stabilityCounter = {0};
         String phase = "Running";
 
-        List<Pod> runningPods = ResourceManager.getClient().listPods(namespaceName, labelSelector);
-
         TestUtils.waitFor(String.format("Pods in namespace '%s' with LabelSelector %s stability in phase %s", namespaceName, labelSelector, phase), TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT,
                 () -> {
+                    List<Pod> runningPods = ResourceManager.getClient().listPods(namespaceName, labelSelector);
                     List<Pod> actualPods = runningPods.stream().map(p -> ResourceManager.getClient().getPod(namespaceName, p.getMetadata().getName())).toList();
+                    LOGGER.debug("Working with the following pods: {}", actualPods.stream().map(p -> p.getMetadata().getName()).toList());
 
                     for (Pod pod : actualPods) {
+                        if (pod == null) {
+                            continue;
+                        }
                         if (pod.getStatus().getPhase().equals(phase)) {
-                            LOGGER.info("Pod: {}/{} is in the {} state. Remaining seconds Pod to be stable {}",
+                            LOGGER.debug("Pod: {}/{} is in the {} state. Remaining seconds for Pod to be stable {}",
                                     namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(),
                                     TestConstants.GLOBAL_STABILITY_TIME - stabilityCounter[0]);
                         } else {
-                            LOGGER.info("Pod: {}/{} is not stable in phase following phase {} reset the stability counter from {} to {}",
-                                    namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(), stabilityCounter[0], 0);
+                            LOGGER.warn("Pod: {}/{} is not stable in phase following phase {} ({}) reset the stability counter from {}s to {}s",
+                                    namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(), phase, stabilityCounter[0], 0);
                             stabilityCounter[0] = 0;
                             return false;
                         }

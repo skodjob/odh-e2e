@@ -397,5 +397,4 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
         c.accept(exec.out());
         return (K) this;
     }
-
 }
