@@ -27,6 +27,7 @@ public class Environment {
     private static final String PASSWORD_ENV = "KUBE_PASSWORD";
     private static final String TOKEN_ENV = "KUBE_TOKEN";
     private static final String URL_ENV = "KUBE_URL";
+    private static final String PRODUCT_ENV = "PRODUCT";
 
     /**
      * Install bundle files
@@ -37,26 +38,13 @@ public class Environment {
     /**
      * OLM env variables
      */
-    private static final String OLM_OPERATOR_NAME_ENV = "OLM_OPERATOR_NAME";
-    private static final String OLM_OPERATOR_NAMESPACE_ENV = "OLM_OPERATOR_NAMESPACE";
-    private static final String OLM_OPERATOR_DEPLOYMENT_NAME_ENV = "OLM_OPERATOR_DEPLOYMENT_NAME";
     private static final String OLM_SOURCE_NAME_ENV = "OLM_SOURCE_NAME";
     private static final String OLM_SOURCE_NAMESPACE_ENV = "OLM_SOURCE_NAMESPACE";
-    private static final String OLM_APP_BUNDLE_PREFIX_ENV = "OLM_APP_BUNDLE_PREFIX";
     private static final String OLM_OPERATOR_VERSION_ENV = "OLM_OPERATOR_VERSION";
     private static final String OLM_OPERATOR_CHANNEL_ENV = "OLM_OPERATOR_CHANNEL";
     private static final String OPERATOR_INSTALL_TYPE_ENV = "OPERATOR_INSTALL_TYPE";
 
-    /**
-     * Defaults
-     */
-    public static final String OLM_OPERATOR_NAME_DEFAULT = "opendatahub-operator";
-    public static final String OLM_OPERATOR_NAMESPACE_DEFAULT = "openshift-operators";
-    public static final String OLM_OPERATOR_DEPLOYMENT_NAME_DEFAULT = "opendatahub-operator-controller-manager";
-    public static final String OLM_SOURCE_NAME_DEFAULT = "community-operators";
-    public static final String OLM_APP_BUNDLE_PREFIX_DEFAULT = "opendatahub-operator";
-    public static final String OLM_OPERATOR_CHANNEL_DEFAULT = "fast";
-    public static final String OLM_OPERATOR_VERSION_DEFAULT = "2.4.0";
+    public static final String PRODUCT_DEFAULT = "odh";
 
     /**
      * Set values
@@ -72,16 +60,13 @@ public class Environment {
     public static final String INSTALL_FILE_PREVIOUS_PATH = getOrDefault(INSTALL_FILE_RELEASED_ENV, TestConstants.RELEASED_BUNDLE_DEPLOY_FILE);
 
     // OLM env variables
-    public static final String OLM_OPERATOR_NAME = getOrDefault(OLM_OPERATOR_NAME_ENV, OLM_OPERATOR_NAME_DEFAULT);
-    public static final String OLM_OPERATOR_NAMESPACE = getOrDefault(OLM_OPERATOR_NAMESPACE_ENV, OLM_OPERATOR_NAMESPACE_DEFAULT);
-    public static final String OLM_OPERATOR_DEPLOYMENT_NAME = getOrDefault(OLM_OPERATOR_DEPLOYMENT_NAME_ENV, OLM_OPERATOR_DEPLOYMENT_NAME_DEFAULT);
-    public static final String OLM_SOURCE_NAME = getOrDefault(OLM_SOURCE_NAME_ENV, OLM_SOURCE_NAME_DEFAULT);
+    public static final String OLM_SOURCE_NAME = getOrDefault(OLM_SOURCE_NAME_ENV, OdhConstants.OLM_SOURCE_NAME);
     public static final String OLM_SOURCE_NAMESPACE = getOrDefault(OLM_SOURCE_NAMESPACE_ENV, "openshift-marketplace");
-    public static final String OLM_APP_BUNDLE_PREFIX = getOrDefault(OLM_APP_BUNDLE_PREFIX_ENV, OLM_APP_BUNDLE_PREFIX_DEFAULT);
-    public static final String OLM_OPERATOR_CHANNEL = getOrDefault(OLM_OPERATOR_CHANNEL_ENV, OLM_OPERATOR_CHANNEL_DEFAULT);
-    public static final String OLM_OPERATOR_VERSION = getOrDefault(OLM_OPERATOR_VERSION_ENV, OLM_OPERATOR_VERSION_DEFAULT);
+    public static final String OLM_OPERATOR_CHANNEL = getOrDefault(OLM_OPERATOR_CHANNEL_ENV, OdhConstants.OLM_OPERATOR_CHANNEL);
+    public static final String OLM_OPERATOR_VERSION = getOrDefault(OLM_OPERATOR_VERSION_ENV, OdhConstants.OLM_OPERATOR_VERSION);
 
     public static final String OPERATOR_INSTALL_TYPE = getOrDefault(OPERATOR_INSTALL_TYPE_ENV, InstallTypes.BUNDLE.toString());
+    public static final String PRODUCT = getOrDefault(PRODUCT_ENV, PRODUCT_DEFAULT);
 
     private Environment() { }
 

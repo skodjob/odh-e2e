@@ -7,7 +7,7 @@ package io.odh.test.e2e.continuous;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.odh.test.TestConstants;
+import io.odh.test.OdhConstants;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
@@ -47,7 +47,7 @@ public class DataScienceClusterST extends Abstract {
 
     @Test
     void checkDataScienceClusterExists() {
-        DataScienceCluster cluster = dataScienceProjectCli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_CLUSTER_NAME).get();
+        DataScienceCluster cluster = dataScienceProjectCli.inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(DS_CLUSTER_NAME).get();
 
         assertEquals(Kserve.ManagementState.MANAGED, cluster.getSpec().getComponents().getKserve().getManagementState());
         assertEquals(Codeflare.ManagementState.MANAGED, cluster.getSpec().getComponents().getCodeflare().getManagementState());
@@ -61,7 +61,7 @@ public class DataScienceClusterST extends Abstract {
 
     @Test
     void checkDataScienceClusterStatus() {
-        DataScienceCluster cluster = dataScienceProjectCli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_CLUSTER_NAME).get();
+        DataScienceCluster cluster = dataScienceProjectCli.inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(DS_CLUSTER_NAME).get();
 
         assertEquals("Ready", cluster.getStatus().getPhase());
         assertNull(cluster.getStatus().getErrorMessage());
@@ -78,7 +78,7 @@ public class DataScienceClusterST extends Abstract {
 
     @Test
     void checkDataScienceDashboard() {
-        OdhDashboardConfig dashboard = dashboardConfigCli.inNamespace(TestConstants.ODH_NAMESPACE).withName(DS_DASHBOARD_CONFIG_NAME).get();
+        OdhDashboardConfig dashboard = dashboardConfigCli.inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(DS_DASHBOARD_CONFIG_NAME).get();
 
         assertTrue(dashboard.getSpec().getNotebookController().getEnabled());
 

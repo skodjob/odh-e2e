@@ -8,7 +8,7 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.openshift.client.OpenShiftClient;
-import io.odh.test.TestConstants;
+import io.odh.test.OdhConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.ResourceType;
@@ -61,7 +61,7 @@ public class NotebookResource implements ResourceType<Notebook> {
         String notebookString = IOUtils.toString(is, "UTF-8");
         notebookString = notebookString.replace("my-project", namespace).replace("my-workbench", name);
         // Set new Route url
-        String routeHost = ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).routes().inNamespace(TestConstants.ODH_NAMESPACE).withName(TestConstants.ODH_DASHBOARD_ROUTE_NAME).get().getSpec().getHost();
+        String routeHost = ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).routes().inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(OdhConstants.DASHBOARD_ROUTE_NAME).get().getSpec().getHost();
         notebookString = notebookString.replace("odh_dashboard_route", "https://" + routeHost);
         // Set correct username
         String username = ResourceManager.getKubeCmdClient().getUsername().strip();

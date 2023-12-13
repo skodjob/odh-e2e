@@ -7,8 +7,6 @@ package io.odh.test;
 import java.time.Duration;
 
 public class TestConstants {
-    public static final String ODH_NAMESPACE = "opendatahub";
-    public static final String ODH_DASHBOARD_ROUTE_NAME = "odh-dashboard";
     public static final String DEFAULT_NAMESPACE = "default";
 
     public static final String SUBSCRIPTION = "Subscription";
