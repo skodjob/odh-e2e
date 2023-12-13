@@ -4,10 +4,11 @@
  */
 package io.odh.test.framework.logs;
 
-import io.fabric8.kubernetes.api.model.PodStatus;
 import io.odh.test.Environment;
+import io.odh.test.OdhConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.platform.KubeClient;
 import io.odh.test.platform.cmdClient.KubeCmdClient;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
 
 public class LogCollector {
     private static final Logger LOGGER = LoggerFactory.getLogger(LogCollector.class);
@@ -25,13 +25,6 @@ public class LogCollector {
      * Calls storing cluster info for connected cluster
      */
     public static void saveKubernetesState(ExtensionContext extensionContext, Throwable throwable) throws Throwable {
-        LOGGER.warn("Printing all pods on cluster");
-        ResourceManager.getClient().getClient().pods().inAnyNamespace().list().getItems().forEach(p ->
-                LOGGER.info("Pod: {} in ns: {} with phase: {}",
-                        p.getMetadata().getName(),
-                        p.getMetadata().getNamespace(),
-                        Optional.ofNullable(p.getStatus()).map(PodStatus::getPhase).orElse("null")));
-
         Path logPath = TestUtils.getLogPath(Environment.LOG_DIR.resolve("failedTest").toString(), extensionContext);
         Files.createDirectories(logPath);
         LOGGER.info("Storing cluster info into {}", logPath);
@@ -44,11 +37,36 @@ public class LogCollector {
     }
 
     private static void saveClusterState(Path logpath) throws IOException {
+        KubeClient kube = ResourceManager.getClient();
         KubeCmdClient cmdClient = ResourceManager.getKubeCmdClient();
         Files.writeString(logpath.resolve("describe-cluster-nodes.log"), cmdClient.exec(false, false, "describe", "nodes").out());
         Files.writeString(logpath.resolve("all-events.log"), cmdClient.exec(false, false, "get", "events", "--all-namespaces").out());
         Files.writeString(logpath.resolve("pvs.log"), cmdClient.exec(false, false, "describe", "pv").out());
         Files.writeString(logpath.resolve("dsc.yml"), cmdClient.exec(false, false, "get", "dsc", "-o", "yaml").out());
         Files.writeString(logpath.resolve("dsci.yml"), cmdClient.exec(false, false, "get", "dsci", "-o", "yaml").out());
+        kube.listPodsByPrefixInName(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, "opendatahub-operator-controller-manager").forEach(pod -> {
+            try {
+                LOGGER.debug("Get logs from pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+                Files.writeString(logpath.resolve(pod.getMetadata().getName() + ".log"), kube.getLogs(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, pod.getMetadata().getName()));
+            } catch (IOException e) {
+                LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+            }
+        });
+        kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, "opendatahub").forEach(pod -> {
+            try {
+                LOGGER.debug("Get logs from pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+                Files.writeString(logpath.resolve(pod.getMetadata().getName() + ".log"), kube.getLogs(OdhConstants.OLM_OPERATOR_NAMESPACE, pod.getMetadata().getName()));
+            } catch (IOException e) {
+                LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+            }
+        });
+        kube.listPods(OdhConstants.CONTROLLERS_NAMESPACE).forEach(pod -> {
+            try {
+                LOGGER.debug("Get logs from pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+                Files.writeString(logpath.resolve(pod.getMetadata().getName() + ".log"), kube.getLogs(OdhConstants.CONTROLLERS_NAMESPACE, pod.getMetadata().getName()));
+            } catch (IOException e) {
+                LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+            }
+        });
     }
 }

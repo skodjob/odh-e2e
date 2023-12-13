@@ -57,6 +57,7 @@ public class Environment {
     /**
      * Set values
      */
+    public static final String PRODUCT = getOrDefault(PRODUCT_ENV, PRODUCT_DEFAULT);
     public static final String RUN_USER = getOrDefault("USER", null);
     public static final String KUBE_USERNAME = getOrDefault(USERNAME_ENV, null);
     public static final String KUBE_PASSWORD = getOrDefault(PASSWORD_ENV, null);
@@ -74,7 +75,6 @@ public class Environment {
     public static final String OLM_OPERATOR_VERSION = getOrDefault(OLM_OPERATOR_VERSION_ENV, OdhConstants.OLM_OPERATOR_VERSION);
 
     public static final String OPERATOR_INSTALL_TYPE = getOrDefault(OPERATOR_INSTALL_TYPE_ENV, InstallTypes.BUNDLE.toString());
-    public static final String PRODUCT = getOrDefault(PRODUCT_ENV, PRODUCT_DEFAULT);
 
     public static final Path LOG_DIR = getOrDefault(LOG_DIR_ENV, Paths::get, Paths.get(USER_PATH, "target", "logs")).resolve("test-run-" + DATE_FORMAT.format(LocalDateTime.now()));
 

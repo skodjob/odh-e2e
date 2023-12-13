@@ -8,12 +8,9 @@ import io.odh.test.framework.listeners.ResourceManagerContextHandler;
 import io.odh.test.framework.listeners.TestVisualSeparator;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.listeners.TestExceptionCallbackListener;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@DisplayNameGeneration(DisplayNameGenerator.IndicativeSentences.class)
 @ExtendWith(TestExceptionCallbackListener.class)
 @ExtendWith(ResourceManagerContextHandler.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
