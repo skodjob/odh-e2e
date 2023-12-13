@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.odh.test.framework.WaitException;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -188,5 +192,25 @@ public final class TestUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Path getLogPath(String folderName, ExtensionContext context) {
+        String testMethod = context.getDisplayName();
+        String testClassName = context.getTestClass().map(Class::getName).orElse("NOCLASS");
+        return getLogPath(folderName, testClassName, testMethod);
+    }
+
+    public static Path getLogPath(String folderName, TestInfo info) {
+        String testMethod = info.getDisplayName();
+        String testClassName = info.getTestClass().map(Class::getName).orElse("NOCLASS");
+        return getLogPath(folderName, testClassName, testMethod);
+    }
+
+    public static Path getLogPath(String folderName, String testClassName, String testMethod) {
+        Path path = Environment.LOG_DIR.resolve(Paths.get(folderName, testClassName));
+        if (testMethod != null) {
+            path = path.resolve(testMethod.replace("(", "").replace(")", ""));
+        }
+        return path;
     }
 }
