@@ -8,6 +8,10 @@ import io.odh.test.install.InstallTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +25,8 @@ public class Environment {
     private static final Logger LOGGER = LoggerFactory.getLogger(Environment.class);
     private static final Map<String, String> VALUES = new HashMap<>();
 
+    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm");
+
     public static final String USER_PATH = System.getProperty("user.dir");
 
     private static final String USERNAME_ENV = "KUBE_USERNAME";
@@ -28,6 +34,8 @@ public class Environment {
     private static final String TOKEN_ENV = "KUBE_TOKEN";
     private static final String URL_ENV = "KUBE_URL";
     private static final String PRODUCT_ENV = "PRODUCT";
+
+    private static final String LOG_DIR_ENV = "LOG_DIR";
 
     /**
      * Install bundle files
@@ -67,6 +75,8 @@ public class Environment {
 
     public static final String OPERATOR_INSTALL_TYPE = getOrDefault(OPERATOR_INSTALL_TYPE_ENV, InstallTypes.BUNDLE.toString());
     public static final String PRODUCT = getOrDefault(PRODUCT_ENV, PRODUCT_DEFAULT);
+
+    public static final Path LOG_DIR = getOrDefault(LOG_DIR_ENV, Paths::get, Paths.get(USER_PATH, "target", "logs")).resolve("test-run-" + DATE_FORMAT.format(LocalDateTime.now()));
 
     private Environment() { }
 
