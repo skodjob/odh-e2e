@@ -9,6 +9,7 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.Subscription;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.SubscriptionBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
+import io.odh.test.OdhConstants;
 import io.odh.test.framework.manager.ResourceItem;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
@@ -22,17 +23,17 @@ import java.util.Collections;
 public class OlmInstall {
     private static final Logger LOGGER = LoggerFactory.getLogger(OlmInstall.class);
 
-    private String namespace = Environment.OLM_OPERATOR_NAMESPACE;
+    private String namespace = OdhConstants.OLM_OPERATOR_NAMESPACE;
     private String channel = Environment.OLM_OPERATOR_CHANNEL;
-    private String name = Environment.OLM_OPERATOR_NAME;
-    private String operatorName = Environment.OLM_OPERATOR_NAME;
+    private String name = OdhConstants.OLM_OPERATOR_NAME;
+    private String operatorName = OdhConstants.OLM_OPERATOR_NAME;
     private String sourceName = Environment.OLM_SOURCE_NAME;
     private String sourceNamespace = Environment.OLM_SOURCE_NAMESPACE;
     private String startingCsv;
-    private String deploymentName = Environment.OLM_OPERATOR_DEPLOYMENT_NAME;
-    private String olmAppBundlePrefix  = Environment.OLM_OPERATOR_NAME;
+    private String deploymentName = OdhConstants.OLM_OPERATOR_DEPLOYMENT_NAME;
+    private String olmAppBundlePrefix  = OdhConstants.OLM_OPERATOR_NAME;
     private String operatorVersion  = Environment.OLM_OPERATOR_VERSION;
-    private String csvName = operatorName + ".v" + operatorVersion;
+    private String csvName = operatorName + "." + operatorVersion;
 
     private String approval = "Automatic";
 

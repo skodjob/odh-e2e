@@ -8,7 +8,6 @@ import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
-import io.odh.test.TestConstants;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.utils.DeploymentUtils;
@@ -44,14 +43,14 @@ public class BundleUpgradeST extends UpgradeAbstract {
         baseBundle = new BundleInstall(Environment.INSTALL_FILE_PREVIOUS_PATH);
         baseBundle.createWithoutResourceManager();
 
-        Map<String, String> operatorSnapshot = DeploymentUtils.depSnapshot(baseBundle.getNamespace(), baseBundle.getDeploymentName());
-
         String dsProjectName = "test-notebooks-upgrade";
         String ntbName = "test-odh-notebook";
         String ntbNamespace = "test-odh-notebook-upgrade";
 
         deployDsc(dsProjectName);
         deployNotebook(ntbNamespace, ntbName);
+
+        Map<String, String> operatorSnapshot = DeploymentUtils.depSnapshot(baseBundle.getNamespace(), baseBundle.getDeploymentName());
 
         LabelSelector lblSelector = new LabelSelectorBuilder()
                 .withMatchLabels(Map.of("app", ntbName))
@@ -65,8 +64,8 @@ public class BundleUpgradeST extends UpgradeAbstract {
 
         DeploymentUtils.waitTillDepHasRolled(baseBundle.getNamespace(), baseBundle.getDeploymentName(), operatorSnapshot);
 
-        LabelSelector labelSelector = ResourceManager.getClient().getDeployment(TestConstants.ODH_NAMESPACE, OdhConstants.ODH_DASHBOARD).getSpec().getSelector();
-        PodUtils.verifyThatPodsAreStable(TestConstants.ODH_NAMESPACE, labelSelector);
+        LabelSelector labelSelector = ResourceManager.getClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
+        PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
 
         // Verify that NTB pods are stable
         PodUtils.waitForPodsReady(ntbNamespace, lblSelector, 1, true, () -> { });

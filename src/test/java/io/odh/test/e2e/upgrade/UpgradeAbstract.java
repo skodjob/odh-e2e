@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
+import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
@@ -33,6 +34,7 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Wo
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kubeflow.v1.Notebook;
 import org.kubeflow.v1.NotebookBuilder;
+import org.kubeflow.v1.notebookspec.template.spec.containers.EnvBuilder;
 
 import java.io.IOException;
 
@@ -100,6 +102,21 @@ public class UpgradeAbstract extends Abstract {
         ResourceManager.getInstance().createResourceWithoutWait(pvc);
 
         Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name)).build();
+        if (Environment.PRODUCT != Environment.PRODUCT_DEFAULT) {
+            notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name))
+                    .editSpec()
+                    .editNotebookspecTemplate()
+                    .editOrNewSpec()
+                    .editContainer(0)
+                    .withImage("image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/pytorch:2023.2")
+                    .addToEnv(new EnvBuilder().withName("JUPYTER_IMAGE").withValue("image-registry.openshift-image-registry.svc:5000/redhat-ods-applications/pytorch:2023.2").build())
+                    .endSpecContainer()
+                    .endTemplateSpec()
+                    .endNotebookspecTemplate()
+                    .endSpec()
+                    .build();
+        }
+
         ResourceManager.getInstance().createResourceWithoutWait(notebook);
     }
 }

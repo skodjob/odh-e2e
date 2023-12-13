@@ -7,8 +7,8 @@ package io.odh.test.e2e.upgrade;
 import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
+import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
-import io.odh.test.TestConstants;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.OlmInstall;
 import io.odh.test.platform.KubeUtils;
@@ -30,7 +30,7 @@ public class OlmUpgradeST extends UpgradeAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(OlmUpgradeST.class);
     private static final String DS_PROJECT_NAME = "upgrade-dsc";
 
-    private final String startingVersion = "2.4.0";
+    private final String startingVersion = Environment.PRODUCT != Environment.PRODUCT_DEFAULT ? "2.4.0" : "v.2.4.0";
 
     @Test
     @Disabled("Tested only for upgrades from 2.4+ so we are waiting for 2.5 release")
@@ -40,12 +40,12 @@ public class OlmUpgradeST extends UpgradeAbstract {
 
         OlmInstall olmInstall = new OlmInstall();
         olmInstall.setApproval("Manual");
-        olmInstall.setStartingCsv(olmInstall.getOperatorName() + ".v" + startingVersion);
+        olmInstall.setStartingCsv(olmInstall.getOperatorName() + "." + startingVersion);
         olmInstall.createManual();
 
         // Approve install plan created for older version
-        KubeUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + ".v" + startingVersion);
-        InstallPlan ip = ResourceManager.getClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + ".v" + startingVersion);
+        KubeUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
+        InstallPlan ip = ResourceManager.getClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
         ResourceManager.getClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
         // Wait for old version readiness
         DeploymentUtils.waitForDeploymentReady(olmInstall.getNamespace(), olmInstall.getDeploymentName());
@@ -72,8 +72,8 @@ public class OlmUpgradeST extends UpgradeAbstract {
         DeploymentUtils.waitTillDepHasRolled(olmInstall.getNamespace(), olmInstall.getDeploymentName(), operatorSnapshot);
 
         // Wait for pod stability for Dashboard
-        LabelSelector labelSelector = ResourceManager.getClient().getDeployment(TestConstants.ODH_NAMESPACE, OdhConstants.ODH_DASHBOARD).getSpec().getSelector();
-        PodUtils.verifyThatPodsAreStable(TestConstants.ODH_NAMESPACE, labelSelector);
+        LabelSelector labelSelector = ResourceManager.getClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
+        PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
 
         // Verify that NTB pods are stable
         PodUtils.waitForPodsReady(ntbNamespace, lblSelector, 1, true, () -> { });
