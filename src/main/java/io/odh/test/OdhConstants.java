@@ -4,11 +4,17 @@
  */
 package io.odh.test;
 
+import java.util.Objects;
+
 public class OdhConstants {
+    private OdhConstants() { }
+
     // ODH
     private static final String ODH_CONTROLLERS_NAMESPACE = "opendatahub";
     private static final String ODH_DASHBOARD_ROUTE_NAME = "odh-dashboard";
     private static final String ODH_DASHBOARD_CONTROLLER = "odh-dashboard";
+
+    private static final String ODH_BUNDLE_OPERATOR_NAME = "opendatahub-operator-system";
 
     // ODH OLM
     private static final String ODH_OLM_OPERATOR_NAME = "opendatahub-operator";
@@ -47,6 +53,7 @@ public class OdhConstants {
     public static final String CONTROLLERS_NAMESPACE = getOdhOrRhoai(ODH_CONTROLLERS_NAMESPACE, RHOAI_CONTROLLERS_NAMESPACE);
     public static final String DASHBOARD_ROUTE_NAME = getOdhOrRhoai(ODH_DASHBOARD_ROUTE_NAME, RHOAI_DASHBOARD_ROUTE_NAME);
     public static final String DASHBOARD_CONTROLLER = getOdhOrRhoai(ODH_DASHBOARD_CONTROLLER, RHOAI_DASHBOARD_CONTROLLER);
+    public static final String BUNDLE_OPERATOR_NAMESPACE = getOdhOrRhoai(ODH_BUNDLE_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
     // OLM env variables
     public static final String OLM_OPERATOR_NAME = getOdhOrRhoai(ODH_OLM_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
     public static final String OLM_OPERATOR_NAMESPACE = getOdhOrRhoai(ODH_OLM_OPERATOR_NAMESPACE, RHOAI_OLM_OPERATOR_NAMESPACE);
@@ -58,7 +65,7 @@ public class OdhConstants {
 
     private static <T> T getOdhOrRhoai(T odhValue, T rhoaiValue) {
         T returnValue = odhValue;
-        if (Environment.PRODUCT != Environment.PRODUCT_DEFAULT) {
+        if (!Objects.equals(Environment.PRODUCT, Environment.PRODUCT_DEFAULT)) {
             returnValue = rhoaiValue;
         }
         return returnValue;
