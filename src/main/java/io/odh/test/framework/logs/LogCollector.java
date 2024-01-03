@@ -4,6 +4,7 @@
  */
 package io.odh.test.framework.logs;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestUtils;
@@ -36,6 +37,18 @@ public class LogCollector {
         throw throwable;
     }
 
+    private static void writeLogsFromPods(Path logpath, Pod pod) {
+        pod.getSpec().getContainers().forEach(container -> {
+            try {
+                LOGGER.debug("Get logs from pod {}/{} container {}", pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName());
+                Files.writeString(logpath.resolve(pod.getMetadata().getNamespace() + "-" + pod.getMetadata().getName() + "-" + container.getName() + ".log"),
+                        ResourceManager.getClient().getLogsFromContainer(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName()));
+            } catch (IOException e) {
+                LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+            }
+        });
+    }
+
     private static void saveClusterState(Path logpath) throws IOException {
         KubeClient kube = ResourceManager.getClient();
         KubeCmdClient cmdClient = ResourceManager.getKubeCmdClient();
@@ -45,28 +58,13 @@ public class LogCollector {
         Files.writeString(logpath.resolve("dsc.yml"), cmdClient.exec(false, false, "get", "dsc", "-o", "yaml").out());
         Files.writeString(logpath.resolve("dsci.yml"), cmdClient.exec(false, false, "get", "dsci", "-o", "yaml").out());
         kube.listPodsByPrefixInName(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, "opendatahub-operator-controller-manager").forEach(pod -> {
-            try {
-                LOGGER.debug("Get logs from pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-                Files.writeString(logpath.resolve(pod.getMetadata().getName() + ".log"), kube.getLogs(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, pod.getMetadata().getName()));
-            } catch (IOException e) {
-                LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-            }
+            writeLogsFromPods(logpath, pod);
         });
         kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, "opendatahub").forEach(pod -> {
-            try {
-                LOGGER.debug("Get logs from pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-                Files.writeString(logpath.resolve(pod.getMetadata().getName() + ".log"), kube.getLogs(OdhConstants.OLM_OPERATOR_NAMESPACE, pod.getMetadata().getName()));
-            } catch (IOException e) {
-                LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-            }
+            writeLogsFromPods(logpath, pod);
         });
         kube.listPods(OdhConstants.CONTROLLERS_NAMESPACE).forEach(pod -> {
-            try {
-                LOGGER.debug("Get logs from pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-                Files.writeString(logpath.resolve(pod.getMetadata().getName() + ".log"), kube.getLogs(OdhConstants.CONTROLLERS_NAMESPACE, pod.getMetadata().getName()));
-            } catch (IOException e) {
-                LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-            }
+            writeLogsFromPods(logpath, pod);
         });
     }
 }

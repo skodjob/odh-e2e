@@ -233,8 +233,12 @@ public class KubeClient {
         return getPod(namespace, name);
     }
 
-    public String getLogs(String namespaceName, String podName) {
+    public String getLogsFromPod(String namespaceName, String podName) {
         return client.pods().inNamespace(namespaceName).withName(podName).getLog();
+    }
+
+    public String getLogsFromContainer(String namespaceName, String podName, String containerName) {
+        return client.pods().inNamespace(namespaceName).withName(podName).inContainer(containerName).getLog();
     }
 
     // ==================================
