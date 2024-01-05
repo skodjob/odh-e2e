@@ -4,6 +4,8 @@
  */
 package io.odh.test.install;
 
+import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.openshift.api.model.operatorhub.v1.OperatorGroupBuilder;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.Subscription;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.SubscriptionBuilder;
@@ -38,6 +40,14 @@ public class OlmInstall {
     private String approval = "Automatic";
 
     public void create() {
+        // Create namespace at first because operator-group and subscription could you specific namespace
+        Namespace ns = new NamespaceBuilder()
+                .withNewMetadata()
+                .withName(namespace)
+                .endMetadata()
+                .build();
+        ResourceManager.getInstance().createResourceWithoutWait(ns);
+        // Create operator group and subscription
         createOperatorGroup();
         ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
         createAndModifySubscription();

@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -32,10 +33,12 @@ public class StandardAbstract extends Abstract {
 
     @BeforeAll
     void setupEnvironment() throws IOException {
-        if (Environment.OPERATOR_INSTALL_TYPE.equals(InstallTypes.OLM.toString())) {
+        if (Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH)
+                .equals(InstallTypes.OLM.toString().toLowerCase(Locale.ENGLISH))) {
             OlmInstall olmInstall = new OlmInstall();
             olmInstall.create();
-        } else if (Environment.OPERATOR_INSTALL_TYPE.equals(InstallTypes.BUNDLE.toString())) {
+        } else if (Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH)
+                .equals(InstallTypes.BUNDLE.toString().toLowerCase(Locale.ENGLISH))) {
             BundleInstall bundleInstall = new BundleInstall();
             bundleInstall.create();
         } else {
