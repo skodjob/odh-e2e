@@ -148,7 +148,13 @@ public class KubeClient {
             client.load(is).get().forEach(i -> {
                 HasMetadata h = modifier.apply(i);
                 if (h != null) {
-                    client.resource(h).inNamespace(namespace).create();
+                    if (client.resource(h).inNamespace(namespace).get() == null) {
+                        LOGGER.debug("Creating {} {}/{}", h.getKind(), namespace, h.getMetadata().getName());
+                        client.resource(h).inNamespace(namespace).create();
+                    } else {
+                        LOGGER.debug("Updating {} {}/{}", h.getKind(), namespace, h.getMetadata().getName());
+                        client.resource(h).inNamespace(namespace).update();
+                    }
                 }
             });
         }
@@ -159,10 +165,68 @@ public class KubeClient {
             client.load(is).get().forEach(i -> {
                 HasMetadata h = modifier.apply(i);
                 if (h != null) {
-                    client.resource(h).create();
+                    if (client.resource(h).get() == null) {
+                        LOGGER.debug("Creating {} {}/{}", h.getKind(), h.getMetadata().getNamespace(), h.getMetadata().getName());
+                        client.resource(h).create();
+                    } else {
+                        LOGGER.debug("Updating {} {}/{}", h.getKind(), h.getMetadata().getNamespace(), h.getMetadata().getName());
+                        client.resource(h).update();
+                    }
                 }
             });
         }
+    }
+
+    public void create(String namespace, List<HasMetadata> resources, Function<HasMetadata, HasMetadata> modifier) {
+        resources.forEach(i -> {
+            HasMetadata h = modifier.apply(i);
+            if (h != null) {
+                if (client.resource(h).inNamespace(namespace).get() == null) {
+                    LOGGER.debug("Creating {} {}/{}", h.getKind(), namespace, h.getMetadata().getName());
+                    client.resource(h).inNamespace(namespace).create();
+                } else {
+                    LOGGER.debug("Updating {} {}/{}", h.getKind(), namespace, h.getMetadata().getName());
+                    client.resource(h).inNamespace(namespace).update();
+                }
+            }
+        });
+    }
+
+    public void create(List<HasMetadata> resources, Function<HasMetadata, HasMetadata> modifier) {
+        resources.forEach(i -> {
+            HasMetadata h = modifier.apply(i);
+            if (h != null) {
+                if (client.resource(h).get() == null) {
+                    LOGGER.debug("Creating {} {}/{}", h.getKind(), h.getMetadata().getNamespace(), h.getMetadata().getName());
+                    client.resource(h).create();
+                } else {
+                    LOGGER.debug("Updating {} {}/{}", h.getKind(), h.getMetadata().getNamespace(), h.getMetadata().getName());
+                    client.resource(h).update();
+                }
+            }
+        });
+    }
+
+    public void delete(List<HasMetadata> resources) {
+        resources.forEach(h -> {
+            if (h != null) {
+                if (client.resource(h).get() != null) {
+                    LOGGER.debug("Deleting {} {}/{}", h.getKind(), h.getMetadata().getNamespace(), h.getMetadata().getName());
+                    client.resource(h).delete();
+                }
+            }
+        });
+    }
+
+    public void delete(List<HasMetadata> resources, String namespace) {
+        resources.forEach(h -> {
+            if (h != null) {
+                if (client.resource(h).inNamespace(namespace).get() != null) {
+                    LOGGER.debug("Deleting {} {}/{}", h.getKind(), namespace, h.getMetadata().getName());
+                    client.resource(h).inNamespace(namespace).delete();
+                }
+            }
+        });
     }
 
     public List<HasMetadata> readResourcesFromYaml(InputStream is) throws IOException {
@@ -395,7 +459,7 @@ public class KubeClient {
     public InstallPlan getNonApprovedInstallPlan(String namespaceName, String csvPrefix) {
         return client.adapt(OpenShiftClient.class).operatorHub().installPlans()
                 .inNamespace(namespaceName).list().getItems().stream()
-                .filter(installPlan ->  !installPlan.getSpec().getApproved() && installPlan.getSpec().getClusterServiceVersionNames().toString().contains(csvPrefix))
+                .filter(installPlan -> !installPlan.getSpec().getApproved() && installPlan.getSpec().getClusterServiceVersionNames().toString().contains(csvPrefix))
                 .findFirst().get();
     }
 

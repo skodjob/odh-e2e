@@ -42,6 +42,7 @@ public class Environment {
      */
     private static final String INSTALL_FILE_ENV = "INSTALL_FILE";
     private static final String INSTALL_FILE_RELEASED_ENV = "INSTALL_FILE_PREVIOUS";
+    private static final String OPERATOR_IMAGE_OVERRIDE_ENV = "OPERATOR_IMAGE_OVERRIDE";
 
     /**
      * OLM env variables
@@ -64,9 +65,10 @@ public class Environment {
     public static final String KUBE_TOKEN = getOrDefault(TOKEN_ENV, null);
     public static final String KUBE_URL = getOrDefault(URL_ENV, null);
 
-    // Bundle
+    // YAML Bundle
     public static final String INSTALL_FILE_PATH = getOrDefault(INSTALL_FILE_ENV, TestConstants.LATEST_BUNDLE_DEPLOY_FILE);
     public static final String INSTALL_FILE_PREVIOUS_PATH = getOrDefault(INSTALL_FILE_RELEASED_ENV, TestConstants.RELEASED_BUNDLE_DEPLOY_FILE);
+    public static final String OPERATOR_IMAGE_OVERRIDE = getOrDefault(OPERATOR_IMAGE_OVERRIDE_ENV, null);
 
     // OLM env variables
     public static final String OLM_SOURCE_NAME = getOrDefault(OLM_SOURCE_NAME_ENV, OdhConstants.OLM_SOURCE_NAME);
