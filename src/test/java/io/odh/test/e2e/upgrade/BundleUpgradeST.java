@@ -41,6 +41,7 @@ public class BundleUpgradeST extends UpgradeAbstract {
     void testUpgradeBundle() throws IOException {
         LOGGER.info("Install base version");
         baseBundle = new BundleInstall(Environment.INSTALL_FILE_PREVIOUS_PATH);
+        baseBundle.disableModifyOperatorImage();
         baseBundle.createWithoutResourceManager();
 
         String dsProjectName = "test-notebooks-upgrade";

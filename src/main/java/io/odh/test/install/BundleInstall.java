@@ -29,6 +29,8 @@ public class BundleInstall {
     List<HasMetadata> resources;
     File installFile;
 
+    boolean modifyOperatorImage = true;
+
     public BundleInstall(String installFilePath) throws IOException {
         InputStream is;
         if (installFilePath.equals(TestConstants.LATEST_BUNDLE_DEPLOY_FILE)
@@ -45,6 +47,14 @@ public class BundleInstall {
     public BundleInstall() throws IOException {
         //use default latest
         this(Environment.INSTALL_FILE_PATH);
+    }
+
+    public void disableModifyOperatorImage() {
+        this.modifyOperatorImage = false;
+    }
+
+    public void enableModifyOperatorImage() {
+        this.modifyOperatorImage = true;
     }
 
     public String getNamespace() {
@@ -67,17 +77,30 @@ public class BundleInstall {
         });
     }
 
+    private void modifyOperatorImage() {
+        if (Environment.OPERATOR_IMAGE_OVERRIDE != null && this.modifyOperatorImage) {
+            for (HasMetadata r : resources) {
+                if (r instanceof Deployment) {
+                    Deployment d = (Deployment) r;
+                    d.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(Environment.OPERATOR_IMAGE_OVERRIDE);
+                }
+            }
+        }
+    }
+
     public void create() {
+        modifyOperatorImage();
         ResourceManager.getInstance().createResourceWithWait(resources.toArray(new HasMetadata[0]));
         ResourceManager.getInstance().pushToStack(new ResourceItem(KubeUtils::deleteDefaultDSCI, null));
     }
 
     public void createWithoutResourceManager() {
-        ResourceManager.getKubeCmdClient().namespace(getNamespace()).apply(installFile.getAbsolutePath());
+        modifyOperatorImage();
+        ResourceManager.getClient().create(resources, r -> r);
     }
 
     public void deleteWithoutResourceManager() {
         KubeUtils.deleteDefaultDSCI();
-        ResourceManager.getKubeCmdClient().namespace(getNamespace()).delete(installFile.getAbsolutePath());
+        ResourceManager.getClient().delete(resources);
     }
 }
