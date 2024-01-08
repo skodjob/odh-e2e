@@ -26,6 +26,6 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Validate with Maven
-        run: mvn test --settings settings.xml
+        run: mvn test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
