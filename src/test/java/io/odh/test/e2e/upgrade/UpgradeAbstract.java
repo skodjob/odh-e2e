@@ -102,7 +102,7 @@ public class UpgradeAbstract extends Abstract {
         ResourceManager.getInstance().createResourceWithoutWait(pvc);
 
         Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name)).build();
-        if (Environment.PRODUCT != Environment.PRODUCT_DEFAULT) {
+        if (!Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)) {
             notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name))
                     .editSpec()
                     .editNotebookspecTemplate()
