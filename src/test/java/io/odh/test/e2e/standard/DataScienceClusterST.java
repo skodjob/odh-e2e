@@ -4,6 +4,7 @@
  */
 package io.odh.test.e2e.standard;
 
+import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -24,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Tag("smoke")
+@Tag(TestSuite.SMOKE)
 public class DataScienceClusterST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-dsp";

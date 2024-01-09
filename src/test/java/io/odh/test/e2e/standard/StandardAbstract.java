@@ -5,6 +5,7 @@
 package io.odh.test.e2e.standard;
 
 import io.odh.test.Environment;
+import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
@@ -24,10 +25,10 @@ import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-@Tag("standard")
+@Tag(TestSuite.STANDARD)
 @ExtendWith(OdhResourceCleaner.class)
 @ExtendWith(ResourceManagerDeleteHandler.class)
-public class StandardAbstract extends Abstract {
+public abstract class StandardAbstract extends Abstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardAbstract.class);
 

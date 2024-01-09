@@ -11,6 +11,7 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
+import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
@@ -31,6 +32,7 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Mo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kubeflow.v1.Notebook;
 import org.kubeflow.v1.NotebookBuilder;
@@ -38,9 +40,10 @@ import org.kubeflow.v1.notebookspec.template.spec.containers.EnvBuilder;
 
 import java.io.IOException;
 
+@Tag(TestSuite.UPGRADE)
 @ExtendWith(OdhResourceCleaner.class)
 @ExtendWith(ResourceManagerDeleteHandler.class)
-public class UpgradeAbstract extends Abstract {
+public abstract class UpgradeAbstract extends Abstract {
 
     protected void deployDsc(String name) {
         // Deploy DSC

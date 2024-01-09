@@ -16,7 +16,6 @@ import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.odh.test.utils.UpgradeUtils;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
-@Tag("upgrade")
 public class OlmUpgradeST extends UpgradeAbstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OlmUpgradeST.class);

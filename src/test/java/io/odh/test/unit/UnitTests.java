@@ -10,6 +10,7 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
+import io.odh.test.TestSuite;
 import io.odh.test.framework.ExtensionContextParameterResolver;
 import io.odh.test.framework.listeners.TestVisualSeparator;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@Tag("unit")
+@Tag(TestSuite.UNIT)
 @ExtendWith(ExtensionContextParameterResolver.class)
 @EnableKubernetesMockClient(crud = true)
 public class UnitTests implements TestVisualSeparator {
