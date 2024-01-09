@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith(TestExceptionCallbackListener.class)
 @ExtendWith(ResourceManagerContextHandler.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class Abstract implements TestVisualSeparator {
+public abstract class Abstract implements TestVisualSeparator {
 
     static {
         ResourceManager.getInstance();
