@@ -135,7 +135,7 @@ public class Environment {
             File yamlFile = new File(config).getAbsoluteFile();
             return yaml.load(new FileInputStream(yamlFile));
         } catch (IOException ex) {
-            LOGGER.info("Json configuration not provider or not exists");
+            LOGGER.info("Yaml configuration not provider or not exists");
             return Collections.emptyMap();
         }
     }
