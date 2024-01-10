@@ -35,7 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag(TestSuite.CONTINUOUS)
 public class DataScienceClusterST extends Abstract {
 
-    private static final String DS_CLUSTER_NAME = "default";
+    // TODO on my cluster this is default-dsc, cluster created with existing jenkins automation in PSI
+    private static final String DS_CLUSTER_NAME = "default-dsc";
     private static final String DS_DASHBOARD_CONFIG_NAME = "odh-dashboard-config";
     MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceProjectCli;
     MixedOperation<OdhDashboardConfig, KubernetesResourceList<OdhDashboardConfig>, Resource<OdhDashboardConfig>> dashboardConfigCli;
