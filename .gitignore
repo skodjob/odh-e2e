@@ -38,3 +38,4 @@ build/
 ## Suite specific files
 **/*.kubeconfig
 env
+config.yaml
