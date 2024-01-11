@@ -28,7 +28,7 @@ public class PodUtils {
     private PodUtils() { }
 
     public static void waitForPodsReady(String namespaceName, boolean containers, Runnable onTimeout) {
-        TestUtils.waitFor("readiness of all Pods matching in namespace {} " + namespaceName,
+        TestUtils.waitFor("readiness of all Pods matching in namespace " + namespaceName,
                 TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, READINESS_TIMEOUT,
                 () -> {
                     List<Pod> pods = ResourceManager.getClient().listPods(namespaceName);
