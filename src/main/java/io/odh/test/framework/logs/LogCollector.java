@@ -57,10 +57,14 @@ public class LogCollector {
         Files.writeString(logpath.resolve("pvs.log"), cmdClient.exec(false, false, "describe", "pv").out());
         Files.writeString(logpath.resolve("dsc.yml"), cmdClient.exec(false, false, "get", "dsc", "-o", "yaml").out());
         Files.writeString(logpath.resolve("dsci.yml"), cmdClient.exec(false, false, "get", "dsci", "-o", "yaml").out());
+        Files.writeString(logpath.resolve("subsccriptions.yml"), cmdClient.exec(false, false, "get", "subscriptions.operators.coreos.com", "--all-namespaces", "-o", "yaml").out());
         kube.listPodsByPrefixInName(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, "opendatahub-operator-controller-manager").forEach(pod -> {
             writeLogsFromPods(logpath, pod);
         });
         kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, "opendatahub").forEach(pod -> {
+            writeLogsFromPods(logpath, pod);
+        });
+        kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, OdhConstants.OLM_OPERATOR_NAME).forEach(pod -> {
             writeLogsFromPods(logpath, pod);
         });
         kube.listPods(OdhConstants.CONTROLLERS_NAMESPACE).forEach(pod -> {
