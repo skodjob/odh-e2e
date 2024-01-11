@@ -44,7 +44,7 @@ public class Environment {
     /**
      * Install operator odh/rhoai
      */
-    private static final String INSTALL_OPERATOR_ENV = "INSTALL_OPERATOR";
+    private static final String SKIP_INSTALL_OPERATOR_ENV = "SKIP_INSTALL_OPERATOR";
 
     /**
      * Install bundle files
@@ -75,7 +75,7 @@ public class Environment {
     public static final String KUBE_URL = getOrDefault(URL_ENV, null);
 
     //Install
-    public static final boolean INSTALL_OPERATOR = getOrDefault(INSTALL_OPERATOR_ENV, Boolean::valueOf, true);
+    public static final boolean SKIP_INSTALL_OPERATOR = getOrDefault(SKIP_INSTALL_OPERATOR_ENV, Boolean::valueOf, false);
 
     // YAML Bundle
     public static final String INSTALL_FILE_PATH = getOrDefault(INSTALL_FILE_ENV, TestConstants.LATEST_BUNDLE_DEPLOY_FILE);

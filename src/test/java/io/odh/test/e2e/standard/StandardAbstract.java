@@ -32,7 +32,9 @@ public abstract class StandardAbstract extends Abstract {
 
     @BeforeAll
     void setupEnvironment() throws IOException {
-        if (Environment.INSTALL_OPERATOR) {
+        if (Environment.SKIP_INSTALL_OPERATOR) {
+            LOGGER.info("Operator install is skipped: SKIP_OPERATOR_INSTALL: {}", Environment.SKIP_INSTALL_OPERATOR);
+        } else {
             if (Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH)
                     .equals(InstallTypes.OLM.toString().toLowerCase(Locale.ENGLISH))) {
                 OlmInstall olmInstall = new OlmInstall();
@@ -45,8 +47,6 @@ public abstract class StandardAbstract extends Abstract {
                 LOGGER.error("Unknown install type {}! You should implement it at first!", Environment.OPERATOR_INSTALL_TYPE);
                 fail(String.format("Unknown install type %s! You should implement it at first!", Environment.OPERATOR_INSTALL_TYPE));
             }
-        } else {
-            LOGGER.info("Operator install is skipped: INSTALL_OPERATOR: {}", Environment.INSTALL_OPERATOR);
         }
     }
 }
