@@ -27,6 +27,35 @@ public class PodUtils {
 
     private PodUtils() { }
 
+    public static void waitForPodsReady(String namespaceName, boolean containers, Runnable onTimeout) {
+        TestUtils.waitFor("readiness of all Pods matching in namespace {} " + namespaceName,
+                TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, READINESS_TIMEOUT,
+                () -> {
+                    List<Pod> pods = ResourceManager.getClient().listPods(namespaceName);
+                    if (pods.isEmpty()) {
+                        LOGGER.debug("Expected Pods are ready");
+                        return true;
+                    }
+                    for (Pod pod : pods) {
+                        if (!Readiness.isPodReady(pod)) {
+                            LOGGER.debug("Pod not ready: {}/{}", namespaceName, pod.getMetadata().getName());
+                            return false;
+                        } else {
+                            if (containers) {
+                                for (ContainerStatus cs : pod.getStatus().getContainerStatuses()) {
+                                    if (!Boolean.TRUE.equals(cs.getReady())) {
+                                        LOGGER.debug("Container: {} of Pod: {}/{} not ready", namespaceName, pod.getMetadata().getName(), cs.getName());
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    LOGGER.info("Pods in namespace {} are ready", namespaceName);
+                    return true;
+                }, onTimeout);
+    }
+
     public static void waitForPodsReady(String namespaceName, LabelSelector selector, int expectPods, boolean containers, Runnable onTimeout) {
         TestUtils.waitFor("readiness of all Pods matching: " + selector,
                 TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, READINESS_TIMEOUT,

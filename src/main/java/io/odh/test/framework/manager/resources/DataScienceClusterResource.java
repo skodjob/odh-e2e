@@ -7,11 +7,13 @@ package io.odh.test.framework.manager.resources;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.ResourceType;
 import io.odh.test.platform.KubeUtils;
+import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,11 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
 
             return dscReady;
         }, () -> { });
+
+        String namespace = OdhConstants.CONTROLLERS_NAMESPACE;
+        LOGGER.info("Waiting for pods readiness in {}", namespace);
+        PodUtils.waitForPodsReady(namespace, true, () -> { });
+
         return true;
     }
 
