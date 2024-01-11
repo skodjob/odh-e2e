@@ -104,9 +104,10 @@ public abstract class UpgradeAbstract extends Abstract {
                 .build();
         ResourceManager.getInstance().createResourceWithoutWait(pvc);
 
-        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name)).build();
+        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.PYTORCH_IMAGE, NotebookResource.PYTORCH_2023_2_TAG);
+        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage)).build();
         if (!Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)) {
-            notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name))
+            notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage))
                     .editSpec()
                     .editNotebookspecTemplate()
                     .editOrNewSpec()

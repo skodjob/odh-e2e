@@ -70,7 +70,8 @@ public class NotebookST extends StandardAbstract {
                 .build();
         ResourceManager.getInstance().createResourceWithoutWait(pvc);
 
-        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME)).build();
+        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.PYTORCH_IMAGE, NotebookResource.PYTORCH_2023_2_TAG);
+        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME, notebookImage)).build();
         ResourceManager.getInstance().createResourceWithoutWait(notebook);
 
         LabelSelector lblSelector = new LabelSelectorBuilder()
