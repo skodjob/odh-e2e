@@ -29,24 +29,22 @@ public class Environment {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Environment.class);
     private static final Map<String, String> VALUES = new HashMap<>();
-
-    private static String config;
-
     private static final Map<String, Object> YAML_DATA = loadConfigurationFile();
-
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm");
-
     public static final String USER_PATH = System.getProperty("user.dir");
 
     private static final String CONFIG_FILE_PATH_ENV = "ENV_FILE";
-
     private static final String USERNAME_ENV = "KUBE_USERNAME";
     private static final String PASSWORD_ENV = "KUBE_PASSWORD";
     private static final String TOKEN_ENV = "KUBE_TOKEN";
     private static final String URL_ENV = "KUBE_URL";
     private static final String PRODUCT_ENV = "PRODUCT";
-
     private static final String LOG_DIR_ENV = "LOG_DIR";
+
+    /**
+     * Install operator odh/rhoai
+     */
+    private static final String INSTALL_OPERATOR_ENV = "INSTALL_OPERATOR";
 
     /**
      * Install bundle files
@@ -75,6 +73,9 @@ public class Environment {
     public static final String KUBE_PASSWORD = getOrDefault(PASSWORD_ENV, null);
     public static final String KUBE_TOKEN = getOrDefault(TOKEN_ENV, null);
     public static final String KUBE_URL = getOrDefault(URL_ENV, null);
+
+    //Install
+    public static final boolean INSTALL_OPERATOR = getOrDefault(INSTALL_OPERATOR_ENV, Boolean::valueOf, true);
 
     // YAML Bundle
     public static final String INSTALL_FILE_PATH = getOrDefault(INSTALL_FILE_ENV, TestConstants.LATEST_BUNDLE_DEPLOY_FILE);
@@ -128,7 +129,7 @@ public class Environment {
     }
 
     private static Map<String, Object> loadConfigurationFile() {
-        config = System.getenv().getOrDefault(CONFIG_FILE_PATH_ENV,
+        String config = System.getenv().getOrDefault(CONFIG_FILE_PATH_ENV,
                 Paths.get(System.getProperty("user.dir"), "config.yaml").toAbsolutePath().toString());
         Yaml yaml = new Yaml();
         try {

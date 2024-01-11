@@ -9,11 +9,9 @@ import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.install.InstallTypes;
 import io.odh.test.install.OlmInstall;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,22 +32,21 @@ public abstract class StandardAbstract extends Abstract {
 
     @BeforeAll
     void setupEnvironment() throws IOException {
-        if (Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH)
-                .equals(InstallTypes.OLM.toString().toLowerCase(Locale.ENGLISH))) {
-            OlmInstall olmInstall = new OlmInstall();
-            olmInstall.create();
-        } else if (Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH)
-                .equals(InstallTypes.BUNDLE.toString().toLowerCase(Locale.ENGLISH))) {
-            BundleInstall bundleInstall = new BundleInstall();
-            bundleInstall.create();
+        if (Environment.INSTALL_OPERATOR) {
+            if (Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH)
+                    .equals(InstallTypes.OLM.toString().toLowerCase(Locale.ENGLISH))) {
+                OlmInstall olmInstall = new OlmInstall();
+                olmInstall.create();
+            } else if (Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH)
+                    .equals(InstallTypes.BUNDLE.toString().toLowerCase(Locale.ENGLISH))) {
+                BundleInstall bundleInstall = new BundleInstall();
+                bundleInstall.create();
+            } else {
+                LOGGER.error("Unknown install type {}! You should implement it at first!", Environment.OPERATOR_INSTALL_TYPE);
+                fail(String.format("Unknown install type %s! You should implement it at first!", Environment.OPERATOR_INSTALL_TYPE));
+            }
         } else {
-            LOGGER.error("Unknown install type {}! You should implement it at first!", Environment.OPERATOR_INSTALL_TYPE);
-            fail(String.format("Unknown install type %s! You should implement it at first!", Environment.OPERATOR_INSTALL_TYPE));
+            LOGGER.info("Operator install is skipped: INSTALL_OPERATOR: {}", Environment.INSTALL_OPERATOR);
         }
-    }
-
-    @AfterAll
-    void teardownEnvironment() {
-        ResourceManager.getInstance().deleteResources();
     }
 }
