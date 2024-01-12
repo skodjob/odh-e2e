@@ -11,7 +11,6 @@ import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.install.InstallTypes;
 import io.odh.test.install.OlmInstall;
 import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DeploymentUtils;
