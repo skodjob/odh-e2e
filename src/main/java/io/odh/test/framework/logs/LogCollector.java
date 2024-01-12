@@ -51,9 +51,9 @@ public class LogCollector {
 
     private static void writePodsDescription(Path logpath, Pod pod) {
         try {
-            LOGGER.debug("Get description if pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+            LOGGER.debug("Get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
             Files.writeString(logpath.resolve(pod.getMetadata().getNamespace() + "-" + pod.getMetadata().getName() + ".log"),
-                    ResourceManager.getKubeCmdClient().describe(pod.getKind(), pod.getMetadata().getName()));
+                    ResourceManager.getKubeCmdClient().namespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
         } catch (IOException e) {
             LOGGER.warn("Cannot get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
         }
@@ -69,18 +69,17 @@ public class LogCollector {
         Files.writeString(logpath.resolve("dsci.yml"), cmdClient.exec(false, false, "get", "dsci", "-o", "yaml").out());
         Files.writeString(logpath.resolve("subscriptions.yml"), cmdClient.exec(false, false, "get", "subscriptions.operators.coreos.com", "--all-namespaces", "-o", "yaml").out());
         Files.writeString(logpath.resolve("notebooks.yml"), cmdClient.exec(false, false, "get", "notebook", "--all-namespaces", "-o", "yaml").out());
+        LOGGER.debug("Listing pods in {}", OdhConstants.BUNDLE_OPERATOR_NAMESPACE);
         kube.listPodsByPrefixInName(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, "opendatahub-operator-controller-manager").forEach(pod -> {
             writeLogsFromPods(logpath, pod);
             writePodsDescription(logpath, pod);
         });
-        kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, "opendatahub").forEach(pod -> {
+        LOGGER.debug("Listing pods in {}", OdhConstants.OLM_OPERATOR_NAMESPACE);
+        kube.listPods(OdhConstants.OLM_OPERATOR_NAMESPACE).forEach(pod -> {
             writeLogsFromPods(logpath, pod);
             writePodsDescription(logpath, pod);
         });
-        kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, OdhConstants.OLM_OPERATOR_NAME).forEach(pod -> {
-            writeLogsFromPods(logpath, pod);
-            writePodsDescription(logpath, pod);
-        });
+        LOGGER.debug("Listing pods in {}", OdhConstants.CONTROLLERS_NAMESPACE);
         kube.listPods(OdhConstants.CONTROLLERS_NAMESPACE).forEach(pod -> {
             writeLogsFromPods(logpath, pod);
             writePodsDescription(logpath, pod);
