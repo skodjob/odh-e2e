@@ -28,7 +28,7 @@ public class OlmUpgradeST extends UpgradeAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(OlmUpgradeST.class);
     private static final String DS_PROJECT_NAME = "upgrade-dsc";
 
-    private final String startingVersion = !Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT) ? "2.4.0" : "v.2.4.0";
+    private final String startingVersion = Environment.OLM_UPGRADE_STARTING_VERSION;
 
     @Test
     @Disabled("Tested only for upgrades from 2.4+ so we are waiting for 2.5 release")

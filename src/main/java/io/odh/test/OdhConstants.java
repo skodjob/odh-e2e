@@ -23,7 +23,9 @@ public class OdhConstants {
     private static final String ODH_OLM_SOURCE_NAME = "community-operators";
     private static final String ODH_OLM_APP_BUNDLE_PREFIX = "opendatahub-operator";
     private static final String ODH_OLM_OPERATOR_CHANNEL = "fast";
+    // TODO - should be changed after 2.5 release
     private static final String ODH_OLM_OPERATOR_VERSION = "v2.4.0";
+    private static final String ODH_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "v2.4.0";
 
     // RHOAI
     private static final String RHOAI_CONTROLLERS_NAMESPACE = "redhat-ods-applications";
@@ -37,6 +39,7 @@ public class OdhConstants {
     private static final String RHOAI_OLM_APP_BUNDLE_PREFIX = "rhods-operator";
     private static final String RHOAI_OLM_OPERATOR_CHANNEL = "stable";
     private static final String RHOAI_OLM_OPERATOR_VERSION = "2.5.0";
+    private static final String RHOAI_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "2.4.0";
 
     // Public part
     public static final String CODEFLARE_DEPLOYMENT_NAME = "codeflare-operator-manager";
@@ -62,6 +65,7 @@ public class OdhConstants {
     public static final String OLM_OPERATOR_VERSION = getOdhOrRhoai(ODH_OLM_OPERATOR_VERSION, RHOAI_OLM_OPERATOR_VERSION);
     public static final String OLM_SOURCE_NAME = getOdhOrRhoai(ODH_OLM_SOURCE_NAME, RHOAI_OLM_SOURCE_NAME);
     public static final String OLM_OPERATOR_CHANNEL = getOdhOrRhoai(ODH_OLM_OPERATOR_CHANNEL, RHOAI_OLM_OPERATOR_CHANNEL);
+    public static final String OLM_UPGRADE_STARTING_OPERATOR_VERSION = getOdhOrRhoai(ODH_OLM_UPGRADE_STARTING_OPERATOR_VERSION, RHOAI_OLM_UPGRADE_STARTING_OPERATOR_VERSION);
 
     private static <T> T getOdhOrRhoai(T odhValue, T rhoaiValue) {
         T returnValue = odhValue;

@@ -61,6 +61,7 @@ public class Environment {
     private static final String OLM_OPERATOR_VERSION_ENV = "OLM_OPERATOR_VERSION";
     private static final String OLM_OPERATOR_CHANNEL_ENV = "OLM_OPERATOR_CHANNEL";
     private static final String OPERATOR_INSTALL_TYPE_ENV = "OPERATOR_INSTALL_TYPE";
+    private static final String OLM_UPGRADE_STARTING_VERSION_ENV = "OLM_UPGRADE_STARTING_VERSION";
 
     public static final String PRODUCT_DEFAULT = "odh";
 
@@ -87,6 +88,7 @@ public class Environment {
     public static final String OLM_SOURCE_NAMESPACE = getOrDefault(OLM_SOURCE_NAMESPACE_ENV, "openshift-marketplace");
     public static final String OLM_OPERATOR_CHANNEL = getOrDefault(OLM_OPERATOR_CHANNEL_ENV, OdhConstants.OLM_OPERATOR_CHANNEL);
     public static final String OLM_OPERATOR_VERSION = getOrDefault(OLM_OPERATOR_VERSION_ENV, OdhConstants.OLM_OPERATOR_VERSION);
+    public static final String OLM_UPGRADE_STARTING_VERSION = getOrDefault(OLM_UPGRADE_STARTING_VERSION_ENV, OdhConstants.OLM_UPGRADE_STARTING_OPERATOR_VERSION);
 
     public static final String OPERATOR_INSTALL_TYPE = getOrDefault(OPERATOR_INSTALL_TYPE_ENV, InstallTypes.BUNDLE.toString());
 
