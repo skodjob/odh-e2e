@@ -32,9 +32,9 @@ public class PodUtils {
                 TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, READINESS_TIMEOUT,
                 () -> {
                     List<Pod> pods = ResourceManager.getClient().listPods(namespaceName);
-                    if (!pods.isEmpty()) {
+                    if (pods.isEmpty()) {
                         LOGGER.debug("Expected Pods are not ready!");
-                        return true;
+                        return false;
                     }
                     for (Pod pod : pods) {
                         if (!Readiness.isPodReady(pod)) {
