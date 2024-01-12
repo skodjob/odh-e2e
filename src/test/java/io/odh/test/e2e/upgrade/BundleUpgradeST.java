@@ -10,6 +10,7 @@ import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.BundleInstall;
+import io.odh.test.install.InstallTypes;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.odh.test.utils.UpgradeUtils;
@@ -19,7 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class BundleUpgradeST extends UpgradeAbstract {
 
@@ -37,6 +42,8 @@ public class BundleUpgradeST extends UpgradeAbstract {
 
     @Test
     void testUpgradeBundle() throws IOException {
+        assumeTrue(Objects.equals(Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH),
+                InstallTypes.BUNDLE.name().toLowerCase(Locale.ENGLISH)));
         LOGGER.info("Install base version");
         baseBundle = new BundleInstall(Environment.INSTALL_FILE_PREVIOUS_PATH);
         baseBundle.disableModifyOperatorImage();
