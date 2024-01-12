@@ -40,13 +40,7 @@ public class OlmInstall {
     private String approval = "Automatic";
 
     public void create() {
-        // Create namespace at first because operator-group and subscription could you specific namespace
-        Namespace ns = new NamespaceBuilder()
-                .withNewMetadata()
-                .withName(namespace)
-                .endMetadata()
-                .build();
-        ResourceManager.getInstance().createResourceWithoutWait(ns);
+        createNamespace();
         // Create operator group and subscription
         createOperatorGroup();
         ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
@@ -57,9 +51,23 @@ public class OlmInstall {
     }
 
     public void createManual() {
+        createNamespace();
         createOperatorGroup();
         ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
         createAndModifySubscription();
+    }
+
+    /**
+     * Creates namespace for operator-group and subscription
+     */
+    private void createNamespace() {
+        // Create namespace at first because operator-group and subscription could you specific namespace
+        Namespace ns = new NamespaceBuilder()
+                .withNewMetadata()
+                .withName(namespace)
+                .endMetadata()
+                .build();
+        ResourceManager.getInstance().createResourceWithoutWait(ns);
     }
 
     /**

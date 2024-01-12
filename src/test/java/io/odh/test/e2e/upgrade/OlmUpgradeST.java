@@ -9,6 +9,7 @@ import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
+import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.InstallTypes;
 import io.odh.test.install.OlmInstall;
@@ -16,17 +17,15 @@ import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.odh.test.utils.UpgradeUtils;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-
+@Tag(TestSuite.OLM_UPGRADE)
 public class OlmUpgradeST extends UpgradeAbstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OlmUpgradeST.class);
@@ -36,8 +35,6 @@ public class OlmUpgradeST extends UpgradeAbstract {
 
     @Test
     void testUpgradeOlm() throws IOException, InterruptedException {
-        assumeTrue(Objects.equals(Environment.OPERATOR_INSTALL_TYPE.toLowerCase(Locale.ENGLISH),
-                InstallTypes.OLM.name().toLowerCase(Locale.ENGLISH)));
         String ntbName = "test-odh-notebook";
         String ntbNamespace = "test-odh-notebook-upgrade";
 
