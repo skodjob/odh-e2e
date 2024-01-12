@@ -49,6 +49,16 @@ public class LogCollector {
         });
     }
 
+    private static void writePodsDescription(Path logpath, Pod pod) {
+        try {
+            LOGGER.debug("Get description if pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+            Files.writeString(logpath.resolve(pod.getMetadata().getNamespace() + "-" + pod.getMetadata().getName() + ".log"),
+                    ResourceManager.getKubeCmdClient().describe(pod.getKind(), pod.getMetadata().getName()));
+        } catch (IOException e) {
+            LOGGER.warn("Cannot get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
+        }
+    }
+
     private static void saveClusterState(Path logpath) throws IOException {
         KubeClient kube = ResourceManager.getClient();
         KubeCmdClient cmdClient = ResourceManager.getKubeCmdClient();
@@ -61,15 +71,19 @@ public class LogCollector {
         Files.writeString(logpath.resolve("notebooks.yml"), cmdClient.exec(false, false, "get", "notebook", "--all-namespaces", "-o", "yaml").out());
         kube.listPodsByPrefixInName(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, "opendatahub-operator-controller-manager").forEach(pod -> {
             writeLogsFromPods(logpath, pod);
+            writePodsDescription(logpath, pod);
         });
         kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, "opendatahub").forEach(pod -> {
             writeLogsFromPods(logpath, pod);
+            writePodsDescription(logpath, pod);
         });
         kube.listPodsByPrefixInName(OdhConstants.OLM_OPERATOR_NAMESPACE, OdhConstants.OLM_OPERATOR_NAME).forEach(pod -> {
             writeLogsFromPods(logpath, pod);
+            writePodsDescription(logpath, pod);
         });
         kube.listPods(OdhConstants.CONTROLLERS_NAMESPACE).forEach(pod -> {
             writeLogsFromPods(logpath, pod);
+            writePodsDescription(logpath, pod);
         });
     }
 }
