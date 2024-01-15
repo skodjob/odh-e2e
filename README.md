@@ -60,3 +60,13 @@ GITHUB_TOKEN="your_github_read_token" mvn verify -Pupgrade
 ```commandline
 GITHUB_TOKEN="your_github_read_token" mvn test
 ```
+
+## Reproducing test run
+When every test run is executed, test suite automatically creates a `config.yaml` file
+which contains all configured environment variables. Location of config file 
+is `$LOG_DIR/test-run-YYYY-MM-DD_HH-mm/config.yaml` where `$LOG_DIR` is by
+default `${repo_root}/target/logs`.
+
+```commandline
+GITHUB_TOKEN="your_github_read_token" ENV_FILE=path_to_file/config.yaml mvn verify -Psmoke
+```
