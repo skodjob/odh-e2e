@@ -7,17 +7,21 @@ package io.odh.test;
 import io.odh.test.install.InstallTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -109,6 +113,11 @@ public class Environment {
                     }
                 });
         LoggerUtils.logSeparator("-", 30);
+        try {
+            saveConfigurationFile();
+        } catch (IOException e) {
+            LOGGER.warn("Yaml configuration can't be saved");
+        }
     }
 
     public static void print() {
@@ -143,5 +152,32 @@ public class Environment {
             LOGGER.info("Yaml configuration not provider or not exists");
             return Collections.emptyMap();
         }
+    }
+
+    private static void saveConfigurationFile() throws IOException {
+        Path logPath = Environment.LOG_DIR;
+        Files.createDirectories(logPath);
+
+        LinkedHashMap<String, String> toSave = new LinkedHashMap<>();
+
+        VALUES.forEach((key, value) -> {
+            if (isWriteable(key, value)) {
+                toSave.put(key, value);
+            }
+        });
+
+        PrintWriter writer = new PrintWriter(logPath.resolve("config.yaml").toFile());
+        final DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setPrettyFlow(true);
+        Yaml yaml = new Yaml(options);
+        yaml.dump(toSave, writer);
+    }
+
+    private static boolean isWriteable(String var, String value) {
+        return !value.equals("null")
+                && !var.equals(CONFIG_FILE_PATH_ENV)
+                && !var.equals(USER_PATH)
+                && !value.equals("USER");
     }
 }
