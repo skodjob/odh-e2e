@@ -85,6 +85,7 @@ public class OdhConstants {
 
     static {
         String debugFormat = "{}: {}";
+        LoggerUtils.logSeparator("-", 30);
         LOGGER.info("Used OdhConstants:");
         VALUES.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
@@ -93,5 +94,6 @@ public class OdhConstants {
                         LOGGER.info(debugFormat, entry.getKey(), entry.getValue());
                     }
                 });
+        LoggerUtils.logSeparator("-", 30);
     }
 }
