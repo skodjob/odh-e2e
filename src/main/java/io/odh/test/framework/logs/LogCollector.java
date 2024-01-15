@@ -52,7 +52,7 @@ public class LogCollector {
     private static void writePodsDescription(Path logpath, Pod pod) {
         try {
             LOGGER.debug("Get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-            Files.writeString(logpath.resolve(pod.getMetadata().getNamespace() + "-" + pod.getMetadata().getName() + ".log"),
+            Files.writeString(logpath.resolve(pod.getMetadata().getNamespace() + "-" + pod.getMetadata().getName() + ".describe.log"),
                     ResourceManager.getKubeCmdClient().namespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
         } catch (IOException e) {
             LOGGER.warn("Cannot get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
