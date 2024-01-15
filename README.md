@@ -11,6 +11,8 @@ E2E test suite for opendatahub using fabric8 kubernetes client
 ## List of test suites
 * smoke
 * upgrade
+* olm-upgrade
+* bundle-upgrade
 * standard
 * continuous
 * all (standard + upgrade)

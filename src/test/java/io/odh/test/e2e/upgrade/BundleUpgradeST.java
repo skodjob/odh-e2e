@@ -8,12 +8,14 @@ import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
+import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.odh.test.utils.UpgradeUtils;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
+@Tag(TestSuite.BUNDLE_UPGRADE)
 public class BundleUpgradeST extends UpgradeAbstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BundleUpgradeST.class);

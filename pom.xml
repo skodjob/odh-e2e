@@ -344,6 +344,26 @@
         </profile>
 
         <profile>
+            <id>bundle-upgrade</id>
+            <properties>
+                <it.skip>false</it.skip>
+                <groups>
+                    bundle-upgrade
+                </groups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>olm-upgrade</id>
+            <properties>
+                <it.skip>false</it.skip>
+                <groups>
+                    olm-upgrade
+                </groups>
+            </properties>
+        </profile>
+
+        <profile>
             <id>all</id>
             <properties>
                 <it.skip>false</it.skip>

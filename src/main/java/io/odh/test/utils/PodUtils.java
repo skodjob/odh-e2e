@@ -33,8 +33,8 @@ public class PodUtils {
                 () -> {
                     List<Pod> pods = ResourceManager.getClient().listPods(namespaceName);
                     if (pods.isEmpty()) {
-                        LOGGER.debug("Expected Pods are ready");
-                        return true;
+                        LOGGER.debug("Expected Pods are not ready!");
+                        return false;
                     }
                     for (Pod pod : pods) {
                         if (!Readiness.isPodReady(pod)) {

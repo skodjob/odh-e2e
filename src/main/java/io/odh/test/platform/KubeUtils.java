@@ -45,7 +45,7 @@ public class KubeUtils {
     }
 
     public static void waitForInstallPlan(String namespace, String csvName) {
-        TestUtils.waitFor("Install paln with new version", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+        TestUtils.waitFor("Install plan with new version", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             try {
                 InstallPlan ip = ResourceManager.getClient().getNonApprovedInstallPlan(namespace, csvName);
                 LOGGER.debug("Found InstallPlan {} - {}", ip.getMetadata().getName(), ip.getSpec().getClusterServiceVersionNames());

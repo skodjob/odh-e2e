@@ -4,11 +4,18 @@
  */
 package io.odh.test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class OdhConstants {
     private OdhConstants() { }
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OdhConstants.class);
+    private static final Map<String, String> VALUES = new HashMap<>();
     // ODH
     private static final String ODH_CONTROLLERS_NAMESPACE = "opendatahub";
     private static final String ODH_DASHBOARD_ROUTE_NAME = "odh-dashboard";
@@ -23,7 +30,9 @@ public class OdhConstants {
     private static final String ODH_OLM_SOURCE_NAME = "community-operators";
     private static final String ODH_OLM_APP_BUNDLE_PREFIX = "opendatahub-operator";
     private static final String ODH_OLM_OPERATOR_CHANNEL = "fast";
+    // TODO - should be changed after 2.5 release
     private static final String ODH_OLM_OPERATOR_VERSION = "v2.4.0";
+    private static final String ODH_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "v2.4.0";
 
     // RHOAI
     private static final String RHOAI_CONTROLLERS_NAMESPACE = "redhat-ods-applications";
@@ -37,6 +46,7 @@ public class OdhConstants {
     private static final String RHOAI_OLM_APP_BUNDLE_PREFIX = "rhods-operator";
     private static final String RHOAI_OLM_OPERATOR_CHANNEL = "stable";
     private static final String RHOAI_OLM_OPERATOR_VERSION = "2.5.0";
+    private static final String RHOAI_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "2.4.0";
 
     // Public part
     public static final String CODEFLARE_DEPLOYMENT_NAME = "codeflare-operator-manager";
@@ -50,24 +60,38 @@ public class OdhConstants {
     public static final String ODH_NOTEBOOK_OPERATOR = "odh-notebook-controller-manager";
     public static final String TRUSTY_AI_OPERATOR = "trustyai-service-operator-controller-manager";
 
-    public static final String CONTROLLERS_NAMESPACE = getOdhOrRhoai(ODH_CONTROLLERS_NAMESPACE, RHOAI_CONTROLLERS_NAMESPACE);
-    public static final String DASHBOARD_ROUTE_NAME = getOdhOrRhoai(ODH_DASHBOARD_ROUTE_NAME, RHOAI_DASHBOARD_ROUTE_NAME);
-    public static final String DASHBOARD_CONTROLLER = getOdhOrRhoai(ODH_DASHBOARD_CONTROLLER, RHOAI_DASHBOARD_CONTROLLER);
-    public static final String BUNDLE_OPERATOR_NAMESPACE = getOdhOrRhoai(ODH_BUNDLE_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
+    public static final String CONTROLLERS_NAMESPACE = getOdhOrRhoai("CONTROLLERS_NAMESPACE", ODH_CONTROLLERS_NAMESPACE, RHOAI_CONTROLLERS_NAMESPACE);
+    public static final String DASHBOARD_ROUTE_NAME = getOdhOrRhoai("DASHBOARD_ROUTE_NAME", ODH_DASHBOARD_ROUTE_NAME, RHOAI_DASHBOARD_ROUTE_NAME);
+    public static final String DASHBOARD_CONTROLLER = getOdhOrRhoai("DASHBOARD_CONTROLLER", ODH_DASHBOARD_CONTROLLER, RHOAI_DASHBOARD_CONTROLLER);
+    public static final String BUNDLE_OPERATOR_NAMESPACE = getOdhOrRhoai("BUNDLE_OPERATOR_NAMESPACE", ODH_BUNDLE_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
     // OLM env variables
-    public static final String OLM_OPERATOR_NAME = getOdhOrRhoai(ODH_OLM_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
-    public static final String OLM_OPERATOR_NAMESPACE = getOdhOrRhoai(ODH_OLM_OPERATOR_NAMESPACE, RHOAI_OLM_OPERATOR_NAMESPACE);
-    public static final String OLM_OPERATOR_DEPLOYMENT_NAME = getOdhOrRhoai(ODH_OLM_OPERATOR_DEPLOYMENT_NAME, RHOAI_OLM_OPERATOR_DEPLOYMENT_NAME);
-    public static final String OLM_APP_BUNDLE_PREFIX = getOdhOrRhoai(ODH_OLM_APP_BUNDLE_PREFIX, RHOAI_OLM_APP_BUNDLE_PREFIX);
-    public static final String OLM_OPERATOR_VERSION = getOdhOrRhoai(ODH_OLM_OPERATOR_VERSION, RHOAI_OLM_OPERATOR_VERSION);
-    public static final String OLM_SOURCE_NAME = getOdhOrRhoai(ODH_OLM_SOURCE_NAME, RHOAI_OLM_SOURCE_NAME);
-    public static final String OLM_OPERATOR_CHANNEL = getOdhOrRhoai(ODH_OLM_OPERATOR_CHANNEL, RHOAI_OLM_OPERATOR_CHANNEL);
+    public static final String OLM_OPERATOR_NAME = getOdhOrRhoai("OLM_OPERATOR_NAME", ODH_OLM_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
+    public static final String OLM_OPERATOR_NAMESPACE = getOdhOrRhoai("OLM_OPERATOR_NAMESPACE", ODH_OLM_OPERATOR_NAMESPACE, RHOAI_OLM_OPERATOR_NAMESPACE);
+    public static final String OLM_OPERATOR_DEPLOYMENT_NAME = getOdhOrRhoai("OLM_OPERATOR_DEPLOYMENT_NAME", ODH_OLM_OPERATOR_DEPLOYMENT_NAME, RHOAI_OLM_OPERATOR_DEPLOYMENT_NAME);
+    public static final String OLM_APP_BUNDLE_PREFIX = getOdhOrRhoai("OLM_APP_BUNDLE_PREFIX", ODH_OLM_APP_BUNDLE_PREFIX, RHOAI_OLM_APP_BUNDLE_PREFIX);
+    public static final String OLM_OPERATOR_VERSION = getOdhOrRhoai("OLM_OPERATOR_VERSION", ODH_OLM_OPERATOR_VERSION, RHOAI_OLM_OPERATOR_VERSION);
+    public static final String OLM_SOURCE_NAME = getOdhOrRhoai("OLM_SOURCE_NAME", ODH_OLM_SOURCE_NAME, RHOAI_OLM_SOURCE_NAME);
+    public static final String OLM_OPERATOR_CHANNEL = getOdhOrRhoai("OLM_OPERATOR_CHANNEL", ODH_OLM_OPERATOR_CHANNEL, RHOAI_OLM_OPERATOR_CHANNEL);
+    public static final String OLM_UPGRADE_STARTING_OPERATOR_VERSION = getOdhOrRhoai("OLM_UPGRADE_STARTING_OPERATOR_VERSION", ODH_OLM_UPGRADE_STARTING_OPERATOR_VERSION, RHOAI_OLM_UPGRADE_STARTING_OPERATOR_VERSION);
 
-    private static <T> T getOdhOrRhoai(T odhValue, T rhoaiValue) {
+    private static <T> T getOdhOrRhoai(String var, T odhValue, T rhoaiValue) {
         T returnValue = odhValue;
         if (!Objects.equals(Environment.PRODUCT, Environment.PRODUCT_DEFAULT)) {
             returnValue = rhoaiValue;
         }
+        VALUES.put(var, String.valueOf(returnValue));
         return returnValue;
+    }
+
+    static {
+        String debugFormat = "{}: {}";
+        LOGGER.info("Used OdhConstants:");
+        VALUES.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(entry -> {
+                    if (!Objects.equals(entry.getValue(), "null")) {
+                        LOGGER.info(debugFormat, entry.getKey(), entry.getValue());
+                    }
+                });
     }
 }
