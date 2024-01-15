@@ -99,6 +99,7 @@ public class Environment {
 
     static {
         String debugFormat = "{}: {}";
+        LoggerUtils.logSeparator("-", 30);
         LOGGER.info("Used environment variables:");
         VALUES.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
@@ -107,6 +108,7 @@ public class Environment {
                         LOGGER.info(debugFormat, entry.getKey(), entry.getValue());
                     }
                 });
+        LoggerUtils.logSeparator("-", 30);
     }
 
     public static void print() {
