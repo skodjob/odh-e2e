@@ -8,8 +8,6 @@ import io.odh.test.framework.manager.ResourceManager;
 
 import static io.odh.test.framework.matchers.Matchers.logHasNoUnexpectedErrors;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.core.IsNot.not;
 
 public class UpgradeUtils {
 
