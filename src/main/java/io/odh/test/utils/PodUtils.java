@@ -111,18 +111,17 @@ public class PodUtils {
 
         TestUtils.waitFor(String.format("Pods in namespace '%s' with LabelSelector %s stability in phase %s", namespaceName, labelSelector, phase), TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT,
                 () -> {
-                    List<Pod> runningPods = ResourceManager.getClient().listPods(namespaceName, labelSelector);
-                    List<Pod> actualPods = runningPods.stream().map(p -> ResourceManager.getClient().getPod(namespaceName, p.getMetadata().getName())).toList();
-                    LOGGER.debug("Working with the following pods: {}", actualPods.stream().map(p -> p.getMetadata().getName()).toList());
+                    List<Pod> existingPod = ResourceManager.getClient().listPods(namespaceName, labelSelector);
+                    LOGGER.debug("Working with the following pods: {}", existingPod.stream().map(p -> p.getMetadata().getName()).toList());
 
-                    for (Pod pod : actualPods) {
+                    for (Pod pod : existingPod) {
                         if (pod == null) {
                             continue;
                         }
                         if (pod.getStatus().getPhase().equals(phase)) {
                             LOGGER.debug("Pod: {}/{} is in the {} state. Remaining seconds for Pod to be stable {}",
                                     namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(),
-                                    TestConstants.GLOBAL_STABILITY_TIME / (TestConstants.GLOBAL_POLL_INTERVAL_SHORT / 1000) - stabilityCounter[0]);
+                                    TestConstants.GLOBAL_STABILITY_TIME - (TestConstants.GLOBAL_POLL_INTERVAL_SHORT / 1000 * stabilityCounter[0]));
                         } else {
                             LOGGER.warn("Pod: {}/{} is not stable in phase following phase {} ({}) reset the stability counter from {}s to {}s",
                                     namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(), phase, stabilityCounter[0], 0);
@@ -133,7 +132,7 @@ public class PodUtils {
                     stabilityCounter[0]++;
 
                     if (stabilityCounter[0] == TestConstants.GLOBAL_STABILITY_TIME / (TestConstants.GLOBAL_POLL_INTERVAL_SHORT / 1000)) {
-                        LOGGER.info("All Pods are stable {}", actualPods.stream().map(p -> p.getMetadata().getName()).collect(Collectors.joining(" ,")));
+                        LOGGER.info("All Pods are stable {}", existingPod.stream().map(p -> p.getMetadata().getName()).collect(Collectors.joining(" ,")));
                         return true;
                     }
                     return false;
