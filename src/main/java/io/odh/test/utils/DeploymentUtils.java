@@ -85,7 +85,7 @@ public class DeploymentUtils {
      */
     public static void waitForDeploymentDeletion(String namespaceName, String name) {
         LOGGER.debug("Waiting for Deployment: {}/{} deletion", namespaceName, name);
-        TestUtils.waitFor("deletion of Deployment: " + namespaceName + "/" + name, TestConstants.GLOBAL_POLL_INTERVAL, DELETION_TIMEOUT,
+        TestUtils.waitFor("deletion of Deployment: " + namespaceName + "/" + name, TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, DELETION_TIMEOUT,
             () -> {
                 if (ResourceManager.getClient().getDeployment(namespaceName, name) == null) {
                     return true;
