@@ -122,7 +122,7 @@ public class PodUtils {
                         if (pod.getStatus().getPhase().equals(phase)) {
                             LOGGER.debug("Pod: {}/{} is in the {} state. Remaining seconds for Pod to be stable {}",
                                     namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(),
-                                    TestConstants.GLOBAL_STABILITY_TIME - stabilityCounter[0]);
+                                    TestConstants.GLOBAL_STABILITY_TIME / TestConstants.GLOBAL_POLL_INTERVAL_SHORT - stabilityCounter[0]);
                         } else {
                             LOGGER.warn("Pod: {}/{} is not stable in phase following phase {} ({}) reset the stability counter from {}s to {}s",
                                     namespaceName, pod.getMetadata().getName(), pod.getStatus().getPhase(), phase, stabilityCounter[0], 0);
