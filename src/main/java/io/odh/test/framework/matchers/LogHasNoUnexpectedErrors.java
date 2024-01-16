@@ -1,5 +1,5 @@
 /*
- * Copyright Strimzi authors.
+ * Copyright Skodjob authors.
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
 package io.odh.test.framework.matchers;
@@ -14,8 +14,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * <p>A LogHasNoUnexpectedErrors is custom matcher to check log form kubernetes client
- * doesn't have any unexpected errors. </p>
+ * A LogHasNoUnexpectedErrors is custom matcher to check log form kubernetes client
+ * doesn't have any unexpected errors.
  */
 public class LogHasNoUnexpectedErrors extends BaseMatcher<String> {
 
