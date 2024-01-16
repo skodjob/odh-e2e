@@ -208,7 +208,7 @@ public class ResourceManager {
         boolean[] resourceReady = new boolean[1];
 
         TestUtils.waitFor("resource condition: " + condition.getConditionName() + " to be fulfilled for resource " + resource.getKind() + ":" + resource.getMetadata().getName(),
-                TestConstants.GLOBAL_POLL_INTERVAL, TestConstants.GLOBAL_TIMEOUT,
+                TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, TestConstants.GLOBAL_TIMEOUT,
                 () -> {
                     T res = type.get(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                     resourceReady[0] = condition.getPredicate().test(res);
