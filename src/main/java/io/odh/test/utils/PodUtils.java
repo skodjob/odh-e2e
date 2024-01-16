@@ -132,7 +132,7 @@ public class PodUtils {
                     }
                     stabilityCounter[0]++;
 
-                    if (stabilityCounter[0] == TestConstants.GLOBAL_STABILITY_TIME) {
+                    if (stabilityCounter[0] == TestConstants.GLOBAL_STABILITY_TIME / TestConstants.GLOBAL_POLL_INTERVAL_SHORT) {
                         LOGGER.info("All Pods are stable {}", actualPods.stream().map(p -> p.getMetadata().getName()).collect(Collectors.joining(" ,")));
                         return true;
                     }
