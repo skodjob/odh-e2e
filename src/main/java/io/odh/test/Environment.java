@@ -178,6 +178,6 @@ public class Environment {
         return !value.equals("null")
                 && !var.equals(CONFIG_FILE_PATH_ENV)
                 && !var.equals(USER_PATH)
-                && !value.equals("USER");
+                && !var.equals("USER");
     }
 }
