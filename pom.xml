@@ -314,6 +314,9 @@
             <id>standard</id>
             <properties>
                 <it.skip>false</it.skip>
+                <it.test>
+                    io.odh.test.e2e.standard.*ST
+                </it.test>
                 <groups>
                     standard,
                     !upgrade
