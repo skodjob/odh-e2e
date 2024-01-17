@@ -4,6 +4,7 @@
  */
 package io.odh.test.e2e.standard;
 
+import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
@@ -20,6 +21,11 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ks
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.opendatahub.dscinitialization.v1.DSCInitializationBuilder;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.Monitoring;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.ServiceMesh;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.servicemesh.ControlPlane;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +38,27 @@ public class DataScienceClusterST extends StandardAbstract {
 
     @Test
     void createDataScienceCluster() {
+        DSCInitialization dsci = new DSCInitializationBuilder()
+                .withNewMetadata()
+                .withName("default-dsci")
+                .endMetadata()
+                .withNewSpec()
+                .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .withNewMonitoring()
+                .withManagementState(Monitoring.ManagementState.MANAGED)
+                .withNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .endMonitoring()
+                .withNewServiceMesh()
+                .withManagementState(ServiceMesh.ManagementState.REMOVED)
+                .withNewControlPlane()
+                .withName("data-science-smcp")
+                .withNamespace("istio-system")
+                .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
+                .endControlPlane()
+                .endServiceMesh()
+                .endSpec()
+                .build();
+
         DataScienceCluster c = new DataScienceClusterBuilder()
                 .withNewMetadata()
                 .withName(DS_PROJECT_NAME)
@@ -58,6 +85,8 @@ public class DataScienceClusterST extends StandardAbstract {
                 .endSpec()
                 .build();
 
+
+        ResourceManager.getInstance().createResourceWithWait(dsci);
         ResourceManager.getInstance().createResourceWithWait(c);
 
         DataScienceCluster cluster = DataScienceClusterResource.dataScienceCLusterClient().withName(DS_PROJECT_NAME).get();

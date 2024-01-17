@@ -11,6 +11,7 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
+import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
@@ -32,6 +33,11 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Mo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.opendatahub.dscinitialization.v1.DSCInitializationBuilder;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.Monitoring;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.ServiceMesh;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.servicemesh.ControlPlane;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kubeflow.v1.Notebook;
@@ -46,6 +52,27 @@ import java.io.IOException;
 public abstract class UpgradeAbstract extends Abstract {
 
     protected void deployDsc(String name) {
+        DSCInitialization dsci = new DSCInitializationBuilder()
+                .withNewMetadata()
+                .withName("default-dsci")
+                .endMetadata()
+                .withNewSpec()
+                .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .withNewMonitoring()
+                .withManagementState(Monitoring.ManagementState.MANAGED)
+                .withNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .endMonitoring()
+                .withNewServiceMesh()
+                .withManagementState(ServiceMesh.ManagementState.REMOVED)
+                .withNewControlPlane()
+                .withName("data-science-smcp")
+                .withNamespace("istio-system")
+                .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
+                .endControlPlane()
+                .endServiceMesh()
+                .endSpec()
+                .build();
+
         // Deploy DSC
         DataScienceCluster dsc = new DataScienceClusterBuilder()
             .withNewMetadata()
@@ -76,6 +103,7 @@ public abstract class UpgradeAbstract extends Abstract {
             .endSpec()
             .build();
         // Deploy DSC
+        ResourceManager.getInstance().createResourceWithWait(dsci);
         ResourceManager.getInstance().createResourceWithWait(dsc);
     }
     public void deployNotebook(String namespace, String name) throws IOException {

@@ -12,6 +12,7 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.OdhAnnotationsLabels;
+import io.odh.test.OdhConstants;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.utils.PodUtils;
@@ -28,6 +29,11 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ks
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.opendatahub.dscinitialization.v1.DSCInitializationBuilder;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.Monitoring;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.ServiceMesh;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.servicemesh.ControlPlane;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kubeflow.v1.Notebook;
@@ -84,6 +90,28 @@ public class NotebookST extends StandardAbstract {
 
     @BeforeAll
     void deployDataScienceCluster() {
+        // Create DSCI
+        DSCInitialization dsci = new DSCInitializationBuilder()
+                .withNewMetadata()
+                .withName("default-dsci")
+                .endMetadata()
+                .withNewSpec()
+                .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .withNewMonitoring()
+                .withManagementState(Monitoring.ManagementState.MANAGED)
+                .withNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .endMonitoring()
+                .withNewServiceMesh()
+                .withManagementState(ServiceMesh.ManagementState.REMOVED)
+                .withNewControlPlane()
+                .withName("data-science-smcp")
+                .withNamespace("istio-system")
+                .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
+                .endControlPlane()
+                .endServiceMesh()
+                .endSpec()
+                .build();
+
         // Create DSC
         DataScienceCluster dsc = new DataScienceClusterBuilder()
                 .withNewMetadata()
@@ -110,7 +138,8 @@ public class NotebookST extends StandardAbstract {
                         .build())
                 .endSpec()
                 .build();
-        // Deploy DSC
+        // Deploy DSCI,DSC
+        ResourceManager.getInstance().createResourceWithWait(dsci);
         ResourceManager.getInstance().createResourceWithWait(dsc);
     }
 }

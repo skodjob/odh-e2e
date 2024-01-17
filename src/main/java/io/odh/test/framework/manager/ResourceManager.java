@@ -14,6 +14,7 @@ import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
+import io.odh.test.framework.manager.resources.DataScienceInitializationResource;
 import io.odh.test.framework.manager.resources.NamespaceResource;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
@@ -23,6 +24,7 @@ import io.odh.test.platform.cmdClient.KubeCmdClient;
 import io.odh.test.platform.cmdClient.Oc;
 import io.odh.test.utils.DeploymentUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,6 +68,7 @@ public class ResourceManager {
         new SubscriptionResource(),
         new OperatorGroupResource(),
         new DataScienceClusterResource(),
+        new DataScienceInitializationResource(),
         new NotebookResource(),
     };
 
@@ -199,7 +202,8 @@ public class ResourceManager {
         // cluster role binding and custom resource definition does not need namespace...
         if (!(resource instanceof ClusterRoleBinding || resource instanceof CustomResourceDefinition
                 || resource instanceof ClusterRole || resource instanceof ValidatingWebhookConfiguration
-                || resource instanceof DataScienceCluster || resource instanceof Namespace)) {
+                || resource instanceof DataScienceCluster || resource instanceof Namespace
+                || resource instanceof DSCInitialization)) {
             assertNotNull(resource.getMetadata().getNamespace());
         }
 
