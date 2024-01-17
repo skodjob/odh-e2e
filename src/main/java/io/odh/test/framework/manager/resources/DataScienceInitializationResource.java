@@ -27,7 +27,11 @@ public class DataScienceInitializationResource implements ResourceType<DSCInitia
 
     @Override
     public void create(DSCInitialization resource) {
-        dsciClient().resource(resource).create();
+        if (get("", resource.getMetadata().getName()) == null) {
+            dsciClient().resource(resource).create();
+        } else {
+            dsciClient().resource(resource).update();
+        }
     }
 
     @Override
