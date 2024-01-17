@@ -40,7 +40,7 @@ public class DataScienceClusterST extends StandardAbstract {
     void createDataScienceCluster() {
         DSCInitialization dsci = new DSCInitializationBuilder()
                 .withNewMetadata()
-                .withName("default-dsci")
+                .withName(OdhConstants.DEFAULT_DSCI_NAME)
                 .endMetadata()
                 .withNewSpec()
                 .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
