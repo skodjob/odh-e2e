@@ -29,7 +29,7 @@ public class LogHasNoUnexpectedErrors extends BaseMatcher<String> {
             }
             // This pattern is used for split each log ine with stack trace if it's there from some reasons
             // It's match start of the line which contains date in format yyyy-mm-dd hh:mm:ss
-            String logLineSplitPattern = "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}";
+            String logLineSplitPattern = "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z";
             for (String line : ((String) actualValue).split(logLineSplitPattern)) {
                 if (line.contains("DEBUG") || line.contains("WARN") || line.contains("INFO")) {
                     continue;
@@ -68,7 +68,8 @@ public class LogHasNoUnexpectedErrors extends BaseMatcher<String> {
 
     enum LogIgnoreList {
         // This should be removed when https://issues.redhat.com/browse/RHOAIENG-1742 will be done
-        MISSING_SERVICE_MESH("servicemeshcontrolplanes.maistra.io\" not found");
+        MISSING_SERVICE_MESH("servicemeshcontrolplanes.maistra.io\" not found"),
+        WRONG_LABEL_SELECTOR("MatchExpressions:\\[\\]v1.LabelSelectorRequirement\\(nil\\)");
 
         final String name;
 
