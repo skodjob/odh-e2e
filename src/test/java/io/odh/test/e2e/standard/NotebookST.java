@@ -85,7 +85,6 @@ public class NotebookST extends StandardAbstract {
                 .build();
 
         PodUtils.waitForPodsReady(NTB_NAMESPACE, lblSelector, 1, true, () -> { });
-
     }
 
     @BeforeAll

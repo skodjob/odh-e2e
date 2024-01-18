@@ -7,6 +7,7 @@ package io.odh.test.framework.logs;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
+import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.KubeClient;
@@ -28,6 +29,9 @@ public class LogCollector {
     public static void saveKubernetesState(ExtensionContext extensionContext, Throwable throwable) throws Throwable {
         Path logPath = TestUtils.getLogPath(Environment.LOG_DIR.resolve("failedTest").toString(), extensionContext);
         Files.createDirectories(logPath);
+        ResourceManager.addNamespaceForLogCollect(OdhConstants.BUNDLE_OPERATOR_NAMESPACE);
+        ResourceManager.addNamespaceForLogCollect(OdhConstants.OLM_OPERATOR_NAMESPACE);
+        ResourceManager.addNamespaceForLogCollect(OdhConstants.CONTROLLERS_NAMESPACE);
         LOGGER.info("Storing cluster info into {}", logPath);
         try {
             saveClusterState(logPath);
@@ -38,10 +42,15 @@ public class LogCollector {
     }
 
     private static void writeLogsFromPods(Path logpath, Pod pod) {
+        try {
+            Files.createDirectories(logpath.resolve(pod.getMetadata().getNamespace()));
+        } catch (IOException e) {
+            LOGGER.warn("Cannot create logdir in {}", logpath);
+        }
         pod.getSpec().getContainers().forEach(container -> {
             try {
                 LOGGER.debug("Get logs from pod {}/{} container {}", pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName());
-                Files.writeString(logpath.resolve(pod.getMetadata().getNamespace() + "-" + pod.getMetadata().getName() + "-" + container.getName() + ".log"),
+                Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + "-" + container.getName() + ".log"),
                         ResourceManager.getClient().getLogsFromContainer(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName()));
             } catch (IOException e) {
                 LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
@@ -51,8 +60,13 @@ public class LogCollector {
 
     private static void writePodsDescription(Path logpath, Pod pod) {
         try {
+            Files.createDirectories(logpath.resolve(pod.getMetadata().getNamespace()));
+        } catch (IOException e) {
+            LOGGER.warn("Cannot create logdir in {}", logpath);
+        }
+        try {
             LOGGER.debug("Get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
-            Files.writeString(logpath.resolve(pod.getMetadata().getNamespace() + "-" + pod.getMetadata().getName() + ".describe.log"),
+            Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + ".describe.log"),
                     ResourceManager.getKubeCmdClient().namespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
         } catch (IOException e) {
             LOGGER.warn("Cannot get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
@@ -62,6 +76,8 @@ public class LogCollector {
     private static void saveClusterState(Path logpath) throws IOException {
         KubeClient kube = ResourceManager.getClient();
         KubeCmdClient cmdClient = ResourceManager.getKubeCmdClient();
+
+        // Collecting cluster wide resources and CRs
         Files.writeString(logpath.resolve("describe-cluster-nodes.log"), cmdClient.exec(false, false, "describe", "nodes").out());
         Files.writeString(logpath.resolve("all-events.log"), cmdClient.exec(false, false, "get", "events", "--all-namespaces").out());
         Files.writeString(logpath.resolve("pvs.log"), cmdClient.exec(false, false, "describe", "pv").out());
@@ -69,20 +85,13 @@ public class LogCollector {
         Files.writeString(logpath.resolve("dsci.yml"), cmdClient.exec(false, false, "get", "dsci", "-o", "yaml").out());
         Files.writeString(logpath.resolve("subscriptions.yml"), cmdClient.exec(false, false, "get", "subscriptions.operators.coreos.com", "--all-namespaces", "-o", "yaml").out());
         Files.writeString(logpath.resolve("notebooks.yml"), cmdClient.exec(false, false, "get", "notebook", "--all-namespaces", "-o", "yaml").out());
-        LOGGER.debug("Listing pods in {}", OdhConstants.BUNDLE_OPERATOR_NAMESPACE);
-        kube.listPodsByPrefixInName(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, "opendatahub-operator-controller-manager").forEach(pod -> {
-            writeLogsFromPods(logpath, pod);
-            writePodsDescription(logpath, pod);
-        });
-        LOGGER.debug("Listing pods in {}", OdhConstants.OLM_OPERATOR_NAMESPACE);
-        kube.listPods(OdhConstants.OLM_OPERATOR_NAMESPACE).forEach(pod -> {
-            writeLogsFromPods(logpath, pod);
-            writePodsDescription(logpath, pod);
-        });
-        LOGGER.debug("Listing pods in {}", OdhConstants.CONTROLLERS_NAMESPACE);
-        kube.listPods(OdhConstants.CONTROLLERS_NAMESPACE).forEach(pod -> {
-            writeLogsFromPods(logpath, pod);
-            writePodsDescription(logpath, pod);
+
+        kube.getClient().namespaces().withLabel(TestConstants.LOG_COLLECT_LABEL).list().getItems().forEach(ns -> {
+            LOGGER.debug("Listing pods in {}", ns.getMetadata().getNamespace());
+            kube.listPodsByPrefixInName(ns.getMetadata().getName(), "opendatahub-operator-controller-manager").forEach(pod -> {
+                writeLogsFromPods(logpath, pod);
+                writePodsDescription(logpath, pod);
+            });
         });
     }
 }
