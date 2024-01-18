@@ -87,7 +87,7 @@ public class LogCollector {
         Files.writeString(logpath.resolve("notebooks.yml"), cmdClient.exec(false, false, "get", "notebook", "--all-namespaces", "-o", "yaml").out());
 
         kube.getClient().namespaces().withLabel(TestConstants.LOG_COLLECT_LABEL).list().getItems().forEach(ns -> {
-            LOGGER.debug("Listing pods in {}", ns.getMetadata().getNamespace());
+            LOGGER.debug("Listing pods in {}", ns.getMetadata().getName());
             kube.listPodsByPrefixInName(ns.getMetadata().getName(), "opendatahub-operator-controller-manager").forEach(pod -> {
                 writeLogsFromPods(logpath, pod);
                 writePodsDescription(logpath, pod);
