@@ -88,7 +88,7 @@ public class LogCollector {
 
         kube.getClient().namespaces().withLabel(TestConstants.LOG_COLLECT_LABEL).list().getItems().forEach(ns -> {
             LOGGER.debug("Listing pods in {}", ns.getMetadata().getName());
-            kube.listPodsByPrefixInName(ns.getMetadata().getName(), "opendatahub-operator-controller-manager").forEach(pod -> {
+            kube.listPods(ns.getMetadata().getName()).forEach(pod -> {
                 writeLogsFromPods(logpath, pod);
                 writePodsDescription(logpath, pod);
             });
