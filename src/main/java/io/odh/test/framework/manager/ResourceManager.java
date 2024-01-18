@@ -6,6 +6,7 @@ package io.odh.test.framework.manager;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhookConfiguration;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -28,7 +29,9 @@ import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -46,11 +49,20 @@ public class ResourceManager {
 
     static Stack<ResourceItem> resourceStackPointer = CLASS_RESOURCE_STACK;
 
+    static List<String> defaultNamespacesForLogCollect = Arrays.asList(
+        "openshift-marketplace",
+        "openshift-operators",
+        "openshift-operators-redhat"
+    );
+
     public static synchronized ResourceManager getInstance() {
         if (instance == null) {
             instance = new ResourceManager();
             client = new KubeClient(TestConstants.DEFAULT_NAMESPACE);
             kubeCmdClient = new Oc(client.getKubeconfigPath());
+            for (String ns : defaultNamespacesForLogCollect) {
+                addNamespaceForLogCollect(ns);
+            }
         }
         return instance;
     }
@@ -80,6 +92,17 @@ public class ResourceManager {
         resourceStackPointer = CLASS_RESOURCE_STACK;
     }
 
+    public static void addNamespaceForLogCollect(String namespace) {
+        if (getClient().namespaceExists(namespace)) {
+            getClient().getClient().namespaces().withName(namespace).edit(n ->
+                    new NamespaceBuilder(n)
+                            .editMetadata()
+                            .addToLabels(TestConstants.LOG_COLLECT_LABEL, "true")
+                            .endMetadata()
+                            .build());
+        }
+    }
+
     public final void pushToStack(ResourceItem item) {
         resourceStackPointer.push(item);
     }
@@ -101,10 +124,10 @@ public class ResourceManager {
 
             synchronized (this) {
                 resourceStackPointer.push(
-                    new ResourceItem<T>(
-                        () -> deleteResource(resource),
-                        resource
-                    ));
+                        new ResourceItem<T>(
+                                () -> deleteResource(resource),
+                                resource
+                        ));
             }
 
             if (resource.getMetadata().getNamespace() == null) {
@@ -113,6 +136,7 @@ public class ResourceManager {
             } else {
                 LOGGER.info("Creating/Updating {} {}/{}",
                         resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                addNamespaceForLogCollect(resource.getMetadata().getNamespace());
             }
 
             if (type == null) {
