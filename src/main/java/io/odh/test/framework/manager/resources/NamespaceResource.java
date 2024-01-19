@@ -52,11 +52,11 @@ public class NamespaceResource implements ResourceType<Namespace> {
             ResourceManager.getClient().getClient().namespaces().withName(namespace).edit(n ->
                     new NamespaceBuilder(n)
                             .editMetadata()
-                            .addToLabels(TestConstants.LOG_COLLECT_LABEL, "true")
+                            .addToLabels(key, value)
                             .endMetadata()
                             .build());
         }
-        TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), 1_000, TestConstants.GLOBAL_STABILITY_TIME, () ->
+        TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME, () ->
                 ResourceManager.getClient().getClient().namespaces().withName(namespace).get().getMetadata().getLabels().get(key) != null);
     }
 }
