@@ -6,7 +6,6 @@ package io.odh.test.framework.manager;
 
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.admissionregistration.v1.ValidatingWebhookConfiguration;
 import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -93,14 +92,7 @@ public class ResourceManager {
     }
 
     public static void addNamespaceForLogCollect(String namespace) {
-        if (getClient().namespaceExists(namespace)) {
-            getClient().getClient().namespaces().withName(namespace).edit(n ->
-                    new NamespaceBuilder(n)
-                            .editMetadata()
-                            .addToLabels(TestConstants.LOG_COLLECT_LABEL, "true")
-                            .endMetadata()
-                            .build());
-        }
+        NamespaceResource.labelNamespace(namespace, TestConstants.LOG_COLLECT_LABEL, "true");
     }
 
     public final void pushToStack(ResourceItem item) {

@@ -5,9 +5,11 @@
 package io.odh.test.framework.manager.resources;
 
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.odh.test.TestConstants;
+import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.ResourceType;
-
 
 public class NamespaceResource implements ResourceType<Namespace> {
 
@@ -43,5 +45,18 @@ public class NamespaceResource implements ResourceType<Namespace> {
     @Override
     public boolean waitForReadiness(Namespace resource) {
         return resource != null;
+    }
+
+    public static void labelNamespace(String namespace, String key, String value) {
+        if (ResourceManager.getClient().namespaceExists(namespace)) {
+            ResourceManager.getClient().getClient().namespaces().withName(namespace).edit(n ->
+                    new NamespaceBuilder(n)
+                            .editMetadata()
+                            .addToLabels(TestConstants.LOG_COLLECT_LABEL, "true")
+                            .endMetadata()
+                            .build());
+        }
+        TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), 1_000, TestConstants.GLOBAL_STABILITY_TIME, () ->
+                ResourceManager.getClient().getClient().namespaces().withName(namespace).get().getMetadata().getLabels().get(key) != null);
     }
 }
