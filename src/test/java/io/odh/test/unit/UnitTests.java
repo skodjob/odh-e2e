@@ -15,9 +15,16 @@ import io.odh.test.framework.ExtensionContextParameterResolver;
 import io.odh.test.framework.listeners.TestVisualSeparator;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.CodeflareBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Dashboard;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Datasciencepipelines;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.datasciencepipelines.devflags.ManifestsBuilder;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.opendatahub.dscinitialization.v1.DSCInitializationBuilder;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.Monitoring;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.servicemesh.ControlPlane;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
 import io.opendatahub.v1alpha.OdhDashboardConfigBuilder;
 import org.junit.jupiter.api.Tag;
@@ -38,6 +45,41 @@ public class UnitTests implements TestVisualSeparator {
     private KubernetesMockServer server;
 
     @Test
+    void testCreateDSCInitialization() {
+        MixedOperation<DSCInitialization, KubernetesResourceList<DSCInitialization>, Resource<DSCInitialization>> dsciClient =
+                kubernetesClient.resources(DSCInitialization.class);
+
+        DSCInitialization dsci = new DSCInitializationBuilder()
+                .withNewMetadata()
+                .withName("default")
+                .endMetadata()
+                .withNewSpec()
+                .withApplicationsNamespace("opendatahub")
+                .withNewMonitoring()
+                .withNamespace("odh")
+                .withManagementState(Monitoring.ManagementState.MANAGED)
+                .endMonitoring()
+                .withNewServiceMesh()
+                .withNewControlPlane()
+                .withNamespace("istio")
+                .withName("istio")
+                .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
+                .endControlPlane()
+                .endServiceMesh()
+                .endSpec()
+                .build();
+        dsciClient.resource(dsci).create();
+
+        DSCInitialization returned = dsciClient.withName(dsci.getMetadata().getName()).get();
+
+        assertEquals("opendatahub", returned.getSpec().getApplicationsNamespace());
+
+        dsciClient.withName(dsci.getMetadata().getName()).delete();
+
+        assertNull(dsciClient.withName(dsci.getMetadata().getName()).get());
+    }
+
+    @Test
     void testCreateDeleteDataScienceCluster() {
         MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dsClient =
                 kubernetesClient.resources(DataScienceCluster.class);
@@ -47,13 +89,26 @@ public class UnitTests implements TestVisualSeparator {
                 .withName("Test")
                 .endMetadata()
                 .withNewSpec()
-                .withComponents(
-                        new ComponentsBuilder()
-                                .withCodeflare(
-                                        new CodeflareBuilder()
-                                                .withManagementState(Codeflare.ManagementState.MANAGED)
-                                                .build())
-                                .build())
+                .withNewComponents()
+                .withNewCodeflare()
+                .withManagementState(Codeflare.ManagementState.MANAGED)
+                .endCodeflare()
+                .withNewDashboard()
+                .withManagementState(Dashboard.ManagementState.MANAGED)
+                .endDashboard()
+                .withNewKserve()
+                .withManagementState(Kserve.ManagementState.REMOVED)
+                .endKserve()
+                .withNewWorkbenches()
+                .withManagementState(Workbenches.ManagementState.MANAGED)
+                .endWorkbenches()
+                .withNewDatasciencepipelines()
+                .withManagementState(Datasciencepipelines.ManagementState.MANAGED)
+                .withNewDevFlags()
+                .withManifests(new ManifestsBuilder().withUri("https://kornys.com").build())
+                .endDatasciencepipelinesDevFlags()
+                .endDatasciencepipelines()
+                .endDatascienceclusterspecComponents()
                 .endSpec()
                 .build();
 
