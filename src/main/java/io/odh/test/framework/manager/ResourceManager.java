@@ -50,8 +50,7 @@ public class ResourceManager {
 
     static List<String> defaultNamespacesForLogCollect = Arrays.asList(
         "openshift-marketplace",
-        "openshift-operators",
-        "openshift-operators-redhat"
+        "openshift-operators"
     );
 
     public static synchronized ResourceManager getInstance() {
