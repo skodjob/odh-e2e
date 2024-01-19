@@ -56,7 +56,12 @@ public class NamespaceResource implements ResourceType<Namespace> {
                             .endMetadata()
                             .build());
         }
-        TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME, () ->
-                ResourceManager.getClient().getClient().namespaces().withName(namespace).get().getMetadata().getLabels().get(key) != null);
+        TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME, () -> {
+            Namespace n = ResourceManager.getClient().getClient().namespaces().withName(namespace).get();
+            if (n != null) {
+                return n.getMetadata().getLabels().get(key) != null;
+            }
+            return false;
+        });
     }
 }
