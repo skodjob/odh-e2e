@@ -8,14 +8,14 @@ E2E test suite for opendatahub using fabric8 kubernetes client
 * java jdk >= 17
 * oc
 
-## List of test suites
-* smoke
-* upgrade
-* olm-upgrade
-* bundle-upgrade
-* standard
-* continuous
-* all (standard + upgrade)
+## List of test tags
+* `standard` - e2e tests that install the operator and needed operands and verify the use cases. Could be used as regression profile.
+  * `smoke` - quick verification for install ODH and some notebooks
+* `upgrade` - perform operator upgrade verification
+  * `olm-upgrade` - tests that perform upgrade with operator installed via OLM
+  * `bundle-upgrade` - tests that perform upgrade with operator installed via yaml files
+* `continuous` - specific tests designed to verify [this](https://github.com/skodjob/deployment-hub/tree/main/open-data-hub) scenario. Do not use it unless you install the scenario from the link!
+* `all` (standard + upgrade)
 
 ## Environment variables
 * **ENV_FILE** - path to yaml file with env variables values
@@ -70,3 +70,10 @@ default `${repo_root}/target/logs`.
 ```commandline
 GITHUB_TOKEN="your_github_read_token" ENV_FILE=path_to_file/config.yaml mvn verify -Psmoke
 ```
+
+## Debug
+During failures all logs relevant logs are collected and stored in `target/logs` so users can go through the logs and see if the problem was in project or in tests.
+
+As part of `target/logs` you can find file `config.yaml` that contains all env variables used by the test run. 
+You can easily re-use it by pass path to the file into `ENV_FILE` environment variable. 
+Note that we suggest to copy the file outside the target dir.
