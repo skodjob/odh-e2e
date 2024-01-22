@@ -49,13 +49,17 @@ public class NamespaceResource implements ResourceType<Namespace> {
 
     public static void labelNamespace(String namespace, String key, String value) {
         if (ResourceManager.getClient().namespaceExists(namespace)) {
-            ResourceManager.getClient().getClient().namespaces().withName(namespace).edit(n ->
-                    new NamespaceBuilder(n)
-                            .editMetadata()
-                            .addToLabels(key, value)
-                            .endMetadata()
-                            .build());
             TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME * 1000, () -> {
+                try {
+                    ResourceManager.getClient().getClient().namespaces().withName(namespace).edit(n ->
+                            new NamespaceBuilder(n)
+                                    .editMetadata()
+                                    .addToLabels(key, value)
+                                    .endMetadata()
+                                    .build());
+                } catch (Exception ex) {
+                    return false;
+                }
                 Namespace n = ResourceManager.getClient().getClient().namespaces().withName(namespace).get();
                 if (n != null) {
                     return n.getMetadata().getLabels().get(key) != null;
