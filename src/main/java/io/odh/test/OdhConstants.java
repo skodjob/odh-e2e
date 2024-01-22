@@ -22,6 +22,8 @@ public class OdhConstants {
     private static final String ODH_DASHBOARD_CONTROLLER = "odh-dashboard";
 
     private static final String ODH_BUNDLE_OPERATOR_NAME = "opendatahub-operator-system";
+    private static final String ODH_MONITORING_NAMESPACE = "odh-monitoring";
+
 
     // ODH OLM
     private static final String ODH_OLM_OPERATOR_NAME = "opendatahub-operator";
@@ -49,6 +51,7 @@ public class OdhConstants {
     private static final String RHOAI_OLM_OPERATOR_CHANNEL = "stable";
     private static final String RHOAI_OLM_OPERATOR_VERSION = "2.5.0";
     private static final String RHOAI_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "2.4.0";
+    private static final String RHOAI_MONITORING_NAMESPACE = "redhat-ods-monitoring";
 
     // Public part
     public static final String CODEFLARE_DEPLOYMENT_NAME = "codeflare-operator-manager";
@@ -67,6 +70,7 @@ public class OdhConstants {
     public static final String DASHBOARD_CONTROLLER = getOdhOrRhoai("DASHBOARD_CONTROLLER", ODH_DASHBOARD_CONTROLLER, RHOAI_DASHBOARD_CONTROLLER);
     public static final String BUNDLE_OPERATOR_NAMESPACE = getOdhOrRhoai("BUNDLE_OPERATOR_NAMESPACE", ODH_BUNDLE_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
     public static final String DEFAULT_DSCI_NAME = getOdhOrRhoai("DSCI_NAME", ODH_DSCI_NAME, RHOAI_DSCI_NAME);
+    public static final String MONITORING_NAMESPACE = getOdhOrRhoai("MONITORING_NAMESPACE", ODH_MONITORING_NAMESPACE, RHOAI_MONITORING_NAMESPACE);
     // OLM env variables
     public static final String OLM_OPERATOR_NAME = getOdhOrRhoai("OLM_OPERATOR_NAME", ODH_OLM_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
     public static final String OLM_OPERATOR_NAMESPACE = getOdhOrRhoai("OLM_OPERATOR_NAMESPACE", ODH_OLM_OPERATOR_NAMESPACE, RHOAI_OLM_OPERATOR_NAMESPACE);

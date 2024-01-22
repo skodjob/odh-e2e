@@ -60,7 +60,7 @@ public abstract class UpgradeAbstract extends Abstract {
                 .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
                 .withNewMonitoring()
                 .withManagementState(Monitoring.ManagementState.MANAGED)
-                .withNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .withNamespace(OdhConstants.MONITORING_NAMESPACE)
                 .endMonitoring()
                 .withNewServiceMesh()
                 .withManagementState(ServiceMesh.ManagementState.REMOVED)

@@ -33,6 +33,7 @@ public class LogCollector {
             ResourceManager.addNamespaceForLogCollect(OdhConstants.BUNDLE_OPERATOR_NAMESPACE);
             ResourceManager.addNamespaceForLogCollect(OdhConstants.OLM_OPERATOR_NAMESPACE);
             ResourceManager.addNamespaceForLogCollect(OdhConstants.CONTROLLERS_NAMESPACE);
+            ResourceManager.addNamespaceForLogCollect(OdhConstants.MONITORING_NAMESPACE);
         } catch (Exception ignored) {
             LOGGER.warn("Cannot label namespaces for collect logs");
         }
