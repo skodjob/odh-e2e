@@ -29,9 +29,13 @@ public class LogCollector {
     public static void saveKubernetesState(ExtensionContext extensionContext, Throwable throwable) throws Throwable {
         Path logPath = TestUtils.getLogPath(Environment.LOG_DIR.resolve("failedTest").toString(), extensionContext);
         Files.createDirectories(logPath);
-        ResourceManager.addNamespaceForLogCollect(OdhConstants.BUNDLE_OPERATOR_NAMESPACE);
-        ResourceManager.addNamespaceForLogCollect(OdhConstants.OLM_OPERATOR_NAMESPACE);
-        ResourceManager.addNamespaceForLogCollect(OdhConstants.CONTROLLERS_NAMESPACE);
+        try {
+            ResourceManager.addNamespaceForLogCollect(OdhConstants.BUNDLE_OPERATOR_NAMESPACE);
+            ResourceManager.addNamespaceForLogCollect(OdhConstants.OLM_OPERATOR_NAMESPACE);
+            ResourceManager.addNamespaceForLogCollect(OdhConstants.CONTROLLERS_NAMESPACE);
+        } catch (Exception ignored) {
+            LOGGER.warn("Cannot label namespaces for collect logs");
+        }
         LOGGER.info("Storing cluster info into {}", logPath);
         try {
             saveClusterState(logPath);
