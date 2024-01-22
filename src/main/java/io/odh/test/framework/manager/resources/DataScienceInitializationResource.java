@@ -46,7 +46,7 @@ public class DataScienceInitializationResource implements ResourceType<DSCInitia
 
     @Override
     public boolean waitForReadiness(DSCInitialization resource) {
-        String message = String.format("DataScienceCluster %s readiness", resource.getMetadata().getName());
+        String message = String.format("DSCInitialization %s readiness", resource.getMetadata().getName());
         TestUtils.waitFor(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             boolean dsciReady;
 
