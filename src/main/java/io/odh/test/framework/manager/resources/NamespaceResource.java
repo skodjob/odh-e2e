@@ -55,13 +55,13 @@ public class NamespaceResource implements ResourceType<Namespace> {
                             .addToLabels(key, value)
                             .endMetadata()
                             .build());
+            TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME * 1000, () -> {
+                Namespace n = ResourceManager.getClient().getClient().namespaces().withName(namespace).get();
+                if (n != null) {
+                    return n.getMetadata().getLabels().get(key) != null;
+                }
+                return false;
+            });
         }
-        TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME, () -> {
-            Namespace n = ResourceManager.getClient().getClient().namespaces().withName(namespace).get();
-            if (n != null) {
-                return n.getMetadata().getLabels().get(key) != null;
-            }
-            return false;
-        });
     }
 }
