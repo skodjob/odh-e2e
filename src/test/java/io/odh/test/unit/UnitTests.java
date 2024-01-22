@@ -10,7 +10,6 @@ import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
-import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.ExtensionContextParameterResolver;
 import io.odh.test.framework.listeners.TestVisualSeparator;
@@ -55,7 +54,7 @@ public class UnitTests implements TestVisualSeparator {
                 .withName("default")
                 .endMetadata()
                 .withNewSpec()
-                .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
+                .withApplicationsNamespace("opendatahub")
                 .withNewMonitoring()
                 .withNamespace("monitoring")
                 .withManagementState(Monitoring.ManagementState.MANAGED)
@@ -73,7 +72,7 @@ public class UnitTests implements TestVisualSeparator {
 
         DSCInitialization returned = dsciClient.withName(dsci.getMetadata().getName()).get();
 
-        assertEquals("monitoring", returned.getSpec().getApplicationsNamespace());
+        assertEquals("opendatahub", returned.getSpec().getApplicationsNamespace());
 
         dsciClient.withName(dsci.getMetadata().getName()).delete();
 
