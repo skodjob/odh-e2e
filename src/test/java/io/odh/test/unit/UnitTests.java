@@ -57,7 +57,7 @@ public class UnitTests implements TestVisualSeparator {
                 .withNewSpec()
                 .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
                 .withNewMonitoring()
-                .withNamespace(OdhConstants.MONITORING_NAMESPACE)
+                .withNamespace("monitoring")
                 .withManagementState(Monitoring.ManagementState.MANAGED)
                 .endMonitoring()
                 .withNewServiceMesh()
@@ -73,7 +73,7 @@ public class UnitTests implements TestVisualSeparator {
 
         DSCInitialization returned = dsciClient.withName(dsci.getMetadata().getName()).get();
 
-        assertEquals("opendatahub", returned.getSpec().getApplicationsNamespace());
+        assertEquals("monitoring", returned.getSpec().getApplicationsNamespace());
 
         dsciClient.withName(dsci.getMetadata().getName()).delete();
 
