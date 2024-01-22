@@ -83,6 +83,8 @@ public class LogCollector {
 
         // Collecting cluster wide resources and CRs
         Files.writeString(logpath.resolve("describe-cluster-nodes.log"), cmdClient.exec(false, false, "describe", "nodes").out());
+        Files.writeString(logpath.resolve("namespaces.log"), cmdClient.exec(false, false, "get", "ns").out());
+        Files.writeString(logpath.resolve("pods.log"), cmdClient.exec(false, false, "get", "po", "--all-namespaces").out());
         Files.writeString(logpath.resolve("all-events.log"), cmdClient.exec(false, false, "get", "events", "--all-namespaces").out());
         Files.writeString(logpath.resolve("pvs.log"), cmdClient.exec(false, false, "describe", "pv").out());
         Files.writeString(logpath.resolve("dsc.yml"), cmdClient.exec(false, false, "get", "dsc", "-o", "yaml").out());
