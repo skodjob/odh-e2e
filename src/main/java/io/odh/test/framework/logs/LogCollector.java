@@ -5,6 +5,7 @@
 package io.odh.test.framework.logs;
 
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
@@ -78,6 +79,22 @@ public class LogCollector {
         }
     }
 
+    private static void writeDeployments(Path logpath, Deployment deployment) {
+        try {
+            Files.createDirectories(logpath.resolve(deployment.getMetadata().getNamespace()));
+        } catch (IOException e) {
+            LOGGER.warn("Cannot create logdir in {}", logpath);
+        }
+        try {
+            LOGGER.debug("Get deployment {}/{}", deployment.getMetadata().getNamespace(), deployment.getMetadata().getName());
+            Files.writeString(logpath.resolve(deployment.getMetadata().getNamespace()).resolve("deployment-" + deployment.getMetadata().getName() + ".yaml"),
+                    ResourceManager.getKubeCmdClient().exec(false, false, "get", "deployment", deployment.getMetadata().getName(),
+                            "-n", deployment.getMetadata().getNamespace(), "-o", "yaml").out());
+        } catch (IOException e) {
+            LOGGER.warn("Cannot get deployment of pod {}/{}", deployment.getMetadata().getNamespace(), deployment.getMetadata().getName());
+        }
+    }
+
     private static void saveClusterState(Path logpath) throws IOException {
         KubeClient kube = ResourceManager.getClient();
         KubeCmdClient cmdClient = ResourceManager.getKubeCmdClient();
@@ -99,6 +116,8 @@ public class LogCollector {
                 writeLogsFromPods(logpath, pod);
                 writePodsDescription(logpath, pod);
             });
+            LOGGER.debug("Listing deployments in {}", ns.getMetadata().getName());
+            kube.getClient().apps().deployments().inNamespace(ns.getMetadata().getName()).list().getItems().forEach(d -> writeDeployments(logpath, d));
         });
     }
 }
