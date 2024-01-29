@@ -11,14 +11,13 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
-import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
 import io.odh.test.framework.manager.resources.NotebookResource;
+import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
@@ -39,10 +38,6 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Tr
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
-import io.opendatahub.dscinitialization.v1.DSCInitializationBuilder;
-import io.opendatahub.dscinitialization.v1.dscinitializationspec.Monitoring;
-import io.opendatahub.dscinitialization.v1.dscinitializationspec.ServiceMesh;
-import io.opendatahub.dscinitialization.v1.dscinitializationspec.servicemesh.ControlPlane;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kubeflow.v1.Notebook;
@@ -57,26 +52,7 @@ import java.io.IOException;
 public abstract class UpgradeAbstract extends Abstract {
 
     protected void deployDsc(String name) {
-        DSCInitialization dsci = new DSCInitializationBuilder()
-                .withNewMetadata()
-                .withName(OdhConstants.DEFAULT_DSCI_NAME)
-                .endMetadata()
-                .withNewSpec()
-                .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
-                .withNewMonitoring()
-                .withManagementState(Monitoring.ManagementState.MANAGED)
-                .withNamespace(OdhConstants.MONITORING_NAMESPACE)
-                .endMonitoring()
-                .withNewServiceMesh()
-                .withManagementState(ServiceMesh.ManagementState.MANAGED)
-                .withNewControlPlane()
-                .withName(ServiceMeshOperator.SERVICE_MESH_NAME)
-                .withNamespace(ServiceMeshOperator.SERVICE_MESH_NAMESPACE)
-                .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
-                .endControlPlane()
-                .endServiceMesh()
-                .endSpec()
-                .build();
+        DSCInitialization dsci = DscUtils.getBasicDSCI();
 
         // Deploy DSC
         DataScienceCluster dsc = new DataScienceClusterBuilder()
