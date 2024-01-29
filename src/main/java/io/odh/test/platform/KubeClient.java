@@ -141,7 +141,7 @@ public class KubeClient {
     }
 
     // ==================================================
-    // ---------> Create/read multi-resoruces  <---------
+    // ---------> Create/read multi-resources  <---------
     // ==================================================
     public void create(String namespace, InputStream is, Function<HasMetadata, HasMetadata> modifier) throws IOException {
         try (is) {
