@@ -31,6 +31,10 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ks
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.RayBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.TrustyaiBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
@@ -63,7 +67,7 @@ public abstract class UpgradeAbstract extends Abstract {
                 .withNamespace(OdhConstants.MONITORING_NAMESPACE)
                 .endMonitoring()
                 .withNewServiceMesh()
-                .withManagementState(ServiceMesh.ManagementState.REMOVED)
+                .withManagementState(ServiceMesh.ManagementState.MANAGED)
                 .withNewControlPlane()
                 .withName("data-science-smcp")
                 .withNamespace("istio-system")
@@ -97,7 +101,13 @@ public abstract class UpgradeAbstract extends Abstract {
                         new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.MANAGED).build()
                     )
                     .withModelmeshserving(
-                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.REMOVED).build()
+                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.MANAGED).build()
+                    )
+                    .withRay(
+                        new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
+                    )
+                    .withTrustyai(
+                        new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.MANAGED).build()
                     )
                     .build())
             .endSpec()

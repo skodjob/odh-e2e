@@ -14,5 +14,7 @@ public class OdhAnnotationsLabels {
 
     public static final String ANNO_SERVICE_MESH = ODH_DOMAIN + "service-mesh";
     public static final String ANNO_NTB_INJECT_OAUTH = "notebooks." + ODH_DOMAIN + "inject-oauth";
+    public static final String APP_LABEL_KEY = "app";
+    public static final String APP_LABEL_VALUE = "odh-e2e";
 
 }
