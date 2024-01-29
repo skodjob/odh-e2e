@@ -41,6 +41,7 @@ public class OdhConstants {
     private static final String RHOAI_CONTROLLERS_NAMESPACE = "redhat-ods-applications";
     private static final String RHOAI_DASHBOARD_ROUTE_NAME = "rhods-dashboard";
     private static final String RHOAI_DASHBOARD_CONTROLLER = "rhods-dashboard";
+    private static final String RHOAI_NOTEBOOKS_NAMESPACE = "rhods-notebooks";
     private static final String RHOAI_DSCI_NAME = "default-dsci";
     // RHOAI OLM
     private static final String RHOAI_OLM_OPERATOR_NAME = "rhods-operator";
@@ -68,6 +69,7 @@ public class OdhConstants {
     public static final String CONTROLLERS_NAMESPACE = getOdhOrRhoai("CONTROLLERS_NAMESPACE", ODH_CONTROLLERS_NAMESPACE, RHOAI_CONTROLLERS_NAMESPACE);
     public static final String DASHBOARD_ROUTE_NAME = getOdhOrRhoai("DASHBOARD_ROUTE_NAME", ODH_DASHBOARD_ROUTE_NAME, RHOAI_DASHBOARD_ROUTE_NAME);
     public static final String DASHBOARD_CONTROLLER = getOdhOrRhoai("DASHBOARD_CONTROLLER", ODH_DASHBOARD_CONTROLLER, RHOAI_DASHBOARD_CONTROLLER);
+    public static final String NOTEBOOKS_NAMESPACE = getOdhOrRhoai("NOTEBOOKS_NAMESPACE", ODH_CONTROLLERS_NAMESPACE, RHOAI_NOTEBOOKS_NAMESPACE);
     public static final String BUNDLE_OPERATOR_NAMESPACE = getOdhOrRhoai("BUNDLE_OPERATOR_NAMESPACE", ODH_BUNDLE_OPERATOR_NAME, RHOAI_OLM_OPERATOR_NAME);
     public static final String DEFAULT_DSCI_NAME = getOdhOrRhoai("DSCI_NAME", ODH_DSCI_NAME, RHOAI_DSCI_NAME);
     public static final String MONITORING_NAMESPACE = getOdhOrRhoai("MONITORING_NAMESPACE", ODH_MONITORING_NAMESPACE, RHOAI_MONITORING_NAMESPACE);
