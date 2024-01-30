@@ -37,7 +37,7 @@ public class PodUtils {
                         return false;
                     }
                     for (Pod pod : pods) {
-                        if (!Readiness.isPodReady(pod)) {
+                        if (!(Readiness.isPodReady(pod) || Readiness.isPodSucceeded(pod))) {
                             LOGGER.debug("Pod not ready: {}/{}", namespaceName, pod.getMetadata().getName());
                             return false;
                         } else {
@@ -74,7 +74,7 @@ public class PodUtils {
                     return false;
                 }
                 for (Pod pod : pods) {
-                    if (!Readiness.isPodReady(pod)) {
+                    if (!(Readiness.isPodReady(pod) || Readiness.isPodSucceeded(pod))) {
                         LOGGER.debug("Pod not ready: {}/{}", namespaceName, pod.getMetadata().getName());
                         return false;
                     } else {
