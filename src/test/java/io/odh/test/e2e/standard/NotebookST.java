@@ -14,6 +14,7 @@ import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.OdhConstants;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -109,8 +110,8 @@ public class NotebookST extends StandardAbstract {
                 .withNewServiceMesh()
                 .withManagementState(ServiceMesh.ManagementState.MANAGED)
                 .withNewControlPlane()
-                .withName("data-science-smcp")
-                .withNamespace("istio-system")
+                .withName(ServiceMeshOperator.SERVICE_MESH_NAME)
+                .withNamespace(ServiceMeshOperator.SERVICE_MESH_NAMESPACE)
                 .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
                 .endControlPlane()
                 .endServiceMesh()
@@ -141,13 +142,13 @@ public class NotebookST extends StandardAbstract {
                             new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.REMOVED).build()
                         )
                         .withModelmeshserving(
-                            new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.MANAGED).build()
+                            new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.REMOVED).build()
                         )
                         .withRay(
-                            new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
+                            new RayBuilder().withManagementState(Ray.ManagementState.REMOVED).build()
                         )
                         .withTrustyai(
-                            new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.MANAGED).build()
+                            new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.REMOVED).build()
                         )
                         .build())
                 .endSpec()

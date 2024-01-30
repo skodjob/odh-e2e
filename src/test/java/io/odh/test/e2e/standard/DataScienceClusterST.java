@@ -7,6 +7,7 @@ package io.odh.test.e2e.standard;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -57,8 +58,8 @@ public class DataScienceClusterST extends StandardAbstract {
                 .withNewServiceMesh()
                 .withManagementState(ServiceMesh.ManagementState.MANAGED)
                 .withNewControlPlane()
-                .withName("data-science-smcp")
-                .withNamespace("istio-system")
+                .withName(ServiceMeshOperator.SERVICE_MESH_NAME)
+                .withNamespace(ServiceMeshOperator.SERVICE_MESH_NAMESPACE)
                 .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
                 .endControlPlane()
                 .endServiceMesh()

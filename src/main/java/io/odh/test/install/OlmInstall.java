@@ -12,6 +12,7 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.SubscriptionBuilder;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
+import io.odh.test.TestConstants;
 import io.odh.test.framework.manager.ResourceItem;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
@@ -37,7 +38,7 @@ public class OlmInstall {
     private String operatorVersion  = Environment.OLM_OPERATOR_VERSION;
     private String csvName = operatorName + "." + operatorVersion;
 
-    private String approval = "Automatic";
+    private String approval = TestConstants.APPROVAL_AUTOMATIC;
 
     public void create() {
         createNamespace();

@@ -17,6 +17,7 @@ import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -69,8 +70,8 @@ public abstract class UpgradeAbstract extends Abstract {
                 .withNewServiceMesh()
                 .withManagementState(ServiceMesh.ManagementState.MANAGED)
                 .withNewControlPlane()
-                .withName("data-science-smcp")
-                .withNamespace("istio-system")
+                .withName(ServiceMeshOperator.SERVICE_MESH_NAME)
+                .withNamespace(ServiceMeshOperator.SERVICE_MESH_NAMESPACE)
                 .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
                 .endControlPlane()
                 .endServiceMesh()
