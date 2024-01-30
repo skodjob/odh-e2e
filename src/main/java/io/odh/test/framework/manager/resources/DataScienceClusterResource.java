@@ -15,12 +15,6 @@ import io.odh.test.framework.manager.ResourceType;
 import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Datasciencepipelines;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
