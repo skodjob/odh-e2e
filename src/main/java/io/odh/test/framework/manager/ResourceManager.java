@@ -147,10 +147,14 @@ public class ResourceManager {
                     } else {
                         client.getClient().resource(resource).create();
                     }
-
                 }
             } else {
-                type.create(resource);
+                if (client.getClient().resource(resource).get() != null) {
+                    type.update(resource);
+                } else {
+                    type.create(resource);
+                }
+
                 if (waitReady) {
                     assertTrue(waitResourceCondition(resource, ResourceCondition.readiness(type)),
                             String.format("Timed out waiting for %s %s/%s to be ready", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));

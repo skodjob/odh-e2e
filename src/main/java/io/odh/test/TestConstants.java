@@ -12,6 +12,9 @@ public class TestConstants {
     public static final String SUBSCRIPTION = "Subscription";
     public static final String OPERATOR_GROUP = "OperatorGroup";
 
+    public static final String APPROVAL_AUTOMATIC = "Automatic";
+    public static final String APPROVAL_MANUAL = "Manual";
+
     public static final String LATEST_BUNDLE_DEPLOY_FILE = "install-files/latest.yaml";
     public static final String RELEASED_BUNDLE_DEPLOY_FILE = "install-files/released.yaml";
 
@@ -22,6 +25,13 @@ public class TestConstants {
     public static final long GLOBAL_TIMEOUT = Duration.ofMinutes(10).toMillis();
     public static final long GLOBAL_STABILITY_TIME = Duration.ofMinutes(1).toSeconds();
     public static final String LOG_COLLECT_LABEL = "io.odh-e2e.collect-logs";
+
+    // OLM Constants
+    public static final String OPENSHIFT_MARKETPLACE_NS = "openshift-marketplace";
+    public static final String OPENSHIFT_OPERATORS_NS = "openshift-operators";
+    public static final String REDHAT_CATALOG = "redhat-operators";
+    public static final String CHANNEL_STABLE = "stable";
+    public static final String CHANNEL_LATEST = "latest";
 
     private TestConstants() {
     }

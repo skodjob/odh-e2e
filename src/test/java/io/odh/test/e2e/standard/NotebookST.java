@@ -14,6 +14,7 @@ import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.OdhConstants;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -27,6 +28,12 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Da
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.DatasciencepipelinesBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.RayBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.TrustyaiBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
@@ -101,10 +108,10 @@ public class NotebookST extends StandardAbstract {
                 .withNamespace(OdhConstants.MONITORING_NAMESPACE)
                 .endMonitoring()
                 .withNewServiceMesh()
-                .withManagementState(ServiceMesh.ManagementState.REMOVED)
+                .withManagementState(ServiceMesh.ManagementState.MANAGED)
                 .withNewControlPlane()
-                .withName("data-science-smcp")
-                .withNamespace("istio-system")
+                .withName(ServiceMeshOperator.SERVICE_MESH_NAME)
+                .withNamespace(ServiceMeshOperator.SERVICE_MESH_NAMESPACE)
                 .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
                 .endControlPlane()
                 .endServiceMesh()
@@ -133,6 +140,15 @@ public class NotebookST extends StandardAbstract {
                         )
                         .withDatasciencepipelines(
                             new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.REMOVED).build()
+                        )
+                        .withModelmeshserving(
+                            new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.REMOVED).build()
+                        )
+                        .withRay(
+                            new RayBuilder().withManagementState(Ray.ManagementState.REMOVED).build()
+                        )
+                        .withTrustyai(
+                            new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.REMOVED).build()
                         )
                         .build())
                 .endSpec()
