@@ -43,7 +43,7 @@ public class DataScienceClusterST extends Abstract {
     @BeforeAll
     void init() {
         dataScienceProjectCli = DataScienceClusterResource.dataScienceCLusterClient();
-        dashboardConfigCli  = ResourceManager.getClient().dashboardConfigClient();
+        dashboardConfigCli  = ResourceManager.getKubeClient().dashboardConfigClient();
     }
 
     @Test

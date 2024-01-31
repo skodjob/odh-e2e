@@ -41,7 +41,7 @@ public class BundleInstall {
             installFile = new File(installFilePath);
             is = new FileInputStream(installFilePath);
         }
-        resources = ResourceManager.getClient().readResourcesFromYaml(is);
+        resources = ResourceManager.getKubeClient().readResourcesFromYaml(is);
     }
 
     public BundleInstall() throws IOException {
@@ -96,11 +96,11 @@ public class BundleInstall {
 
     public void createWithoutResourceManager() {
         modifyOperatorImage();
-        ResourceManager.getClient().create(resources, r -> r);
+        ResourceManager.getKubeClient().create(resources, r -> r);
     }
 
     public void deleteWithoutResourceManager() {
         KubeUtils.deleteDefaultDSCI();
-        ResourceManager.getClient().delete(resources);
+        ResourceManager.getKubeClient().delete(resources);
     }
 }

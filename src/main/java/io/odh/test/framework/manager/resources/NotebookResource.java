@@ -71,7 +71,7 @@ public class NotebookResource implements ResourceType<Notebook> {
     }
 
     public static MixedOperation<Notebook, KubernetesResourceList<Notebook>, Resource<Notebook>> notebookClient() {
-        return ResourceManager.getClient().getClient().resources(Notebook.class);
+        return ResourceManager.getKubeClient().getClient().resources(Notebook.class);
     }
 
     public static Notebook loadDefaultNotebook(String namespace, String name, String image) throws IOException {
@@ -79,7 +79,7 @@ public class NotebookResource implements ResourceType<Notebook> {
         String notebookString = IOUtils.toString(is, "UTF-8");
         notebookString = notebookString.replace("my-project", namespace).replace("my-workbench", name);
         // Set new Route url
-        String routeHost = ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).routes().inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(OdhConstants.DASHBOARD_ROUTE_NAME).get().getSpec().getHost();
+        String routeHost = ResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).routes().inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(OdhConstants.DASHBOARD_ROUTE_NAME).get().getSpec().getHost();
         notebookString = notebookString.replace("odh_dashboard_route", "https://" + routeHost);
         // Set correct username
         String username = ResourceManager.getKubeCmdClient().getUsername().strip();

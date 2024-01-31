@@ -45,6 +45,6 @@ public class OperatorGroupResource implements ResourceType<OperatorGroup> {
     }
 
     public static MixedOperation<OperatorGroup, OperatorGroupList, Resource<OperatorGroup>> operatorGroupClient() {
-        return ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().operatorGroups();
+        return ResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().operatorGroups();
     }
 }

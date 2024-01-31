@@ -57,7 +57,7 @@ public class LogCollector {
             try {
                 LOGGER.debug("Get logs from pod {}/{} container {}", pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName());
                 Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + "-" + container.getName() + ".log"),
-                        ResourceManager.getClient().getLogsFromContainer(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName()));
+                        ResourceManager.getKubeClient().getLogsFromContainer(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName()));
             } catch (IOException e) {
                 LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
             }
@@ -96,7 +96,7 @@ public class LogCollector {
     }
 
     private static void saveClusterState(Path logpath) throws IOException {
-        KubeClient kube = ResourceManager.getClient();
+        KubeClient kube = ResourceManager.getKubeClient();
         KubeCmdClient cmdClient = ResourceManager.getKubeCmdClient();
 
         // Collecting cluster wide resources and CRs

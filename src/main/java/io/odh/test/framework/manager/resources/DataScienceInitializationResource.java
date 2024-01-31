@@ -61,7 +61,7 @@ public class DataScienceInitializationResource implements ResourceType<DSCInitia
     }
 
     public static MixedOperation<DSCInitialization, KubernetesResourceList<DSCInitialization>, Resource<DSCInitialization>> dsciClient() {
-        return ResourceManager.getClient().getClient().resources(DSCInitialization.class);
+        return ResourceManager.getKubeClient().getClient().resources(DSCInitialization.class);
     }
 
 }

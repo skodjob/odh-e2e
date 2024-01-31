@@ -48,10 +48,10 @@ public class DataScienceProjectST extends Abstract {
     @ParameterizedTest(name = "checkDataScienceProjects-{0}")
     @MethodSource("getDsProjects")
     void checkDataScienceProjects(String dsProjectName) {
-        assertTrue(ResourceManager.getClient().namespaceExists(dsProjectName));
+        assertTrue(ResourceManager.getKubeClient().namespaceExists(dsProjectName));
 
         assertEquals("true",
-                ResourceManager.getClient().getNamespace(dsProjectName).getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
+                ResourceManager.getKubeClient().getNamespace(dsProjectName).getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
 
         notebookCli.inNamespace(dsProjectName).list().getItems().forEach(notebook -> {
             LOGGER.info("Found notebook {} in datascience project {}", notebook.getMetadata().getName(), dsProjectName);

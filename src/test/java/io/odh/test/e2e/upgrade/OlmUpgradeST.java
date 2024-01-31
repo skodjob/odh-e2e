@@ -44,8 +44,8 @@ public class OlmUpgradeST extends UpgradeAbstract {
 
         // Approve install plan created for older version
         KubeUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
-        InstallPlan ip = ResourceManager.getClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
-        ResourceManager.getClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
+        InstallPlan ip = ResourceManager.getKubeClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
+        ResourceManager.getKubeClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
         // Wait for old version readiness
         DeploymentUtils.waitForDeploymentReady(olmInstall.getNamespace(), olmInstall.getDeploymentName());
 
@@ -65,13 +65,13 @@ public class OlmUpgradeST extends UpgradeAbstract {
         LOGGER.info("Upgrade to next available version in OLM catalog");
         // Approve upgrade to newer version
         KubeUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
-        ip = ResourceManager.getClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
-        ResourceManager.getClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
+        ip = ResourceManager.getKubeClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
+        ResourceManager.getKubeClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
         // Wait for operator RU
         DeploymentUtils.waitTillDepHasRolled(olmInstall.getNamespace(), olmInstall.getDeploymentName(), operatorSnapshot);
 
         // Wait for pod stability for Dashboard
-        LabelSelector labelSelector = ResourceManager.getClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
+        LabelSelector labelSelector = ResourceManager.getKubeClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
         PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
 
         // Verify that NTB pods are stable

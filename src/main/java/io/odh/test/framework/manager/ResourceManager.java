@@ -65,7 +65,7 @@ public class ResourceManager {
         return instance;
     }
 
-    public static KubeClient getClient() {
+    public static KubeClient getKubeClient() {
         return client;
     }
 

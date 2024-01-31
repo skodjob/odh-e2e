@@ -23,7 +23,7 @@ public class NamespaceUtils {
         LOGGER.info("Waiting for Namespace: {} readiness", name);
 
         TestUtils.waitFor("Namespace: " + name, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, DELETION_TIMEOUT,
-                () -> ResourceManager.getClient().getNamespace(name) != null);
+                () -> ResourceManager.getKubeClient().getNamespace(name) != null);
         LOGGER.info("Namespace: {} is ready", name);
     }
 
@@ -31,7 +31,7 @@ public class NamespaceUtils {
         LOGGER.info("Waiting for Namespace: {} deletion", name);
 
         TestUtils.waitFor("Namespace: " + name, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, DELETION_TIMEOUT,
-            () -> ResourceManager.getClient().getNamespace(name) == null);
+            () -> ResourceManager.getKubeClient().getNamespace(name) == null);
         LOGGER.info("Namespace: {} was deleted", name);
     }
 }

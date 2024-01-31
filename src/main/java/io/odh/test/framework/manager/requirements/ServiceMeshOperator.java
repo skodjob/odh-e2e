@@ -4,17 +4,19 @@
  */
 package io.odh.test.framework.manager.requirements;
 
+import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.Subscription;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.SubscriptionBuilder;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestConstants;
 import io.odh.test.framework.manager.ResourceItem;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.utils.PodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
 public class ServiceMeshOperator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceMeshOperator.class);
@@ -43,9 +45,15 @@ public class ServiceMeshOperator {
 
         ResourceManager.getInstance().createResourceWithWait(subscription);
         ResourceManager.getInstance().pushToStack(new ResourceItem(() -> deleteOperator(subscription), null));
+        isOperatorReady();
+    }
+
+    public static void isOperatorReady() {
+        PodUtils.waitForPodsReadyWithRestart(TestConstants.OPENSHIFT_OPERATORS_NS,
+                new LabelSelectorBuilder().withMatchLabels(Map.of("name", "istio-operator")).build(), 1, true);
     }
 
     public static void deleteOperator(Subscription subscription) {
-        ResourceManager.getClient().delete(Arrays.asList(subscription));
+        ResourceManager.getKubeClient().delete(Collections.singletonList(subscription));
     }
 }

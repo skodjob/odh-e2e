@@ -20,26 +20,26 @@ public class NamespaceResource implements ResourceType<Namespace> {
 
     @Override
     public Namespace get(String namespace, String name) {
-        return ResourceManager.getClient().getClient().namespaces().withName(name).get();
+        return ResourceManager.getKubeClient().getClient().namespaces().withName(name).get();
     }
 
     @Override
     public void create(Namespace resource) {
         if (get("", resource.getMetadata().getName()) != null) {
-            ResourceManager.getClient().getClient().resource(resource).update();
+            ResourceManager.getKubeClient().getClient().resource(resource).update();
         } else {
-            ResourceManager.getClient().getClient().resource(resource).create();
+            ResourceManager.getKubeClient().getClient().resource(resource).create();
         }
     }
 
     @Override
     public void delete(Namespace resource) {
-        ResourceManager.getClient().getClient().namespaces().withName(resource.getMetadata().getName()).delete();
+        ResourceManager.getKubeClient().getClient().namespaces().withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
     public void update(Namespace resource) {
-        ResourceManager.getClient().getClient().resource(resource).update();
+        ResourceManager.getKubeClient().getClient().resource(resource).update();
     }
 
     @Override
@@ -48,10 +48,10 @@ public class NamespaceResource implements ResourceType<Namespace> {
     }
 
     public static void labelNamespace(String namespace, String key, String value) {
-        if (ResourceManager.getClient().namespaceExists(namespace)) {
+        if (ResourceManager.getKubeClient().namespaceExists(namespace)) {
             TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, TestConstants.LOG_COLLECT_LABEL), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME * 1000, () -> {
                 try {
-                    ResourceManager.getClient().getClient().namespaces().withName(namespace).edit(n ->
+                    ResourceManager.getKubeClient().getClient().namespaces().withName(namespace).edit(n ->
                             new NamespaceBuilder(n)
                                     .editMetadata()
                                     .addToLabels(key, value)
@@ -60,7 +60,7 @@ public class NamespaceResource implements ResourceType<Namespace> {
                 } catch (Exception ex) {
                     return false;
                 }
-                Namespace n = ResourceManager.getClient().getClient().namespaces().withName(namespace).get();
+                Namespace n = ResourceManager.getKubeClient().getClient().namespaces().withName(namespace).get();
                 if (n != null) {
                     return n.getMetadata().getLabels().get(key) != null;
                 }

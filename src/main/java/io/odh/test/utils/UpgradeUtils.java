@@ -13,7 +13,7 @@ public class UpgradeUtils {
 
     public static void deploymentLogIsErrorEmpty(String namespace, String deploymentName) {
         // Check that operator doesn't contain errors in logs
-        String operatorLog = ResourceManager.getClient().getClient().apps().deployments()
+        String operatorLog = ResourceManager.getKubeClient().getClient().apps().deployments()
                 .inNamespace(namespace).withName(deploymentName).getLog();
 
         assertThat(operatorLog, logHasNoUnexpectedErrors());
