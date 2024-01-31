@@ -149,7 +149,7 @@ public class ResourceManager {
                     }
                 }
             } else {
-                if (client.getClient().resource(resource).get() != null) {
+                if (type.get(resource.getMetadata().getNamespace(), resource.getMetadata().getName()) != null) {
                     type.update(resource);
                 } else {
                     type.create(resource);
