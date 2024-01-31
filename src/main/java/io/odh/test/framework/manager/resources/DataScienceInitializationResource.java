@@ -28,9 +28,9 @@ public class DataScienceInitializationResource implements ResourceType<DSCInitia
     @Override
     public void create(DSCInitialization resource) {
         if (get("", resource.getMetadata().getName()) == null) {
-            dsciClient().resource(resource).create();
+            TestUtils.runUntilPass(5, () -> dsciClient().resource(resource).create());
         } else {
-            dsciClient().resource(resource).update();
+            TestUtils.runUntilPass(5, () -> dsciClient().resource(resource).update());
         }
     }
 
@@ -41,7 +41,7 @@ public class DataScienceInitializationResource implements ResourceType<DSCInitia
 
     @Override
     public void update(DSCInitialization resource) {
-        dsciClient().resource(resource).update();
+        TestUtils.runUntilPass(5, () -> dsciClient().resource(resource).update());
     }
 
     @Override
