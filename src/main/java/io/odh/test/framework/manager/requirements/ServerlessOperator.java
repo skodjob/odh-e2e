@@ -4,6 +4,7 @@
  */
 package io.odh.test.framework.manager.requirements;
 
+import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.openshift.api.model.operatorhub.v1.OperatorGroupBuilder;
@@ -14,11 +15,12 @@ import io.odh.test.TestConstants;
 import io.odh.test.framework.manager.ResourceItem;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
+import io.odh.test.utils.PodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 
 public class ServerlessOperator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerlessOperator.class);
@@ -67,9 +69,17 @@ public class ServerlessOperator {
 
         ResourceManager.getInstance().createResourceWithWait(subscription);
         ResourceManager.getInstance().pushToStack(new ResourceItem(() -> deleteOperator(ns), null));
+        isOperatorReady();
+    }
+
+    public static void isOperatorReady() {
+        PodUtils.waitForPodsReady(OPERATOR_NAMESPACE,
+                new LabelSelectorBuilder().withMatchLabels(Map.of("name", "knative-operator")).build(), 1, true, () -> { });
+        PodUtils.waitForPodsReady(OPERATOR_NAMESPACE,
+                new LabelSelectorBuilder().withMatchLabels(Map.of("name", "knative-openshift")).build(), 1, true, () -> { });
     }
 
     public static void deleteOperator(Namespace namespace) {
-        ResourceManager.getClient().delete(Arrays.asList(namespace));
+        ResourceManager.getClient().delete(Collections.singletonList(namespace));
     }
 }
