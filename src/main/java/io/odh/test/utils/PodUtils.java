@@ -44,7 +44,7 @@ public class PodUtils {
                             if (containers) {
                                 for (ContainerStatus cs : pod.getStatus().getContainerStatuses()) {
                                     if (!(Boolean.TRUE.equals(cs.getReady())
-                                            || cs.getState().getAdditionalProperties().getOrDefault("Reason", "none").equals("Completed"))) {
+                                            || cs.getState().getTerminated().getReason().equals("Completed"))) {
                                         LOGGER.debug("Container: {} of Pod: {}/{} not ready", namespaceName, pod.getMetadata().getName(), cs.getName());
                                         return false;
                                     }
@@ -82,7 +82,7 @@ public class PodUtils {
                         if (containers) {
                             for (ContainerStatus cs : pod.getStatus().getContainerStatuses()) {
                                 if (!(Boolean.TRUE.equals(cs.getReady())
-                                        || cs.getState().getAdditionalProperties().getOrDefault("Reason", "none").equals("Completed"))) {
+                                        || cs.getState().getTerminated().getReason().equals("Completed"))) {
                                     LOGGER.debug("Container: {} of Pod: {}/{} not ready", namespaceName, pod.getMetadata().getName(), cs.getName());
                                     return false;
                                 }
