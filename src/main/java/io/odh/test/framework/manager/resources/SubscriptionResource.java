@@ -48,6 +48,6 @@ public class SubscriptionResource implements ResourceType<Subscription> {
     }
 
     public static MixedOperation<Subscription, SubscriptionList, Resource<Subscription>> subscriptionClient() {
-        return ResourceManager.getClient().getClient().adapt(OpenShiftClient.class).operatorHub().subscriptions();
+        return ResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().subscriptions();
     }
 }

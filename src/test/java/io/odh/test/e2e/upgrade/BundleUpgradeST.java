@@ -66,7 +66,7 @@ public class BundleUpgradeST extends UpgradeAbstract {
 
         DeploymentUtils.waitTillDepHasRolled(baseBundle.getNamespace(), baseBundle.getDeploymentName(), operatorSnapshot);
 
-        LabelSelector labelSelector = ResourceManager.getClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
+        LabelSelector labelSelector = ResourceManager.getKubeClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
         PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
 
         // Verify that NTB pods are stable

@@ -73,13 +73,13 @@ public class ServerlessOperator {
     }
 
     public static void isOperatorReady() {
-        PodUtils.waitForPodsReady(OPERATOR_NAMESPACE,
-                new LabelSelectorBuilder().withMatchLabels(Map.of("name", "knative-operator")).build(), 1, true, () -> { });
-        PodUtils.waitForPodsReady(OPERATOR_NAMESPACE,
-                new LabelSelectorBuilder().withMatchLabels(Map.of("name", "knative-openshift")).build(), 1, true, () -> { });
+        PodUtils.waitForPodsReadyWithRestart(OPERATOR_NAMESPACE,
+                new LabelSelectorBuilder().withMatchLabels(Map.of("name", "knative-operator")).build(), 1, true);
+        PodUtils.waitForPodsReadyWithRestart(OPERATOR_NAMESPACE,
+                new LabelSelectorBuilder().withMatchLabels(Map.of("name", "knative-openshift")).build(), 1, true);
     }
 
     public static void deleteOperator(Namespace namespace) {
-        ResourceManager.getClient().delete(Collections.singletonList(namespace));
+        ResourceManager.getKubeClient().delete(Collections.singletonList(namespace));
     }
 }

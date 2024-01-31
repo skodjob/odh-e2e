@@ -31,7 +31,7 @@ public class PodUtils {
         TestUtils.waitFor("readiness of all Pods matching in namespace " + namespaceName,
                 TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, READINESS_TIMEOUT,
                 () -> {
-                    List<Pod> pods = ResourceManager.getClient().listPods(namespaceName);
+                    List<Pod> pods = ResourceManager.getKubeClient().listPods(namespaceName);
                     if (pods.isEmpty()) {
                         LOGGER.debug("Expected Pods are not ready!");
                         return false;
@@ -61,7 +61,7 @@ public class PodUtils {
         TestUtils.waitFor("readiness of all Pods matching: " + selector,
                 TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, READINESS_TIMEOUT,
             () -> {
-                List<Pod> pods = ResourceManager.getClient().listPods(namespaceName, selector);
+                List<Pod> pods = ResourceManager.getKubeClient().listPods(namespaceName, selector);
                 if (pods.isEmpty() && expectPods == 0) {
                     LOGGER.debug("Expected Pods are ready");
                     return true;
@@ -95,12 +95,23 @@ public class PodUtils {
             }, onTimeout);
     }
 
+    public static void waitForPodsReadyWithRestart(String namespace, LabelSelector selector, int expectedPods, boolean containers) {
+        try {
+            waitForPodsReady(namespace, selector, expectedPods, containers, () -> { });
+        } catch (Exception ex) {
+            LOGGER.warn("Pods not ready trying to restart");
+            ResourceManager.getKubeClient().listPods(namespace, selector).forEach(p ->
+                    ResourceManager.getKubeClient().getClient().resource(p).delete());
+            waitForPodsReady(namespace, selector, expectedPods, containers, () -> { });
+        }
+    }
+
     /**
      * Returns a map of resource name to resource version for all the pods in the given {@code namespace}
      * matching the given {@code selector}.
      */
     public static Map<String, String> podSnapshot(String namespaceName, LabelSelector selector) {
-        List<Pod> pods = ResourceManager.getClient().listPods(namespaceName, selector);
+        List<Pod> pods = ResourceManager.getKubeClient().listPods(namespaceName, selector);
         return pods.stream()
                 .collect(
                         Collectors.toMap(pod -> pod.getMetadata().getName(),
@@ -113,7 +124,7 @@ public class PodUtils {
 
         TestUtils.waitFor(String.format("Pods in namespace '%s' with LabelSelector %s stability in phase %s", namespaceName, labelSelector, phase), TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT,
                 () -> {
-                    List<Pod> existingPod = ResourceManager.getClient().listPods(namespaceName, labelSelector);
+                    List<Pod> existingPod = ResourceManager.getKubeClient().listPods(namespaceName, labelSelector);
                     LOGGER.debug("Working with the following pods: {}", existingPod.stream().map(p -> p.getMetadata().getName()).toList());
 
                     for (Pod pod : existingPod) {

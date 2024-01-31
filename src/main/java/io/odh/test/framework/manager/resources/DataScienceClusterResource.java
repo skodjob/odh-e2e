@@ -119,7 +119,7 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
     }
 
     public static MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceCLusterClient() {
-        return ResourceManager.getClient().getClient().resources(DataScienceCluster.class);
+        return ResourceManager.getKubeClient().getClient().resources(DataScienceCluster.class);
     }
 
 }

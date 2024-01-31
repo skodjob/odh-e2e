@@ -27,13 +27,13 @@ public class KubeUtils {
     }
 
     public static void clearOdhRemainingResources() {
-        ResourceManager.getClient().getClient().apiextensions().v1().customResourceDefinitions().list().getItems()
+        ResourceManager.getKubeClient().getClient().apiextensions().v1().customResourceDefinitions().list().getItems()
             .stream().filter(crd -> crd.getMetadata().getName().contains("opendatahub.io")).toList()
             .forEach(crd -> {
                 LOGGER.info("Deleting CRD {}", crd.getMetadata().getName());
-                ResourceManager.getClient().getClient().resource(crd).delete();
+                ResourceManager.getKubeClient().getClient().resource(crd).delete();
             });
-        ResourceManager.getClient().getClient().namespaces().withName("opendatahub").delete();
+        ResourceManager.getKubeClient().getClient().namespaces().withName("opendatahub").delete();
     }
 
     /**
@@ -47,7 +47,7 @@ public class KubeUtils {
     public static void waitForInstallPlan(String namespace, String csvName) {
         TestUtils.waitFor("Install plan with new version", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             try {
-                InstallPlan ip = ResourceManager.getClient().getNonApprovedInstallPlan(namespace, csvName);
+                InstallPlan ip = ResourceManager.getKubeClient().getNonApprovedInstallPlan(namespace, csvName);
                 LOGGER.debug("Found InstallPlan {} - {}", ip.getMetadata().getName(), ip.getSpec().getClusterServiceVersionNames());
                 return true;
             } catch (NoSuchElementException ex) {

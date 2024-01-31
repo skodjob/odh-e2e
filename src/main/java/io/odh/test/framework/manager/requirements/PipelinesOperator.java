@@ -48,11 +48,11 @@ public class PipelinesOperator {
     }
 
     public static void isOperatorReady() {
-        PodUtils.waitForPodsReady(TestConstants.OPENSHIFT_OPERATORS_NS,
-                new LabelSelectorBuilder().withMatchLabels(Map.of("app", "openshift-pipelines-operator")).build(), 1, true, () -> { });
+        PodUtils.waitForPodsReadyWithRestart(TestConstants.OPENSHIFT_OPERATORS_NS,
+                new LabelSelectorBuilder().withMatchLabels(Map.of("app", "openshift-pipelines-operator")).build(), 1, true);
     }
 
     public static void deleteOperator(Subscription subscription) {
-        ResourceManager.getClient().delete(Collections.singletonList(subscription));
+        ResourceManager.getKubeClient().delete(Collections.singletonList(subscription));
     }
 }
