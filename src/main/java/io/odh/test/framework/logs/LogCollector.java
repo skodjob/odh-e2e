@@ -58,7 +58,7 @@ public class LogCollector {
                 LOGGER.debug("Get logs from pod {}/{} container {}", pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName());
                 Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + "-" + container.getName() + ".log"),
                         ResourceManager.getKubeClient().getLogsFromContainer(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName()));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
             }
         });
@@ -74,7 +74,7 @@ public class LogCollector {
             LOGGER.debug("Get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
             Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + ".describe.log"),
                     ResourceManager.getKubeCmdClient().namespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.warn("Cannot get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
         }
     }
@@ -90,7 +90,7 @@ public class LogCollector {
             Files.writeString(logpath.resolve(deployment.getMetadata().getNamespace()).resolve("deployment-" + deployment.getMetadata().getName() + ".yaml"),
                     ResourceManager.getKubeCmdClient().exec(false, false, "get", "deployment", deployment.getMetadata().getName(),
                             "-n", deployment.getMetadata().getNamespace(), "-o", "yaml").out());
-        } catch (IOException e) {
+        } catch (Exception e) {
             LOGGER.warn("Cannot get deployment of pod {}/{}", deployment.getMetadata().getNamespace(), deployment.getMetadata().getName());
         }
     }
