@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 
 @Tag(TestSuite.OLM_UPGRADE)
@@ -73,10 +74,11 @@ public class OlmUpgradeST extends UpgradeAbstract {
         // Wait for pod stability for Dashboard
         LabelSelector labelSelector = ResourceManager.getKubeClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
         PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
+        Date operatorLogCheckTimestamp = new Date();
 
         // Verify that NTB pods are stable
         PodUtils.waitForPodsReady(ntbNamespace, lblSelector, 1, true, () -> { });
         // Check logs in operator pod
-        UpgradeUtils.deploymentLogIsErrorEmpty(olmInstall.getNamespace(), olmInstall.getDeploymentName());
+        UpgradeUtils.deploymentLogIsErrorEmpty(olmInstall.getNamespace(), olmInstall.getDeploymentName(), operatorLogCheckTimestamp);
     }
 }
