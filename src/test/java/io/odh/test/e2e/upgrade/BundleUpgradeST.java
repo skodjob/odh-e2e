@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Map;
 
 @Tag(TestSuite.BUNDLE_UPGRADE)
@@ -68,10 +69,11 @@ public class BundleUpgradeST extends UpgradeAbstract {
 
         LabelSelector labelSelector = ResourceManager.getKubeClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
         PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
+        Date operatorLogCheckTimestamp = new Date();
 
         // Verify that NTB pods are stable
         PodUtils.waitForPodsReady(ntbNamespace, lblSelector, 1, true, () -> { });
         // Check logs in operator pod
-        UpgradeUtils.deploymentLogIsErrorEmpty(baseBundle.getNamespace(), baseBundle.getDeploymentName());
+        UpgradeUtils.deploymentLogIsErrorEmpty(baseBundle.getNamespace(), baseBundle.getDeploymentName(), operatorLogCheckTimestamp);
     }
 }
