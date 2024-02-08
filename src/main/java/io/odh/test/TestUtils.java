@@ -227,8 +227,8 @@ public final class TestUtils {
             try {
                 LOGGER.debug("Running command, attempt: {}", i);
                 return fn.call();
-            } catch (Exception | AssertionError ex) {
-                LOGGER.warn("Command failed", ex);
+            } catch (Exception | Error ex) {
+                LOGGER.warn("Command failed: {}", ex.getMessage());
             }
             try {
                 Thread.sleep(1000);
