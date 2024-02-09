@@ -276,9 +276,9 @@ public class PipelineServerST {
                     .withNamespace(PRJ_TITLE)
                 .endMetadata()
                 .addToStringData("AWS_ACCESS_KEY_ID", "KEY007")
-                .addToStringData("AWS_S3_BUCKET", "HollyGrail")
-                .addToStringData("AWS_S3_ENDPOINT", "noIdea") // todo
+                .addToStringData("AWS_S3_BUCKET", "HolyGrail")
                 .addToStringData("AWS_SECRET_ACCESS_KEY", "gimmeAccessPlz")
+                .withType("Opaque")
                 .build();
         ResourceManager.getInstance().createResourceWithoutWait(secret);
 
@@ -290,29 +290,17 @@ public class PipelineServerST {
                 .endMetadata()
                 .withNewSpec()
                     .withNewApiServer()
-                        //     applyTektonCustomResource: true
                         .withApplyTektonCustomResource(true)
-                        //    archiveLogs: false
                         .withArchiveLogs(false)
-                        //    autoUpdatePipelineDefaultVersion: true
                         .withAutoUpdatePipelineDefaultVersion(true)
-                        //    collectMetrics: true
                         .withCollectMetrics(true)
-                        //    dbConfigConMaxLifetimeSec: 120
                         .withDbConfigConMaxLifetimeSec(120L)
-                        //    deploy: true
                         .withDeploy(true)
-                        //    enableOauth: true
-                        .withEnableOauth(true) // TODO, unsecured api server for now
-                        //    enableSamplePipeline: false
+                        .withEnableOauth(true)
                         .withEnableSamplePipeline(false)
-                        //    injectDefaultScript: true
                         .withInjectDefaultScript(true)
-                        //    stripEOF: true
                         .withStripEOF(true)
-                        //    terminateStatus: "Cancelled"
                         .withTerminateStatus(ApiServer.TerminateStatus.CANCELLED)
-                        //    trackArtifacts: true
                         .withTrackArtifacts(true)
                     .endApiServer()
                     .withNewDatabase()
@@ -328,18 +316,9 @@ public class PipelineServerST {
                         .withDeploy(false)
                     .endMlmd()
                     .withNewObjectStorage()
-                    //  objectStorage:
-                    //    disableHealthCheck: false
                         .withDisableHealthCheck(false)
-                    //    externalStorage:
-                        .withNewMinio()  // todo I think I want minio here, not aws
-                            //      bucket: "ods-ci-ds-pipelines"
-                            //      host: "s3.amazonaws.com"
-                            //      s3CredentialsSecret:
-                            //        accessKey: "AWS_ACCESS_KEY_ID"
-                            //        secretKey: "AWS_SECRET_ACCESS_KEY"
-                            //        secretName: "secret-mrtzgm"
-                            //      scheme: "https"
+                        // todo: ods-ci uses aws, I think minio is more appropriate here
+                        .withNewMinio()
                             .withDeploy(true)
                             .withImage("quay.io/minio/minio")
                             .withNewPvcSize("1Gi")
@@ -351,18 +330,12 @@ public class PipelineServerST {
                             .endMinioS3CredentialsSecret()
                         .endMinio()
                     .endObjectStorage()
-                    //  persistenceAgent:
                     .withNewPersistenceAgent()
-                    //    deploy: true
                         .withDeploy(true)
-                    //    numWorkers: 2
                         .withNumWorkers(2L)
                     .endPersistenceAgent()
-                    //  scheduledWorkflow:
                     .withNewScheduledWorkflow()
-                    //    cronScheduleTimezone: "UTC"
                         .withCronScheduleTimezone("UTC")
-                    //    deploy: true
                         .withDeploy(true)
                     .endScheduledWorkflow()
                 .endSpec()
