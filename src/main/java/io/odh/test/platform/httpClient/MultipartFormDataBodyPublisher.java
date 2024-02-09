@@ -3,7 +3,7 @@
  * Copyright (c) 2022 yusuke suzuki
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
-package io.odh.test.e2e.standard;
+package io.odh.test.platform.httpClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

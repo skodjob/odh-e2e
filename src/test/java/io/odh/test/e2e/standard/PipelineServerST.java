@@ -18,6 +18,7 @@ import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
 import lombok.SneakyThrows;
