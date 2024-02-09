@@ -149,7 +149,7 @@ public class PipelineServerST extends StandardAbstract {
                 .addToStringData("AWS_SECRET_ACCESS_KEY", "gimmeAccessPlz")
                 .withType("Opaque")
                 .build();
-        ResourceManager.getInstance().createResourceWithoutWait(secret);
+        ResourceManager.getInstance().createResourceWithWait(secret);
 
         // configure pipeline server (with minio, not AWS bucket)
         var dspa = new DataSciencePipelinesApplicationBuilder()
