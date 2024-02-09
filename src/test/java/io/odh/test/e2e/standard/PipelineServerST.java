@@ -15,6 +15,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.OdhAnnotationsLabels;
+import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
@@ -24,7 +25,6 @@ import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipel
 import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -107,144 +107,14 @@ class PipelineSpec {
 public class PipelineServerST extends StandardAbstract {
     private static final Logger logger = LoggerFactory.getLogger(PipelineServerST.class);
 
-    ResourceManager resourceManager = ResourceManager.getInstance();
-    KubernetesClient client = ResourceManager.getKubeClient().getClient();
+    private final ResourceManager resourceManager = ResourceManager.getInstance();
+    private final KubernetesClient client = ResourceManager.getKubeClient().getClient();
 
-    // https://www.kubeflow.org/docs/components/pipelines/v1/tutorials/api-pipelines/
-    // https://www.kubeflow.org/docs/components/pipelines/v1/reference/api/kubeflow-pipeline-api-spec/
-    /*
-    SVC_PORT=$(kubectl -n kubeflow get svc/ml-pipeline -o json | jq ".spec.ports[0].port")
-    kubectl port-forward -n kubeflow svc/ml-pipeline ${SVC_PORT}:8888
-     */
-    @BeforeEach
-    void forwarding() {
-        /// expose pipeline rest api (this is not handled with CRDs)
-//        var svc = client.services().inNamespace("1afterupgrade").withName("ds-pipeline-pipelines-definition").get();
-////        System.out.println(svc);
-//        client.services().inNamespace("1afterupgrade").withName("ds-pipeline-pipelines-definition").portForward(8888, 8888);
-    }
-
-    @Test
-    void pipelinesAPIUploadPipeline() throws Exception {
-        /// initialize http client
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
-
-//
-//        /// deploy pipeline
-
-        /// first, upload definition
-        MultipartFormDataBodyPublisher requestBody = new MultipartFormDataBodyPublisher()
-                .addFile("uploadfile", Path.of("/home/jdanek/repos/odh-e2e/src/test/resources/pipelines/iris_pipeline_compiled.yaml"),
-                        "application/yaml");
-
-        HttpRequest createPipelineRequest = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines/upload?name=someName&description=someDescription"))
-                .header("Content-Type", requestBody.contentType())
-                .POST(requestBody)
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        var responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
-        System.out.println(responseCreate);
-        System.out.println(responseCreate.body());
-
-//        Assertions.assertEquals(okResponse.code(), 200, okResponse.message() + " " + okResponse.body().string());
-//        var newPipeline = objectMapper.readValue(okResponse.body().string(), Pipeline.class);
-//
-//        System.out.println(newPipeline);
-    }
-
-    @Test
-    void pipelinesAPIListPipelines() throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        /// list pipelines
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines"))
-                .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        var reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        System.out.println(reply.body());
-        var json = objectMapper.readValue(reply.body(), PipelineResponse.class);
-        List<Pipeline> pipelines = json.pipelines;
-        Pipeline foundPipeline = null;
-        for (var pipeline : pipelines) {
-//            if (newPipeline.id.equals(pipeline.id)) {
-            foundPipeline = pipeline;
-            break;
-//            }
-        }
-        logger.info("{}, {}", foundPipeline.id, foundPipeline.name);
-    }
-
-    @Test
-    void pipelinesAPIRunPipeline() throws Exception {
-        var foundPipeline = new Pipeline();
-        foundPipeline.id = "6a9e7a41-8136-4ba2-8990-5df8d94a1c87";
-
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
-        /// run pipeline without arguments
-
-        var pipelineRun = new PipelineRun();
-        pipelineRun.name = "myrun";
-        pipelineRun.pipeline_spec = new PipelineSpec();
-        pipelineRun.pipeline_spec.pipeline_id = foundPipeline.id;
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8888/apis/v1beta1/runs"))
-                .POST(HttpRequest.BodyPublishers.ofString(
-                        objectMapper.writeValueAsString(pipelineRun)
-                ))
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        logger.info("{}", reply.body());
-    }
-
-    @Test
-    void vipTest() {
-        var svc = client.services().inNamespace("1afterupgrade").withName("ds-pipeline-pipelines-definition");
-        svc.portForward(8888, 8888);
-        waitForPipelineRun("ebdde210-02f3-4a45-bc46-b3870847d912");
-    }
-
-    @SneakyThrows
-    Pipeline importPipeline(String name, String description, String project, String filePath) {
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
-        MultipartFormDataBodyPublisher requestBody = new MultipartFormDataBodyPublisher()
-                .addFile("uploadfile", Path.of(filePath), "application/yaml");
-
-        HttpRequest createPipelineRequest = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines/upload?name=%s&description=%s".formatted(name, description)))
-                .header("Content-Type", requestBody.contentType())
-                .POST(requestBody)
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        var responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
-
-        assertThat(responseCreate.body(), responseCreate.statusCode(), Matchers.is(200));
-
-        return new ObjectMapper().readValue(responseCreate.body(), Pipeline.class);
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_2)
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
 
     /// ODS-2206 - Verify user can create and run a data science pipeline in DS Project
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
@@ -352,7 +222,7 @@ public class PipelineServerST extends StandardAbstract {
 
         var svc = client.services().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
         var endpoints = client.endpoints().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
-        TestUtils.waitFor("pipelines svc to come up", 1000, 1000 * 60, () -> {
+        TestUtils.waitFor("pipelines svc to come up", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             try {
                 var endpointset = endpoints.get();
                 if (endpointset == null) {
@@ -444,14 +314,25 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     @SneakyThrows
-    private List<PipelineRun> getPipelineRunStatus() {
-        ObjectMapper objectMapper = new ObjectMapper();
+    Pipeline importPipeline(String name, String description, String project, String filePath) {
+        MultipartFormDataBodyPublisher requestBody = new MultipartFormDataBodyPublisher()
+                .addFile("uploadfile", Path.of(filePath), "application/yaml");
 
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
+        HttpRequest createPipelineRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines/upload?name=%s&description=%s".formatted(name, description)))
+                .header("Content-Type", requestBody.contentType())
+                .POST(requestBody)
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
+        var responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
 
+        assertThat(responseCreate.body(), responseCreate.statusCode(), Matchers.is(200));
+
+        return new ObjectMapper().readValue(responseCreate.body(), Pipeline.class);
+    }
+
+    @SneakyThrows
+    private List<PipelineRun> getPipelineRunStatus() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
                 .GET()
@@ -472,13 +353,6 @@ public class PipelineServerST extends StandardAbstract {
 
     @SneakyThrows
     private PipelineRun waitForPipelineRun(String pipelineRunId) {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8888/apis/v1beta1/runs/" + pipelineRunId))
                 .GET()
@@ -514,13 +388,6 @@ public class PipelineServerST extends StandardAbstract {
     private PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, String immediate) {
         Assertions.assertEquals(immediate, "Immediate");
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
         var pipelineRun = new PipelineRun();
         pipelineRun.name = pipelineTestRunBasename;
         pipelineRun.pipeline_spec = new PipelineSpec();
@@ -538,8 +405,6 @@ public class PipelineServerST extends StandardAbstract {
 
     @SneakyThrows
     private List<Pipeline> listPipelines(String prjTitle) {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         HttpClient httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .followRedirects(HttpClient.Redirect.NORMAL)
