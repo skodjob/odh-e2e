@@ -102,7 +102,7 @@ class PipelineSpec {
  */
 
 @ExtendWith(ResourceManagerDeleteHandler.class)
-public class PipelineServerST {
+public class PipelineServerST extends StandardAbstract {
     private static final Logger logger = LoggerFactory.getLogger(PipelineServerST.class);
 
     ResourceManager resourceManager = ResourceManager.getInstance();
