@@ -28,11 +28,11 @@ public class KubeUtils {
 
     public static void clearOdhRemainingResources() {
         ResourceManager.getKubeClient().getClient().apiextensions().v1().customResourceDefinitions().list().getItems()
-            .stream().filter(crd -> crd.getMetadata().getName().contains("opendatahub.io")).toList()
-            .forEach(crd -> {
-                LOGGER.info("Deleting CRD {}", crd.getMetadata().getName());
-                ResourceManager.getKubeClient().getClient().resource(crd).delete();
-            });
+                .stream().filter(crd -> crd.getMetadata().getName().contains("opendatahub.io")).toList()
+                .forEach(crd -> {
+                    LOGGER.info("Deleting CRD {}", crd.getMetadata().getName());
+                    ResourceManager.getKubeClient().getClient().resource(crd).delete();
+                });
         ResourceManager.getKubeClient().getClient().namespaces().withName("opendatahub").delete();
     }
 
@@ -45,16 +45,17 @@ public class KubeUtils {
     }
 
     public static void waitForInstallPlan(String namespace, String csvName) {
-        TestUtils.waitFor("Install plan with new version", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
-            try {
-                InstallPlan ip = ResourceManager.getKubeClient().getNonApprovedInstallPlan(namespace, csvName);
-                LOGGER.debug("Found InstallPlan {} - {}", ip.getMetadata().getName(), ip.getSpec().getClusterServiceVersionNames());
-                return true;
-            } catch (NoSuchElementException ex) {
-                LOGGER.debug("No new install plan available. Checking again ...");
-                return false;
-            }
-        }, () -> { });
+        TestUtils.waitFor(String.format("Install plan with new version: %s:%s", namespace, csvName),
+                TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+                    try {
+                        InstallPlan ip = ResourceManager.getKubeClient().getNonApprovedInstallPlan(namespace, csvName);
+                        LOGGER.debug("Found InstallPlan {} - {}", ip.getMetadata().getName(), ip.getSpec().getClusterServiceVersionNames());
+                        return true;
+                    } catch (NoSuchElementException ex) {
+                        LOGGER.debug("No new install plan available. Checking again ...");
+                        return false;
+                    }
+                }, () -> { });
     }
 
     private KubeUtils() {
