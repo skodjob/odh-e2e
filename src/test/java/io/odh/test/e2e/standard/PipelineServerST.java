@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
+import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /// helpers for reading json responses
@@ -144,6 +146,7 @@ public class PipelineServerST extends StandardAbstract {
                 .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines/upload?name=someName&description=someDescription"))
                 .header("Content-Type", requestBody.contentType())
                 .POST(requestBody)
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         var responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
         System.out.println(responseCreate);
@@ -168,7 +171,7 @@ public class PipelineServerST extends StandardAbstract {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines"))
                 .GET()
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         var reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println(reply.body());
@@ -207,7 +210,7 @@ public class PipelineServerST extends StandardAbstract {
                 .POST(HttpRequest.BodyPublishers.ofString(
                         objectMapper.writeValueAsString(pipelineRun)
                 ))
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         logger.info("{}", reply.body());
@@ -234,6 +237,7 @@ public class PipelineServerST extends StandardAbstract {
                 .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines/upload?name=%s&description=%s".formatted(name, description)))
                 .header("Content-Type", requestBody.contentType())
                 .POST(requestBody)
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         var responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
 
@@ -451,7 +455,7 @@ public class PipelineServerST extends StandardAbstract {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
                 .GET()
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -478,7 +482,7 @@ public class PipelineServerST extends StandardAbstract {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8888/apis/v1beta1/runs/" + pipelineRunId))
                 .GET()
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
 
         AtomicReference<PipelineRun> run = new AtomicReference<>();
@@ -524,7 +528,7 @@ public class PipelineServerST extends StandardAbstract {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(pipelineRun)))
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -544,7 +548,7 @@ public class PipelineServerST extends StandardAbstract {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8888/apis/v1beta1/pipelines"))
                 .GET()
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
 
         var reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
