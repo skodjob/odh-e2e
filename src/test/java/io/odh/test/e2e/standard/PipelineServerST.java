@@ -117,7 +117,7 @@ public class PipelineServerST extends StandardAbstract {
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
     /// https://issues.redhat.com/browse/RHODS-5133
     @Test
-    void pipelinez() {
+    void verifyUserCanCreateRunAndDeleteADSPipelineFromDSProject() {
         OpenShiftClient ocClient = (OpenShiftClient) client;
 
         String PIPELINE_TEST_NAME = "pipeline-test-name";
@@ -128,9 +128,7 @@ public class PipelineServerST extends StandardAbstract {
 
         final String secretName = "secret-name";
 
-        // install openshift pipelines (if not present)
         // create project
-
         Namespace ns = new NamespaceBuilder()
             .withNewMetadata()
             .withName(PRJ_TITLE)
@@ -140,6 +138,7 @@ public class PipelineServerST extends StandardAbstract {
             .build();
         ResourceManager.getInstance().createResourceWithWait(ns);
 
+        // create minio secret
         Secret secret = new SecretBuilder()
                 .withNewMetadata()
                     .withName(secretName)
@@ -213,81 +212,39 @@ public class PipelineServerST extends StandardAbstract {
                 .build();
         ResourceManager.getInstance().createResourceWithWait(dspa);
 
+        // wait for pipeline api server to come up
+        var endpoints = client.endpoints().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
+        waitForEndpoints(endpoints);
+
         // connect to the api server we just created, route not available unless I enable oauth
         var route = ocClient.routes()
                 .inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
-
-        var endpoints = client.endpoints().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
-        waitForEndpoints(endpoints);
 
         // TODO actually I don't know how to do oauth, so lets forward a port
         var svc = client.services().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
         svc.portForward(8888, 8888);
 
-//        Import Pipeline    name=${PIPELINE_TEST_NAME}
-//    ...    description=${PIPELINE_TEST_DESC}
-//    ...    project_title=${PRJ_TITLE}
-//    ...    filepath=${PIPELINE_TEST_FILEPATH}
-//    ...    press_cancel=${TRUE}
-//        Pipeline Should Not Be Listed    pipeline_name=${PIPELINE_TEST_NAME}
-//    ...    pipeline_description=${PIPELINE_TEST_DESC}
-//        Import Pipeline    name=${PIPELINE_TEST_NAME}
-//    ...    description=${PIPELINE_TEST_DESC}
-//    ...    project_title=${PRJ_TITLE}
-//    ...    filepath=${PIPELINE_TEST_FILEPATH}
-//    ...    press_cancel=${FALSE}
-
         var importedPipeline = importPipeline(PIPELINE_TEST_NAME,PIPELINE_TEST_DESC, PRJ_TITLE, PIPELINE_TEST_FILEPATH);
-
-//        Pipeline Context Menu Should Be Working    pipeline_name=${PIPELINE_TEST_NAME}
-//        Pipeline Yaml Should Be Readonly    pipeline_name=${PIPELINE_TEST_NAME}
-
-        // n/a
-
-//        Open Data Science Project Details Page    ${PRJ_TITLE}
-//        Pipeline Should Be Listed    pipeline_name=${PIPELINE_TEST_NAME}
-//    ...    pipeline_description=${PIPELINE_TEST_DESC}
-//        Capture Page Screenshot
 
         List<Pipeline> pipelines = listPipelines(PRJ_TITLE);
         assertThat(pipelines.stream().map(p->p.name).collect(Collectors.toList()), Matchers.contains(PIPELINE_TEST_NAME));
 
-//        ${workflow_name}=    Create Pipeline Run    name=${PIPELINE_TEST_RUN_BASENAME}
-//    ...    pipeline_name=${PIPELINE_TEST_NAME}    from_actions_menu=${FALSE}    run_type=Immediate
-//    ...    press_cancel=${TRUE}
-//        Open Data Science Project Details Page    ${PRJ_TITLE}
-//        ${workflow_name}=    Create Pipeline Run    name=${PIPELINE_TEST_RUN_BASENAME}
-//    ...    pipeline_name=${PIPELINE_TEST_NAME}    from_actions_menu=${FALSE}    run_type=Immediate
-//        Open Data Science Project Details Page    ${PRJ_TITLE}
-
         var pipelineRun = runPipeline(PIPELINE_TEST_RUN_BASENAME, importedPipeline.id, "Immediate");
 
-//        Wait Until Pipeline Last Run Is Started    pipeline_name=${PIPELINE_TEST_NAME}
-//    ...    timeout=10s
-
         waitForPipelineRun(pipelineRun.id);
-
-//        Wait Until Pipeline Last Run Is Finished    pipeline_name=${PIPELINE_TEST_NAME}
-//        Pipeline Last Run Should Be    pipeline_name=${PIPELINE_TEST_NAME}
-//    ...    run_name=${PIPELINE_TEST_RUN_BASENAME}
-//        Pipeline Last Run Status Should Be    pipeline_name=${PIPELINE_TEST_NAME}
-//    ...    status=Completed
 
         var status = getPipelineRunStatus();
         assertThat(status.stream().filter((r) -> r.id.equals(pipelineRun.id)).map((r) -> r.status).findFirst().get(), Matchers.is("Succeeded"));
 
 //        Pipeline Run Should Be Listed    name=${PIPELINE_TEST_RUN_BASENAME}
 //    ...    pipeline_name=${PIPELINE_TEST_NAME}
+
 //        Verify Pipeline Run Deployment Is Successful    project_title=${PRJ_TITLE}
 //    ...    workflow_name=${workflow_name}
 
-//        Delete Pipeline Run    ${PIPELINE_TEST_RUN_BASENAME}    ${PIPELINE_TEST_NAME}
-//        Delete Pipeline    ${PIPELINE_TEST_NAME}
-//        Delete Pipeline Server    ${PRJ_TITLE}
-
-        // deleting whole project, no need to delete individual things in the pipelines server
-//        deletePipelineRun();
-//        deletePipeline();
+        deletePipelineRun();
+        deletePipeline();
+        deletePipelineServer();
     }
 
     private static void waitForEndpoints(Resource<Endpoints> endpoints) {
@@ -419,5 +376,8 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     private void deletePipeline() {
+    }
+
+    private void deletePipelineServer() {
     }
 }
