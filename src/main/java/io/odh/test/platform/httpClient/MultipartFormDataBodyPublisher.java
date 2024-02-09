@@ -253,7 +253,7 @@ enum State {
 }
 
 class MultipartFormDataChannel implements ReadableByteChannel {
-    private static final Charset LATIN1 = Charset.forName("ISO-8859-1");
+    private static final Charset LATIN1 = StandardCharsets.ISO_8859_1;
     private boolean closed = false;
     private State state = State.Boundary;
     private final String boundary;
