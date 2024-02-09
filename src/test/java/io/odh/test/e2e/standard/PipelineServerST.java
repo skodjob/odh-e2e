@@ -7,12 +7,14 @@ package io.odh.test.e2e.standard;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestConstants;
@@ -99,7 +101,7 @@ class PipelineSpec {
  */
 
 @ExtendWith(ResourceManagerDeleteHandler.class)
-public class PipelineServerST extends StandardAbstract {
+public class PipelineServerST /*extends StandardAbstract*/ {
     private static final Logger logger = LoggerFactory.getLogger(PipelineServerST.class);
 
     private final ResourceManager resourceManager = ResourceManager.getInstance();
@@ -215,31 +217,11 @@ public class PipelineServerST extends StandardAbstract {
         var route = ocClient.routes()
                 .inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
 
-        var svc = client.services().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
         var endpoints = client.endpoints().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
-        TestUtils.waitFor("pipelines svc to come up", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
-            try {
-                var endpointset = endpoints.get();
-                if (endpointset == null) {
-                    return false;
-                }
-                var subsets = endpointset.getSubsets();
-                if (subsets.isEmpty()) {
-                    return false;
-                }
-                for (var subset : subsets) {
-                    return !subset.getAddresses().isEmpty();
-                }
-            } catch (KubernetesClientException e) {
-                if (e.getCode() == 404) {
-                    return false;
-                }
-                throw e;
-            }
-            return false;
-        });
-        System.out.println(route.get());
+        waitForEndpoints(endpoints);
+
         // TODO actually I don't know how to do oauth, so lets forward a port
+        var svc = client.services().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
         svc.portForward(8888, 8888);
 
 //        Import Pipeline    name=${PIPELINE_TEST_NAME}
@@ -308,6 +290,30 @@ public class PipelineServerST extends StandardAbstract {
 //        deletePipeline();
     }
 
+    private static void waitForEndpoints(Resource<Endpoints> endpoints) {
+        TestUtils.waitFor("pipelines svc to come up", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+            try {
+                var endpointset = endpoints.get();
+                if (endpointset == null) {
+                    return false;
+                }
+                var subsets = endpointset.getSubsets();
+                if (subsets.isEmpty()) {
+                    return false;
+                }
+                for (var subset : subsets) {
+                    return !subset.getAddresses().isEmpty();
+                }
+            } catch (KubernetesClientException e) {
+                if (e.getCode() == 404) {
+                    return false;
+                }
+                throw e;
+            }
+            return false;
+        });
+    }
+
     @SneakyThrows
     Pipeline importPipeline(String name, String description, String project, String filePath) {
         MultipartFormDataBodyPublisher requestBody = new MultipartFormDataBodyPublisher()
@@ -327,6 +333,42 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     @SneakyThrows
+    private List<Pipeline> listPipelines(String prjTitle) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8888/apis/v1beta1/pipelines"))
+                .GET()
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
+                .build();
+
+        var reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(reply.statusCode(), 200, reply.body());
+
+        var json = objectMapper.readValue(reply.body(), PipelineResponse.class);
+        List<Pipeline> pipelines = json.pipelines;
+
+        return pipelines;
+    }
+
+    @SneakyThrows
+    private PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, String immediate) {
+        Assertions.assertEquals(immediate, "Immediate");
+
+        var pipelineRun = new PipelineRun();
+        pipelineRun.name = pipelineTestRunBasename;
+        pipelineRun.pipeline_spec = new PipelineSpec();
+        pipelineRun.pipeline_spec.pipeline_id = pipelineId;
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(pipelineRun)))
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
+                .build();
+        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        Assertions.assertEquals(reply.statusCode(), 200, reply.body());
+        return objectMapper.readValue(reply.body(), ApiRunDetail.class).run;
+    }
+
+    @SneakyThrows
     private List<PipelineRun> getPipelineRunStatus() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
@@ -337,13 +379,6 @@ public class PipelineServerST extends StandardAbstract {
 
         Assertions.assertEquals(reply.statusCode(), 200, reply.body());
         return objectMapper.readValue(reply.body(), ApiListRunsResponse.class).runs;
-    }
-
-    private void deletePipeline() {
-    }
-
-    private void deletePipelineRun() {
-
     }
 
     @SneakyThrows
@@ -379,44 +414,10 @@ public class PipelineServerST extends StandardAbstract {
         return run.get();
     }
 
-    @SneakyThrows
-    private PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, String immediate) {
-        Assertions.assertEquals(immediate, "Immediate");
+    private void deletePipelineRun() {
 
-        var pipelineRun = new PipelineRun();
-        pipelineRun.name = pipelineTestRunBasename;
-        pipelineRun.pipeline_spec = new PipelineSpec();
-        pipelineRun.pipeline_spec.pipeline_id = pipelineId;
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(pipelineRun)))
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        Assertions.assertEquals(reply.statusCode(), 200, reply.body());
-        return objectMapper.readValue(reply.body(), ApiRunDetail.class).run;
     }
 
-    @SneakyThrows
-    private List<Pipeline> listPipelines(String prjTitle) {
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_2)
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .build();
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8888/apis/v1beta1/pipelines"))
-                .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-
-        var reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        Assertions.assertEquals(reply.statusCode(), 200, reply.body());
-
-        var json = objectMapper.readValue(reply.body(), PipelineResponse.class);
-        List<Pipeline> pipelines = json.pipelines;
-
-        return pipelines;
+    private void deletePipeline() {
     }
 }
