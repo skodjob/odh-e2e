@@ -58,6 +58,7 @@
         <maven.checkstyle.version>3.3.1</maven.checkstyle.version>
         <maven.download.plugin.version>1.7.1</maven.download.plugin.version>
         <commons.io.version>2.15.1</commons.io.version>
+        <maven.artifact.version>3.6.3</maven.artifact.version>
     </properties>
 
     <repositories>
@@ -167,6 +168,12 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-artifact</artifactId>
+            <version>${maven.artifact.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

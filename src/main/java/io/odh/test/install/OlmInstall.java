@@ -18,6 +18,7 @@ import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
 import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DeploymentUtils;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,7 @@ public class OlmInstall {
     private String deploymentName = OdhConstants.OLM_OPERATOR_DEPLOYMENT_NAME;
     private String olmAppBundlePrefix  = OdhConstants.OLM_OPERATOR_NAME;
     private String operatorVersion  = Environment.OLM_OPERATOR_VERSION;
-    private String csvName = (Runtime.Version.parse(operatorVersion).compareTo(Runtime.Version.parse("2.7.0")) >= 0 ? "rhoai" : operatorName) + "." + operatorVersion;
+    private String csvName = (new ComparableVersion(operatorVersion).compareTo(new ComparableVersion("2.7.0")) >= 0 ? "rhoai" : operatorName) + "." + operatorVersion;
 
     private String approval = TestConstants.APPROVAL_AUTOMATIC;
 
