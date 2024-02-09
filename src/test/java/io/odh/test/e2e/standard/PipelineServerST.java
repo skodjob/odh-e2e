@@ -90,11 +90,6 @@ class PipelineSpec {
 }
 
 /**
- * Q1: which http library?
- * fabric8 uses okhttp3
- * there is HttpClient in java 17; does not have multipart form post request helper class?
- * found https://github.com/rest-assured/rest-assured
- * <p>
  * Q2: how to deal with jsons from kf pipeline?
  * fabric8 uses jackson; either use ad hoc, or generate client from openapi/swagger
  * rest-assured can read json fields using string paths (example in its readme)
