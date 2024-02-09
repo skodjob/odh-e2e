@@ -246,7 +246,7 @@ public class PipelineServerST {
     /// https://issues.redhat.com/browse/RHODS-5133
     @Test
     void pipelinez() {
-        OpenShiftClient ocClient = client.adapt(OpenShiftClient.class);
+        OpenShiftClient ocClient = (OpenShiftClient) client;
 
         String PIPELINE_TEST_NAME = "pipeline-test-name";
         String PIPELINE_TEST_DESC = "pipeline-test-desc";
