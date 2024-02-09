@@ -36,7 +36,7 @@ public class OlmInstall {
     private String deploymentName = OdhConstants.OLM_OPERATOR_DEPLOYMENT_NAME;
     private String olmAppBundlePrefix  = OdhConstants.OLM_OPERATOR_NAME;
     private String operatorVersion  = Environment.OLM_OPERATOR_VERSION;
-    private String csvName = operatorName + "." + operatorVersion;
+    private String csvName = (Runtime.Version.parse(operatorVersion).compareTo(Runtime.Version.parse("2.7.0")) >= 0 ? "rhoai" : operatorName) + "." + operatorVersion;
 
     private String approval = TestConstants.APPROVAL_AUTOMATIC;
 
