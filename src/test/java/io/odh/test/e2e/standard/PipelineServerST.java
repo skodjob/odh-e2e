@@ -107,12 +107,6 @@ public class PipelineServerST extends StandardAbstract {
     private final ResourceManager resourceManager = ResourceManager.getInstance();
     private final KubernetesClient client = ResourceManager.getKubeClient().getClient();
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
-
     /// ODS-2206 - Verify user can create and run a data science pipeline in DS Project
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
     /// https://issues.redhat.com/browse/RHODS-5133
@@ -224,16 +218,18 @@ public class PipelineServerST extends StandardAbstract {
         var svc = client.services().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
         svc.portForward(8888, 8888);
 
-        var importedPipeline = importPipeline(PIPELINE_TEST_NAME,PIPELINE_TEST_DESC, PRJ_TITLE, PIPELINE_TEST_FILEPATH);
+        var kfpv1Client = new KFPv1Client("http://localhost:8888");
 
-        List<Pipeline> pipelines = listPipelines(PRJ_TITLE);
+        var importedPipeline = kfpv1Client.importPipeline(PIPELINE_TEST_NAME,PIPELINE_TEST_DESC, PRJ_TITLE, PIPELINE_TEST_FILEPATH);
+
+        List<Pipeline> pipelines = kfpv1Client.listPipelines(PRJ_TITLE);
         assertThat(pipelines.stream().map(p->p.name).collect(Collectors.toList()), Matchers.contains(PIPELINE_TEST_NAME));
 
-        var pipelineRun = runPipeline(PIPELINE_TEST_RUN_BASENAME, importedPipeline.id, "Immediate");
+        var pipelineRun = kfpv1Client.runPipeline(PIPELINE_TEST_RUN_BASENAME, importedPipeline.id, "Immediate");
 
-        waitForPipelineRun(pipelineRun.id);
+        kfpv1Client.waitForPipelineRun(pipelineRun.id);
 
-        var status = getPipelineRunStatus();
+        var status = kfpv1Client.getPipelineRunStatus();
         assertThat(status.stream().filter((r) -> r.id.equals(pipelineRun.id)).map((r) -> r.status).findFirst().get(), Matchers.is("Succeeded"));
 
 //        Pipeline Run Should Be Listed    name=${PIPELINE_TEST_RUN_BASENAME}
@@ -242,9 +238,9 @@ public class PipelineServerST extends StandardAbstract {
 //        Verify Pipeline Run Deployment Is Successful    project_title=${PRJ_TITLE}
 //    ...    workflow_name=${workflow_name}
 
-        deletePipelineRun();
-        deletePipeline();
-        deletePipelineServer();
+        kfpv1Client.deletePipelineRun();
+        kfpv1Client.deletePipeline();
+        kfpv1Client.deletePipelineServer();
     }
 
     private static void waitForEndpoints(Resource<Endpoints> endpoints) {
@@ -270,6 +266,20 @@ public class PipelineServerST extends StandardAbstract {
             return false;
         });
     }
+}
+
+class KFPv1Client {
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_2)
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .build();
+
+    private final String baseUrl;
+
+    public KFPv1Client(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 
     @SneakyThrows
     Pipeline importPipeline(String name, String description, String project, String filePath) {
@@ -277,7 +287,7 @@ public class PipelineServerST extends StandardAbstract {
                 .addFile("uploadfile", Path.of(filePath), "application/yaml");
 
         HttpRequest createPipelineRequest = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:8888/apis/v1beta1/pipelines/upload?name=%s&description=%s".formatted(name, description)))
+                .uri(new URI(baseUrl + "/apis/v1beta1/pipelines/upload?name=%s&description=%s".formatted(name, description)))
                 .header("Content-Type", requestBody.contentType())
                 .POST(requestBody)
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
@@ -290,9 +300,9 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     @SneakyThrows
-    private List<Pipeline> listPipelines(String prjTitle) {
+    public List<Pipeline> listPipelines(String prjTitle) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8888/apis/v1beta1/pipelines"))
+                .uri(URI.create(baseUrl + "/apis/v1beta1/pipelines"))
                 .GET()
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
@@ -307,7 +317,7 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     @SneakyThrows
-    private PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, String immediate) {
+    public PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, String immediate) {
         Assertions.assertEquals(immediate, "Immediate");
 
         var pipelineRun = new PipelineRun();
@@ -315,7 +325,7 @@ public class PipelineServerST extends StandardAbstract {
         pipelineRun.pipeline_spec = new PipelineSpec();
         pipelineRun.pipeline_spec.pipeline_id = pipelineId;
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
+                .uri(URI.create(baseUrl + "/apis/v1beta1/runs"))
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(pipelineRun)))
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
@@ -326,9 +336,9 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     @SneakyThrows
-    private List<PipelineRun> getPipelineRunStatus() {
+    public List<PipelineRun> getPipelineRunStatus() {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8888/apis/v1beta1/runs"))
+                .uri(URI.create(baseUrl + "/apis/v1beta1/runs"))
                 .GET()
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
@@ -339,9 +349,9 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     @SneakyThrows
-    private PipelineRun waitForPipelineRun(String pipelineRunId) {
+    public PipelineRun waitForPipelineRun(String pipelineRunId) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8888/apis/v1beta1/runs/" + pipelineRunId))
+                .uri(URI.create(baseUrl + "/apis/v1beta1/runs/" + pipelineRunId))
                 .GET()
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
@@ -371,13 +381,13 @@ public class PipelineServerST extends StandardAbstract {
         return run.get();
     }
 
-    private void deletePipelineRun() {
+    public void deletePipelineRun() {
 
     }
 
-    private void deletePipeline() {
+    public void deletePipeline() {
     }
 
-    private void deletePipelineServer() {
+    public void deletePipelineServer() {
     }
 }
