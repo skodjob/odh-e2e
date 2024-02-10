@@ -47,50 +47,6 @@ import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-/// helpers for reading json responses
-/// there should be openapi spec, so this can be generated
-
-class PipelineResponse {
-    public List<Pipeline> pipelines;
-    public int total_size;
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-class Pipeline {
-    public String id;
-    public String name;
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-class ApiRunDetail {
-    public PipelineRun run;
-}
-
-class ApiListRunsResponse {
-    public List<PipelineRun> runs;
-    public int total_size;
-    public String next_page_token;
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-class PipelineRun {
-    public String id;
-    public String name;
-    public PipelineSpec pipeline_spec;
-
-    public String created_at;
-    public String scheduled_at;
-    public String finished_at;
-    public String status;
-    public String error;
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-class PipelineSpec {
-    public String pipeline_id;
-    public String pipeline_name;
-}
-
 /**
  * Q2: how to deal with jsons from kf pipeline?
  * fabric8 uses jackson; either use ad hoc, or generate client from openapi/swagger
@@ -222,7 +178,7 @@ public class PipelineServerST extends StandardAbstract {
 
         var importedPipeline = kfpv1Client.importPipeline(PIPELINE_TEST_NAME,PIPELINE_TEST_DESC, PRJ_TITLE, PIPELINE_TEST_FILEPATH);
 
-        List<Pipeline> pipelines = kfpv1Client.listPipelines(PRJ_TITLE);
+        List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines(PRJ_TITLE);
         assertThat(pipelines.stream().map(p->p.name).collect(Collectors.toList()), Matchers.contains(PIPELINE_TEST_NAME));
 
         var pipelineRun = kfpv1Client.runPipeline(PIPELINE_TEST_RUN_BASENAME, importedPipeline.id, "Immediate");
@@ -389,5 +345,49 @@ class KFPv1Client {
     }
 
     public void deletePipelineServer() {
+    }
+
+    /// helpers for reading json responses
+    /// there should be openapi spec, so this can be generated
+
+    static class PipelineResponse {
+        public List<Pipeline> pipelines;
+        public int total_size;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class Pipeline {
+        public String id;
+        public String name;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class ApiRunDetail {
+        public PipelineRun run;
+    }
+
+    static class ApiListRunsResponse {
+        public List<PipelineRun> runs;
+        public int total_size;
+        public String next_page_token;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class PipelineRun {
+        public String id;
+        public String name;
+        public PipelineSpec pipeline_spec;
+
+        public String created_at;
+        public String scheduled_at;
+        public String finished_at;
+        public String status;
+        public String error;
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    static class PipelineSpec {
+        public String pipeline_id;
+        public String pipeline_name;
     }
 }
