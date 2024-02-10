@@ -67,7 +67,7 @@ public class PipelineServerST extends StandardAbstract {
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
     /// https://issues.redhat.com/browse/RHODS-5133
     @Test
-    void verifyUserCanCreateRunAndDeleteADSPipelineFromDSProject() {
+    void verifyUserCanCreateRunAndDeleteADSPipelineFromDSProject() throws IOException {
         OpenShiftClient ocClient = (OpenShiftClient) client;
 
         String PIPELINE_TEST_NAME = "pipeline-test-name";
@@ -172,21 +172,20 @@ public class PipelineServerST extends StandardAbstract {
 
         // TODO actually I don't know how to do oauth, so lets forward a port
         var svc = client.services().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
-        svc.portForward(8888, 8888);
+        try (var portForward = svc.portForward(8888, 0)) {
+            var kfpv1Client = new KFPv1Client("http://localhost:%d".formatted(portForward.getLocalPort()));
 
-        var kfpv1Client = new KFPv1Client("http://localhost:8888");
+            var importedPipeline = kfpv1Client.importPipeline(PIPELINE_TEST_NAME, PIPELINE_TEST_DESC, PRJ_TITLE, PIPELINE_TEST_FILEPATH);
 
-        var importedPipeline = kfpv1Client.importPipeline(PIPELINE_TEST_NAME,PIPELINE_TEST_DESC, PRJ_TITLE, PIPELINE_TEST_FILEPATH);
+            List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines(PRJ_TITLE);
+            assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(PIPELINE_TEST_NAME));
 
-        List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines(PRJ_TITLE);
-        assertThat(pipelines.stream().map(p->p.name).collect(Collectors.toList()), Matchers.contains(PIPELINE_TEST_NAME));
+            var pipelineRun = kfpv1Client.runPipeline(PIPELINE_TEST_RUN_BASENAME, importedPipeline.id, "Immediate");
 
-        var pipelineRun = kfpv1Client.runPipeline(PIPELINE_TEST_RUN_BASENAME, importedPipeline.id, "Immediate");
+            kfpv1Client.waitForPipelineRun(pipelineRun.id);
 
-        kfpv1Client.waitForPipelineRun(pipelineRun.id);
-
-        var status = kfpv1Client.getPipelineRunStatus();
-        assertThat(status.stream().filter((r) -> r.id.equals(pipelineRun.id)).map((r) -> r.status).findFirst().get(), Matchers.is("Succeeded"));
+            var status = kfpv1Client.getPipelineRunStatus();
+            assertThat(status.stream().filter((r) -> r.id.equals(pipelineRun.id)).map((r) -> r.status).findFirst().get(), Matchers.is("Succeeded"));
 
 //        Pipeline Run Should Be Listed    name=${PIPELINE_TEST_RUN_BASENAME}
 //    ...    pipeline_name=${PIPELINE_TEST_NAME}
@@ -194,9 +193,10 @@ public class PipelineServerST extends StandardAbstract {
 //        Verify Pipeline Run Deployment Is Successful    project_title=${PRJ_TITLE}
 //    ...    workflow_name=${workflow_name}
 
-        kfpv1Client.deletePipelineRun();
-        kfpv1Client.deletePipeline();
-        kfpv1Client.deletePipelineServer();
+            kfpv1Client.deletePipelineRun();
+            kfpv1Client.deletePipeline();
+            kfpv1Client.deletePipelineServer();
+        }
     }
 
     private static void waitForEndpoints(Resource<Endpoints> endpoints) {
