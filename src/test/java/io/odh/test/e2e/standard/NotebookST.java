@@ -109,22 +109,22 @@ public class NotebookST extends StandardAbstract {
                             new DashboardBuilder().withManagementState(Dashboard.ManagementState.MANAGED).build()
                         )
                         .withKserve(
-                            new KserveBuilder().withManagementState(Kserve.ManagementState.REMOVED).build()
+                            new KserveBuilder().withManagementState(Kserve.ManagementState.MANAGED).build()
                         )
                         .withCodeflare(
-                            new CodeflareBuilder().withManagementState(Codeflare.ManagementState.REMOVED).build()
+                            new CodeflareBuilder().withManagementState(Codeflare.ManagementState.MANAGED).build()
                         )
                         .withDatasciencepipelines(
-                            new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.REMOVED).build()
+                            new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.MANAGED).build()
                         )
                         .withModelmeshserving(
-                            new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.REMOVED).build()
+                            new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.MANAGED).build()
                         )
                         .withRay(
-                            new RayBuilder().withManagementState(Ray.ManagementState.REMOVED).build()
+                            new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
                         )
                         .withTrustyai(
-                            new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.REMOVED).build()
+                            new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.MANAGED).build()
                         )
                         .build())
                 .endSpec()
