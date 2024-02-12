@@ -80,7 +80,7 @@ public class PipelineServerST extends StandardAbstract {
         final String pipelineTestName = "pipeline-test-name";
         final String pipelineTestDesc = "pipeline-test-desc";
         final String prjTitle = "pipeline-test";
-        final String pipelineTestFilepath = "/home/jdanek/repos/odh-e2e/src/test/resources/pipelines/iris_pipeline_compiled.yaml";
+        final String pipelineTestFilepath = "src/test/resources/pipelines/iris_pipeline_compiled.yaml";
         final String pipelineTestRunBasename = "pipeline-test-run-basename";
 
         final String secretName = "secret-name";
