@@ -4,9 +4,10 @@
  */
 package io.odh.test.e2e.standard;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
@@ -58,7 +59,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(ResourceManagerDeleteHandler.class)
 public class PipelineServerST extends StandardAbstract {
-    private static final Logger logger = LoggerFactory.getLogger(PipelineServerST.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServerST.class);
 
     private final ResourceManager resourceManager = ResourceManager.getInstance();
     private final KubernetesClient client = ResourceManager.getKubeClient().getClient();
@@ -70,18 +71,18 @@ public class PipelineServerST extends StandardAbstract {
     void verifyUserCanCreateRunAndDeleteADSPipelineFromDSProject() throws IOException {
         OpenShiftClient ocClient = (OpenShiftClient) client;
 
-        String PIPELINE_TEST_NAME = "pipeline-test-name";
-        String PIPELINE_TEST_DESC = "pipeline-test-desc";
-        String PRJ_TITLE = "pipeline-test";
-        String PIPELINE_TEST_FILEPATH = "/home/jdanek/repos/odh-e2e/src/test/resources/pipelines/iris_pipeline_compiled.yaml";
-        String PIPELINE_TEST_RUN_BASENAME = "pipeline-test-run-basename";
+        final String pipelineTestName = "pipeline-test-name";
+        final String pipelineTestDesc = "pipeline-test-desc";
+        final String prjTitle = "pipeline-test";
+        final String pipelineTestFilepath = "/home/jdanek/repos/odh-e2e/src/test/resources/pipelines/iris_pipeline_compiled.yaml";
+        final String pipelineTestRunBasename = "pipeline-test-run-basename";
 
         final String secretName = "secret-name";
 
         // create project
         Namespace ns = new NamespaceBuilder()
             .withNewMetadata()
-            .withName(PRJ_TITLE)
+            .withName(prjTitle)
             .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
             .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
             .endMetadata()
@@ -93,7 +94,7 @@ public class PipelineServerST extends StandardAbstract {
                 .withNewMetadata()
                     .withName(secretName)
                     .addToLabels("opendatahub.io/dashboard", "true")
-                    .withNamespace(PRJ_TITLE)
+                    .withNamespace(prjTitle)
                 .endMetadata()
                 .addToStringData("AWS_ACCESS_KEY_ID", "KEY007")
                 .addToStringData("AWS_S3_BUCKET", "HolyGrail")
@@ -106,7 +107,7 @@ public class PipelineServerST extends StandardAbstract {
         var dspa = new DataSciencePipelinesApplicationBuilder()
                 .withNewMetadata()
                     .withName("pipelines-definition")
-                    .withNamespace(PRJ_TITLE)
+                    .withNamespace(prjTitle)
                 .endMetadata()
                 .withNewSpec()
                     .withNewApiServer()
@@ -163,34 +164,34 @@ public class PipelineServerST extends StandardAbstract {
         ResourceManager.getInstance().createResourceWithWait(dspa);
 
         // wait for pipeline api server to come up
-        var endpoints = client.endpoints().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
+        var endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
         waitForEndpoints(endpoints);
 
         // connect to the api server we just created, route not available unless I enable oauth
         var route = ocClient.routes()
-                .inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
+                .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
 
         // TODO actually I don't know how to do oauth, so lets forward a port
-        var svc = client.services().inNamespace(PRJ_TITLE).withName("ds-pipeline-pipelines-definition");
+        var svc = client.services().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
         try (var portForward = svc.portForward(8888, 0)) {
             var kfpv1Client = new KFPv1Client("http://localhost:%d".formatted(portForward.getLocalPort()));
 
-            var importedPipeline = kfpv1Client.importPipeline(PIPELINE_TEST_NAME, PIPELINE_TEST_DESC, PRJ_TITLE, PIPELINE_TEST_FILEPATH);
+            var importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, prjTitle, pipelineTestFilepath);
 
-            List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines(PRJ_TITLE);
-            assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(PIPELINE_TEST_NAME));
+            List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines(prjTitle);
+            assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
 
-            var pipelineRun = kfpv1Client.runPipeline(PIPELINE_TEST_RUN_BASENAME, importedPipeline.id, "Immediate");
+            var pipelineRun = kfpv1Client.runPipeline(pipelineTestRunBasename, importedPipeline.id, "Immediate");
 
             kfpv1Client.waitForPipelineRun(pipelineRun.id);
 
             var status = kfpv1Client.getPipelineRunStatus();
-            assertThat(status.stream().filter((r) -> r.id.equals(pipelineRun.id)).map((r) -> r.status).findFirst().get(), Matchers.is("Succeeded"));
+            assertThat(status.stream().filter(r -> r.id.equals(pipelineRun.id)).map(r -> r.status).findFirst().get(), Matchers.is("Succeeded"));
 
-//        Pipeline Run Should Be Listed    name=${PIPELINE_TEST_RUN_BASENAME}
-//    ...    pipeline_name=${PIPELINE_TEST_NAME}
+//        Pipeline Run Should Be Listed    name=${pipelineTestRunBasename}
+//    ...    pipeline_name=${pipelineTestName}
 
-//        Verify Pipeline Run Deployment Is Successful    project_title=${PRJ_TITLE}
+//        Verify Pipeline Run Deployment Is Successful    project_title=${prjTitle}
 //    ...    workflow_name=${workflow_name}
 
             kfpv1Client.deletePipelineRun();
@@ -225,7 +226,9 @@ public class PipelineServerST extends StandardAbstract {
 }
 
 class KFPv1Client {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
     private final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
             .followRedirects(HttpClient.Redirect.NORMAL)
@@ -252,7 +255,7 @@ class KFPv1Client {
 
         assertThat(responseCreate.body(), responseCreate.statusCode(), Matchers.is(200));
 
-        return new ObjectMapper().readValue(responseCreate.body(), Pipeline.class);
+        return objectMapper.readValue(responseCreate.body(), Pipeline.class);
     }
 
     @SneakyThrows
@@ -278,8 +281,8 @@ class KFPv1Client {
 
         var pipelineRun = new PipelineRun();
         pipelineRun.name = pipelineTestRunBasename;
-        pipelineRun.pipeline_spec = new PipelineSpec();
-        pipelineRun.pipeline_spec.pipeline_id = pipelineId;
+        pipelineRun.pipelineSpec = new PipelineSpec();
+        pipelineRun.pipelineSpec.pipelineId = pipelineId;
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/apis/v1beta1/runs"))
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(pipelineRun)))
@@ -338,7 +341,6 @@ class KFPv1Client {
     }
 
     public void deletePipelineRun() {
-
     }
 
     public void deletePipeline() {
@@ -352,42 +354,38 @@ class KFPv1Client {
 
     static class PipelineResponse {
         public List<Pipeline> pipelines;
-        public int total_size;
+        public int totalSize;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     static class Pipeline {
         public String id;
         public String name;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     static class ApiRunDetail {
         public PipelineRun run;
     }
 
     static class ApiListRunsResponse {
         public List<PipelineRun> runs;
-        public int total_size;
-        public String next_page_token;
+        public int totalSize;
+        public String nextPageToken;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     static class PipelineRun {
         public String id;
         public String name;
-        public PipelineSpec pipeline_spec;
+        public PipelineSpec pipelineSpec;
 
-        public String created_at;
-        public String scheduled_at;
-        public String finished_at;
+        public String createdAt;
+        public String scheduledAt;
+        public String finishedAt;
         public String status;
         public String error;
     }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
     static class PipelineSpec {
-        public String pipeline_id;
-        public String pipeline_name;
+        public String pipelineId;
+        public String pipelineName;
     }
 }

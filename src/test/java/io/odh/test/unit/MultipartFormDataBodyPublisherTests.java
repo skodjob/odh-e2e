@@ -1,8 +1,8 @@
 /*
  * Copyright Skodjob authors.
- * Copyright (c) 2022 yusuke suzuki
  * License: Apache License 2.0 (see the file LICENSE or http://apache.org/licenses/LICENSE-2.0.html).
  */
+// Copyright (c) 2022 yusuke suzuki
 package io.odh.test.unit;
 
 import com.sun.net.httpserver.HttpServer;
