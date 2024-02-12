@@ -8,14 +8,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import io.fabric8.kubernetes.api.model.EndpointSubset;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
+import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.LocalPortForward;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import io.fabric8.kubernetes.client.dsl.ServiceResource;
+import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestConstants;
@@ -23,6 +28,7 @@ import io.odh.test.TestUtils;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
+import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplication;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
 import lombok.SneakyThrows;
@@ -104,7 +110,7 @@ public class PipelineServerST extends StandardAbstract {
         ResourceManager.getInstance().createResourceWithWait(secret);
 
         // configure pipeline server (with minio, not AWS bucket)
-        var dspa = new DataSciencePipelinesApplicationBuilder()
+        DataSciencePipelinesApplication dspa = new DataSciencePipelinesApplicationBuilder()
                 .withNewMetadata()
                     .withName("pipelines-definition")
                     .withNamespace(prjTitle)
@@ -143,7 +149,7 @@ public class PipelineServerST extends StandardAbstract {
                             .withDeploy(true)
                             .withImage("quay.io/minio/minio")
                             .withNewPvcSize("1Gi")
-                            .withBucket("HollyGrail")
+                            .withBucket("HolyGrail")
                             .withNewS3CredentialsSecret()
                                 .withAccessKey("AWS_ACCESS_KEY_ID")
                                 .withSecretKey("AWS_SECRET_ACCESS_KEY")
@@ -164,28 +170,28 @@ public class PipelineServerST extends StandardAbstract {
         ResourceManager.getInstance().createResourceWithWait(dspa);
 
         // wait for pipeline api server to come up
-        var endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
+        Resource<Endpoints> endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
         waitForEndpoints(endpoints);
 
         // connect to the api server we just created, route not available unless I enable oauth
-        var route = ocClient.routes()
+        Resource<Route> route = ocClient.routes()
                 .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
 
         // TODO actually I don't know how to do oauth, so lets forward a port
-        var svc = client.services().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
-        try (var portForward = svc.portForward(8888, 0)) {
-            var kfpv1Client = new KFPv1Client("http://localhost:%d".formatted(portForward.getLocalPort()));
+        ServiceResource<Service> svc = client.services().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
+        try (LocalPortForward portForward = svc.portForward(8888, 0)) {
+            KFPv1Client kfpv1Client = new KFPv1Client("http://localhost:%d".formatted(portForward.getLocalPort()));
 
-            var importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, prjTitle, pipelineTestFilepath);
+            KFPv1Client.Pipeline importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, prjTitle, pipelineTestFilepath);
 
             List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines(prjTitle);
             assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
 
-            var pipelineRun = kfpv1Client.runPipeline(pipelineTestRunBasename, importedPipeline.id, "Immediate");
+            KFPv1Client.PipelineRun pipelineRun = kfpv1Client.runPipeline(pipelineTestRunBasename, importedPipeline.id, "Immediate");
 
             kfpv1Client.waitForPipelineRun(pipelineRun.id);
 
-            var status = kfpv1Client.getPipelineRunStatus();
+            List<KFPv1Client.PipelineRun> status = kfpv1Client.getPipelineRunStatus();
             assertThat(status.stream().filter(r -> r.id.equals(pipelineRun.id)).map(r -> r.status).findFirst().get(), Matchers.is("Succeeded"));
 
 //        Pipeline Run Should Be Listed    name=${pipelineTestRunBasename}
@@ -203,15 +209,15 @@ public class PipelineServerST extends StandardAbstract {
     private static void waitForEndpoints(Resource<Endpoints> endpoints) {
         TestUtils.waitFor("pipelines svc to come up", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             try {
-                var endpointset = endpoints.get();
+                Endpoints endpointset = endpoints.get();
                 if (endpointset == null) {
                     return false;
                 }
-                var subsets = endpointset.getSubsets();
+                List<EndpointSubset> subsets = endpointset.getSubsets();
                 if (subsets.isEmpty()) {
                     return false;
                 }
-                for (var subset : subsets) {
+                for (EndpointSubset subset : subsets) {
                     return !subset.getAddresses().isEmpty();
                 }
             } catch (KubernetesClientException e) {
@@ -251,7 +257,7 @@ class KFPv1Client {
                 .POST(requestBody)
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
-        var responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
 
         assertThat(responseCreate.body(), responseCreate.statusCode(), Matchers.is(200));
 
@@ -266,10 +272,10 @@ class KFPv1Client {
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
 
-        var reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(reply.statusCode(), 200, reply.body());
 
-        var json = objectMapper.readValue(reply.body(), PipelineResponse.class);
+        PipelineResponse json = objectMapper.readValue(reply.body(), PipelineResponse.class);
         List<Pipeline> pipelines = json.pipelines;
 
         return pipelines;
@@ -279,7 +285,7 @@ class KFPv1Client {
     public PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, String immediate) {
         Assertions.assertEquals(immediate, "Immediate");
 
-        var pipelineRun = new PipelineRun();
+        PipelineRun pipelineRun = new PipelineRun();
         pipelineRun.name = pipelineTestRunBasename;
         pipelineRun.pipelineSpec = new PipelineSpec();
         pipelineRun.pipelineSpec.pipelineId = pipelineId;
@@ -322,7 +328,7 @@ class KFPv1Client {
                 reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 Assertions.assertEquals(reply.statusCode(), 200, reply.body());
                 run.set(objectMapper.readValue(reply.body(), ApiRunDetail.class).run);
-                var status = run.get().status;
+                String status = run.get().status;
                 if (status.equals("Failed")) { // todo possible statuses?
                     throw new AssertionError("Pipeline run failed: " + status.toString() + run.get().error);
                 }

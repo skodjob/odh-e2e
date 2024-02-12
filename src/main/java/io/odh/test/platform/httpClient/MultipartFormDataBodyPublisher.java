@@ -33,8 +33,8 @@ import java.util.function.Supplier;
  */
 public class MultipartFormDataBodyPublisher implements BodyPublisher {
     private static String nextBoundary() {
-        var random = new BigInteger(128, new Random());
-        try (var formatter = new Formatter()) {
+        BigInteger random = new BigInteger(128, new Random());
+        try (Formatter formatter = new Formatter()) {
             return formatter.format("-----------------------------%039d", random).toString();
         }
     }
@@ -120,7 +120,7 @@ public class MultipartFormDataBodyPublisher implements BodyPublisher {
      * @return Content-Type
      */
     public String contentType() {
-        try (var formatter = new Formatter()) {
+        try (Formatter formatter = new Formatter()) {
             return formatter.format("multipart/form-data; boundary=%s", this.boundary).toString();
         }
     }
@@ -169,7 +169,7 @@ class StringPart implements Part {
 
     @Override
     public ReadableByteChannel open() throws IOException {
-        var input = new ByteArrayInputStream(this.value.getBytes(this.charset));
+        ByteArrayInputStream input = new ByteArrayInputStream(this.value.getBytes(this.charset));
         return Channels.newChannel(input);
     }
 }
@@ -287,8 +287,8 @@ class MultipartFormDataChannel implements ReadableByteChannel {
     public int read(ByteBuffer buf) throws IOException {
         while (true) {
             if (this.buf.hasRemaining()) {
-                var n = Math.min(this.buf.remaining(), buf.remaining());
-                var slice = this.buf.slice();
+                int n = Math.min(this.buf.remaining(), buf.remaining());
+                ByteBuffer slice = this.buf.slice();
                 slice.limit(n);
                 buf.put(slice);
                 this.buf.position(this.buf.position() + n);
@@ -317,7 +317,7 @@ class MultipartFormDataChannel implements ReadableByteChannel {
                         this.channel = this.current.open();
                     }
 
-                    var n = this.channel.read(buf);
+                    int n = this.channel.read(buf);
                     if (n == -1) {
                         this.channel.close();
                         this.channel = null;
@@ -339,44 +339,44 @@ class MultipartFormDataChannel implements ReadableByteChannel {
     }
 
     String currentHeaders() {
-        var current = this.current;
+        Part current = this.current;
 
         if (current == null) {
             throw new IllegalStateException();
         }
 
-        var contentType = current.contentType();
-        var filename = current.filename();
+        Optional<String> contentType = current.contentType();
+        Optional<String> filename = current.filename();
         if (contentType.isPresent() && filename.isPresent()) {
-            var format = new StringJoiner("\r\n", "", "\r\n")
+            String format = new StringJoiner("\r\n", "", "\r\n")
                     .add("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"").add("Content-Type: %s")
                     .toString();
-            try (var formatter = new Formatter()) {
+            try (Formatter formatter = new Formatter()) {
                 return formatter
                         .format(format, escape(current.name()), escape(filename.get()), escape(contentType.get()))
                         .toString() + "\r\n"; // FIXME
             }
 
         } else if (contentType.isPresent()) {
-            var format = new StringJoiner("\r\n", "", "\r\n").add("Content-Disposition: form-data; name=\"%s\"")
+            String format = new StringJoiner("\r\n", "", "\r\n").add("Content-Disposition: form-data; name=\"%s\"")
                     .add("Content-Type: %s").toString();
-            try (var formatter = new Formatter()) {
+            try (Formatter formatter = new Formatter()) {
                 return formatter.format(format, escape(current.name()), escape(contentType.get())).toString() + "\r\n"; // FIXME
                 // escape
             }
 
         } else if (filename.isPresent()) {
-            var format = new StringJoiner("\r\n", "", "\r\n")
+            String format = new StringJoiner("\r\n", "", "\r\n")
                     .add("Content-Disposition: form-data; name=\"%s\"; filename=\"%s\"").toString();
-            try (var formatter = new Formatter()) {
+            try (Formatter formatter = new Formatter()) {
                 return formatter.format(format, escape(current.name()), escape(filename.get())).toString() + "\r\n"; // FIXME
                 // escape
             }
 
         } else {
-            var format = new StringJoiner("\r\n", "", "\r\n").add("Content-Disposition: form-data; name=\"%s\"")
+            String format = new StringJoiner("\r\n", "", "\r\n").add("Content-Disposition: form-data; name=\"%s\"")
                     .toString();
-            try (var formatter = new Formatter()) {
+            try (Formatter formatter = new Formatter()) {
                 return formatter.format(format, escape(current.name())).toString() + "\r\n"; // FIXME escape
             }
         }

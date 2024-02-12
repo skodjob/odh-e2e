@@ -33,9 +33,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class MultipartFormDataBodyPublisherTests {
     @Test
     public void testStringPart() throws IOException {
-        var publisher = new MultipartFormDataBodyPublisher()
+        MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()
                 .add("key", "val");
-        var str = suckStringFromPublisher(publisher);
+        String str = suckStringFromPublisher(publisher);
 
         assertThat(str, Matchers.matchesRegex(
                 getMultipartRegex("Content-Disposition: form-data; name=\"key\"\r\n\r\nval")));
@@ -47,9 +47,9 @@ public class MultipartFormDataBodyPublisherTests {
         tempFile.toFile().deleteOnExit();
         Files.writeString(tempFile, "Hello World\n");
 
-        var publisher = new MultipartFormDataBodyPublisher()
+        MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()
                 .addFile("key", tempFile);
-        var str = suckStringFromPublisher(publisher);
+        String str = suckStringFromPublisher(publisher);
 
         assertThat(str, Matchers.matchesRegex(
                 getMultipartRegex("Content-Disposition: form-data; name=\"key\"; filename=\"%s\"\r\nContent-Type: application/octet-stream\r\n\r\nHello World\n".formatted(tempFile.getFileName()))));
@@ -57,10 +57,10 @@ public class MultipartFormDataBodyPublisherTests {
 
     @Test
     public void testStreamPart() throws Exception {
-        var publisher = new MultipartFormDataBodyPublisher()
+        MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()
                 .addStream("key", "fname",
                         () -> new ByteArrayInputStream("hello, world!".getBytes()));
-        var str = suckStringFromPublisher(publisher);
+        String str = suckStringFromPublisher(publisher);
 
         assertThat(str, Matchers.matchesRegex(
                 getMultipartRegex("Content-Disposition: form-data; name=\"key\"; filename=\"fname\"\r\nContent-Type: application/octet-stream\r\n\r\nhello, world!")));
@@ -68,10 +68,10 @@ public class MultipartFormDataBodyPublisherTests {
 
     @Test
     public void testMultipartFormDataChannel() throws Exception {
-        var publisher = new MultipartFormDataBodyPublisher()
+        MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()
                 .add("key1", "val1")
                 .add("key2", "val2");
-        var str = suckStringFromPublisher(publisher);
+        String str = suckStringFromPublisher(publisher);
 
         assertThat(str, Matchers.matchesRegex(
                 getMultipartRegex(
@@ -81,9 +81,9 @@ public class MultipartFormDataBodyPublisherTests {
 
     @Test
     public void testMultipartFormDataChannelException() {
-        var ioException = new IOException();
+        IOException ioException = new IOException();
 
-        var publisher = new MultipartFormDataBodyPublisher()
+        MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()
                 .addStream("key", "fname", () -> new InputStream() {
                     @Override
                     public int read() throws IOException {
@@ -95,16 +95,16 @@ public class MultipartFormDataBodyPublisherTests {
                     }
                 });
 
-        var exception = Assertions.assertThrows(RuntimeException.class, () -> suckStringFromPublisher(publisher));
+        RuntimeException exception = Assertions.assertThrows(RuntimeException.class, () -> suckStringFromPublisher(publisher));
         Assertions.assertSame(ioException, exception.getCause().getCause());
     }
 
     @Test
     public void testMultipartFormData() throws Exception {
-        var httpd = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        HttpServer httpd = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
         new Thread(() -> httpd.start()).start();
         try {
-            var publisher = new MultipartFormDataBodyPublisher()
+            MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()
                     .add("key", "value")
                     .addFile("f1", Path.of("pom.xml"))
                     .addFile("f2", Path.of("pom.xml"), "application/xml")
@@ -113,8 +113,8 @@ public class MultipartFormDataBodyPublisherTests {
                     .addChannel("f5", "fname", () -> Channels.newChannel(new ByteArrayInputStream("".getBytes())))
                     .addChannel("f6", "fname", () -> Channels.newChannel(new ByteArrayInputStream("".getBytes())),
                             "application/xml");
-            var client = HttpClient.newHttpClient();
-            var request = HttpRequest
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest
                     .newBuilder(new URI("http", null, "localhost", httpd.getAddress().getPort(), "/", null, null))
                     .header("Content-Type", publisher.contentType()).POST(publisher).build();
             client.send(request, BodyHandlers.discarding());
@@ -126,7 +126,7 @@ public class MultipartFormDataBodyPublisherTests {
 
     String getMultipartRegex(String... bodies) {
         //language=RegExp
-        var regexBuffer = new StringBuilder();
+        StringBuilder regexBuffer = new StringBuilder();
         regexBuffer
                 .append("(?<boundary>-{31}\\d{39})");
         for (String body : bodies) {
@@ -145,7 +145,7 @@ public class MultipartFormDataBodyPublisherTests {
 
     @SneakyThrows
     String suckStringFromPublisher(Flow.Publisher<ByteBuffer> publisher) {
-        var result = new StringBuilder();
+        StringBuilder result = new StringBuilder();
         final CountDownLatch latch = new CountDownLatch(1);
         publisher.subscribe(new Flow.Subscriber<>() {
             @Override
