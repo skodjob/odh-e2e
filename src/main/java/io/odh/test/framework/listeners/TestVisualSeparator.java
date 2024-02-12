@@ -5,6 +5,7 @@
 package io.odh.test.framework.listeners;
 
 import io.odh.test.framework.ExtensionContextParameterResolver;
+import io.odh.test.LoggerUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,16 +13,13 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-
 @ExtendWith(ExtensionContextParameterResolver.class)
 public interface TestVisualSeparator {
     Logger LOGGER = LoggerFactory.getLogger(TestVisualSeparator.class);
-    String SEPARATOR_CHAR = "#";
 
     @BeforeEach
     default void beforeEachTest(ExtensionContext testContext) {
-        LOGGER.info(String.join("", Collections.nCopies(76, SEPARATOR_CHAR)));
+        LoggerUtils.logSeparator();
         LOGGER.info(String.format("%s.%s-STARTED", testContext.getRequiredTestClass().getName(),
                 testContext.getDisplayName().replace("()", "")));
     }
@@ -30,6 +28,6 @@ public interface TestVisualSeparator {
     default void afterEachTest(ExtensionContext testContext) {
         LOGGER.info(String.format("%s.%s-FINISHED", testContext.getRequiredTestClass().getName(),
                 testContext.getDisplayName().replace("()", "")));
-        LOGGER.info(String.join("", Collections.nCopies(76, SEPARATOR_CHAR)));
+        LoggerUtils.logSeparator();
     }
 }

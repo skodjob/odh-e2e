@@ -27,8 +27,8 @@ spec:
                                   --ServerApp.quit_button=False
                                   --ServerApp.tornado_settings={"user":"odh_user","hub_host":"odh_dashboard_route","hub_prefix":"/projects/my-project"}
             - name: JUPYTER_IMAGE
-              value: image-registry.openshift-image-registry.svc:5000/opendatahub/jupyter-pytorch-notebook:2023.2
-          image: image-registry.openshift-image-registry.svc:5000/opendatahub/jupyter-pytorch-notebook:2023.2
+              value: notebook_image_placeholder
+          image: notebook_image_placeholder
           imagePullPolicy: Always
           livenessProbe:
             failureThreshold: 3

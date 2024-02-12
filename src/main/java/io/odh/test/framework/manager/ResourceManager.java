@@ -14,6 +14,7 @@ import io.fabric8.kubernetes.api.model.rbac.ClusterRoleBinding;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
+import io.odh.test.framework.manager.resources.DataScienceInitializationResource;
 import io.odh.test.framework.manager.resources.NamespaceResource;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
@@ -23,10 +24,13 @@ import io.odh.test.platform.cmdClient.KubeCmdClient;
 import io.odh.test.platform.cmdClient.Oc;
 import io.odh.test.utils.DeploymentUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -44,16 +48,24 @@ public class ResourceManager {
 
     static Stack<ResourceItem> resourceStackPointer = CLASS_RESOURCE_STACK;
 
+    static List<String> defaultNamespacesForLogCollect = Arrays.asList(
+        "openshift-marketplace",
+        "openshift-operators"
+    );
+
     public static synchronized ResourceManager getInstance() {
         if (instance == null) {
             instance = new ResourceManager();
             client = new KubeClient(TestConstants.DEFAULT_NAMESPACE);
             kubeCmdClient = new Oc(client.getKubeconfigPath());
+            for (String ns : defaultNamespacesForLogCollect) {
+                addNamespaceForLogCollect(ns);
+            }
         }
         return instance;
     }
 
-    public static KubeClient getClient() {
+    public static KubeClient getKubeClient() {
         return client;
     }
 
@@ -66,6 +78,7 @@ public class ResourceManager {
         new SubscriptionResource(),
         new OperatorGroupResource(),
         new DataScienceClusterResource(),
+        new DataScienceInitializationResource(),
         new NotebookResource(),
     };
 
@@ -75,6 +88,10 @@ public class ResourceManager {
 
     public final void switchToClassResourceStack() {
         resourceStackPointer = CLASS_RESOURCE_STACK;
+    }
+
+    public static void addNamespaceForLogCollect(String namespace) {
+        NamespaceResource.labelNamespace(namespace, TestConstants.LOG_COLLECT_LABEL, "true");
     }
 
     public final void pushToStack(ResourceItem item) {
@@ -98,10 +115,10 @@ public class ResourceManager {
 
             synchronized (this) {
                 resourceStackPointer.push(
-                    new ResourceItem<T>(
-                        () -> deleteResource(resource),
-                        resource
-                    ));
+                        new ResourceItem<T>(
+                                () -> deleteResource(resource),
+                                resource
+                        ));
             }
 
             if (resource.getMetadata().getNamespace() == null) {
@@ -110,11 +127,11 @@ public class ResourceManager {
             } else {
                 LOGGER.info("Creating/Updating {} {}/{}",
                         resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName());
+                addNamespaceForLogCollect(resource.getMetadata().getNamespace());
             }
 
             if (type == null) {
-                if (resource instanceof Deployment) {
-                    Deployment deployment = (Deployment) resource;
+                if (resource instanceof Deployment deployment) {
                     if (client.getClient().apps().deployments().resource(deployment).get() != null) {
                         client.getClient().apps().deployments().resource(deployment).update();
                     } else {
@@ -129,10 +146,14 @@ public class ResourceManager {
                     } else {
                         client.getClient().resource(resource).create();
                     }
-
                 }
             } else {
-                type.create(resource);
+                if (type.get(resource.getMetadata().getNamespace(), resource.getMetadata().getName()) != null) {
+                    type.update(resource);
+                } else {
+                    type.create(resource);
+                }
+
                 if (waitReady) {
                     assertTrue(waitResourceCondition(resource, ResourceCondition.readiness(type)),
                             String.format("Timed out waiting for %s %s/%s to be ready", resource.getKind(), resource.getMetadata().getNamespace(), resource.getMetadata().getName()));
@@ -199,7 +220,8 @@ public class ResourceManager {
         // cluster role binding and custom resource definition does not need namespace...
         if (!(resource instanceof ClusterRoleBinding || resource instanceof CustomResourceDefinition
                 || resource instanceof ClusterRole || resource instanceof ValidatingWebhookConfiguration
-                || resource instanceof DataScienceCluster || resource instanceof Namespace)) {
+                || resource instanceof DataScienceCluster || resource instanceof Namespace
+                || resource instanceof DSCInitialization)) {
             assertNotNull(resource.getMetadata().getNamespace());
         }
 
@@ -208,7 +230,7 @@ public class ResourceManager {
         boolean[] resourceReady = new boolean[1];
 
         TestUtils.waitFor("resource condition: " + condition.getConditionName() + " to be fulfilled for resource " + resource.getKind() + ":" + resource.getMetadata().getName(),
-                TestConstants.GLOBAL_POLL_INTERVAL, TestConstants.GLOBAL_TIMEOUT,
+                TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, TestConstants.GLOBAL_TIMEOUT,
                 () -> {
                     T res = type.get(resource.getMetadata().getNamespace(), resource.getMetadata().getName());
                     resourceReady[0] = condition.getPredicate().test(res);

@@ -17,6 +17,7 @@ import io.odh.test.framework.listeners.OdhResourceCleaner;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
+import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
@@ -30,8 +31,13 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ks
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.RayBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.TrustyaiBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.kubeflow.v1.Notebook;
@@ -46,6 +52,8 @@ import java.io.IOException;
 public abstract class UpgradeAbstract extends Abstract {
 
     protected void deployDsc(String name) {
+        DSCInitialization dsci = DscUtils.getBasicDSCI();
+
         // Deploy DSC
         DataScienceCluster dsc = new DataScienceClusterBuilder()
             .withNewMetadata()
@@ -70,12 +78,19 @@ public abstract class UpgradeAbstract extends Abstract {
                         new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.MANAGED).build()
                     )
                     .withModelmeshserving(
-                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.REMOVED).build()
+                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.MANAGED).build()
+                    )
+                    .withRay(
+                        new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
+                    )
+                    .withTrustyai(
+                        new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.MANAGED).build()
                     )
                     .build())
             .endSpec()
             .build();
         // Deploy DSC
+        ResourceManager.getInstance().createResourceWithWait(dsci);
         ResourceManager.getInstance().createResourceWithWait(dsc);
     }
     public void deployNotebook(String namespace, String name) throws IOException {
@@ -104,9 +119,10 @@ public abstract class UpgradeAbstract extends Abstract {
                 .build();
         ResourceManager.getInstance().createResourceWithoutWait(pvc);
 
-        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name)).build();
+        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.PYTORCH_IMAGE, NotebookResource.PYTORCH_2023_2_TAG);
+        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage)).build();
         if (!Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)) {
-            notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name))
+            notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage))
                     .editSpec()
                     .editNotebookspecTemplate()
                     .editOrNewSpec()

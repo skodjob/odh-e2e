@@ -5,9 +5,11 @@
 package io.odh.test.framework.manager.resources;
 
 import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.odh.test.TestConstants;
+import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.ResourceType;
-
 
 public class NamespaceResource implements ResourceType<Namespace> {
 
@@ -18,30 +20,52 @@ public class NamespaceResource implements ResourceType<Namespace> {
 
     @Override
     public Namespace get(String namespace, String name) {
-        return ResourceManager.getClient().getClient().namespaces().withName(name).get();
+        return ResourceManager.getKubeClient().getClient().namespaces().withName(name).get();
     }
 
     @Override
     public void create(Namespace resource) {
         if (get("", resource.getMetadata().getName()) != null) {
-            ResourceManager.getClient().getClient().resource(resource).update();
+            ResourceManager.getKubeClient().getClient().resource(resource).update();
         } else {
-            ResourceManager.getClient().getClient().resource(resource).create();
+            ResourceManager.getKubeClient().getClient().resource(resource).create();
         }
     }
 
     @Override
     public void delete(Namespace resource) {
-        ResourceManager.getClient().getClient().namespaces().withName(resource.getMetadata().getName()).delete();
+        ResourceManager.getKubeClient().getClient().namespaces().withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
     public void update(Namespace resource) {
-        ResourceManager.getClient().getClient().resource(resource).update();
+        ResourceManager.getKubeClient().getClient().resource(resource).update();
     }
 
     @Override
     public boolean waitForReadiness(Namespace resource) {
         return resource != null;
+    }
+
+    public static void labelNamespace(String namespace, String key, String value) {
+        if (ResourceManager.getKubeClient().namespaceExists(namespace)) {
+            TestUtils.waitFor(String.format("Namespace %s has label: %s", namespace, key), TestConstants.GLOBAL_POLL_INTERVAL_1_SEC, TestConstants.GLOBAL_STABILITY_TIME * 1000, () -> {
+                try {
+                    ResourceManager.getKubeClient().getClient().namespaces().withName(namespace).edit(n ->
+                            new NamespaceBuilder(n)
+                                    .editMetadata()
+                                    .addToLabels(key, value)
+                                    .endMetadata()
+                                    .build());
+                } catch (Exception ex) {
+                    return false;
+                }
+                Namespace n = ResourceManager.getKubeClient().getClient().namespaces().withName(namespace).get();
+                if (n != null) {
+                    return n.getMetadata().getLabels().get(key) != null;
+                }
+                return false;
+            });
+        }
     }
 }

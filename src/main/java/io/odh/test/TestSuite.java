@@ -7,6 +7,8 @@ package io.odh.test;
 public class TestSuite {
     public static final String SMOKE = "smoke";
     public static final String UPGRADE = "upgrade";
+    public static final String OLM_UPGRADE = "olm-upgrade";
+    public static final String BUNDLE_UPGRADE = "bundle-upgrade";
     public static final String STANDARD = "standard";
     public static final String CONTINUOUS = "continuous";
     public static final String UNIT = "unit";

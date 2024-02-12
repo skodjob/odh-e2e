@@ -14,6 +14,7 @@ import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
+import io.odh.test.utils.DscUtils;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -26,8 +27,15 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Da
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.DatasciencepipelinesBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.RayBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.TrustyaiBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kubeflow.v1.Notebook;
@@ -70,7 +78,8 @@ public class NotebookST extends StandardAbstract {
                 .build();
         ResourceManager.getInstance().createResourceWithoutWait(pvc);
 
-        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME)).build();
+        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.PYTORCH_IMAGE, NotebookResource.PYTORCH_2023_2_TAG);
+        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME, notebookImage)).build();
         ResourceManager.getInstance().createResourceWithoutWait(notebook);
 
         LabelSelector lblSelector = new LabelSelectorBuilder()
@@ -78,11 +87,13 @@ public class NotebookST extends StandardAbstract {
                 .build();
 
         PodUtils.waitForPodsReady(NTB_NAMESPACE, lblSelector, 1, true, () -> { });
-
     }
 
     @BeforeAll
     void deployDataScienceCluster() {
+        // Create DSCI
+        DSCInitialization dsci = DscUtils.getBasicDSCI();
+
         // Create DSC
         DataScienceCluster dsc = new DataScienceClusterBuilder()
                 .withNewMetadata()
@@ -98,18 +109,28 @@ public class NotebookST extends StandardAbstract {
                             new DashboardBuilder().withManagementState(Dashboard.ManagementState.MANAGED).build()
                         )
                         .withKserve(
-                            new KserveBuilder().withManagementState(Kserve.ManagementState.REMOVED).build()
+                            new KserveBuilder().withManagementState(Kserve.ManagementState.MANAGED).build()
                         )
                         .withCodeflare(
-                            new CodeflareBuilder().withManagementState(Codeflare.ManagementState.REMOVED).build()
+                            new CodeflareBuilder().withManagementState(Codeflare.ManagementState.MANAGED).build()
                         )
                         .withDatasciencepipelines(
-                            new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.REMOVED).build()
+                            new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.MANAGED).build()
+                        )
+                        .withModelmeshserving(
+                            new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.MANAGED).build()
+                        )
+                        .withRay(
+                            new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
+                        )
+                        .withTrustyai(
+                            new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.MANAGED).build()
                         )
                         .build())
                 .endSpec()
                 .build();
-        // Deploy DSC
+        // Deploy DSCI,DSC
+        ResourceManager.getInstance().createResourceWithWait(dsci);
         ResourceManager.getInstance().createResourceWithWait(dsc);
     }
 }

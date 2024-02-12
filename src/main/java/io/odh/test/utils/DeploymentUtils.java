@@ -46,10 +46,10 @@ public class DeploymentUtils {
                 log.add("\tMessage: " + deploymentCondition.getMessage() + "\n");
             }
 
-            if (!ResourceManager.getClient().listPodsByPrefixInName(namespaceName, name).isEmpty()) {
+            if (!ResourceManager.getKubeClient().listPodsByPrefixInName(namespaceName, name).isEmpty()) {
                 log.add("\nPods with conditions and messages:\n\n");
 
-                for (Pod pod : ResourceManager.getClient().listPodsByPrefixInName(namespaceName, name)) {
+                for (Pod pod : ResourceManager.getKubeClient().listPodsByPrefixInName(namespaceName, name)) {
                     log.add(pod.getMetadata().getName() + ":");
                     for (PodCondition podCondition : pod.getStatus().getConditions()) {
                         if (podCondition.getMessage() != null) {
@@ -71,8 +71,8 @@ public class DeploymentUtils {
 
         TestUtils.waitFor("readiness of Deployment: " + namespaceName + "/" + deploymentName,
             TestConstants.GLOBAL_POLL_INTERVAL_SHORT, READINESS_TIMEOUT,
-            () -> ResourceManager.getClient().getClient().apps().deployments().inNamespace(namespaceName).withName(deploymentName).isReady(),
-            () -> DeploymentUtils.logCurrentDeploymentStatus(ResourceManager.getClient().getDeployment(namespaceName, deploymentName), namespaceName));
+            () -> ResourceManager.getKubeClient().getClient().apps().deployments().inNamespace(namespaceName).withName(deploymentName).isReady(),
+            () -> DeploymentUtils.logCurrentDeploymentStatus(ResourceManager.getKubeClient().getDeployment(namespaceName, deploymentName), namespaceName));
 
         LOGGER.info("Deployment: {}/{} is ready", namespaceName, deploymentName);
         return true;
@@ -85,13 +85,13 @@ public class DeploymentUtils {
      */
     public static void waitForDeploymentDeletion(String namespaceName, String name) {
         LOGGER.debug("Waiting for Deployment: {}/{} deletion", namespaceName, name);
-        TestUtils.waitFor("deletion of Deployment: " + namespaceName + "/" + name, TestConstants.GLOBAL_POLL_INTERVAL, DELETION_TIMEOUT,
+        TestUtils.waitFor("deletion of Deployment: " + namespaceName + "/" + name, TestConstants.GLOBAL_POLL_INTERVAL_MEDIUM, DELETION_TIMEOUT,
             () -> {
-                if (ResourceManager.getClient().getDeployment(namespaceName, name) == null) {
+                if (ResourceManager.getKubeClient().getDeployment(namespaceName, name) == null) {
                     return true;
                 } else {
                     LOGGER.warn("Deployment: {}/{} is not deleted yet! Triggering force delete by cmd client!", namespaceName, name);
-                    ResourceManager.getClient().getClient().apps().deployments().inNamespace(namespaceName).withName(name).delete();
+                    ResourceManager.getKubeClient().getClient().apps().deployments().inNamespace(namespaceName).withName(name).delete();
                     return false;
                 }
             });
@@ -104,7 +104,7 @@ public class DeploymentUtils {
      * @return A map of pod name to resource version for Pods in the given Deployment.
      */
     public static Map<String, String> depSnapshot(String namespaceName, String name) {
-        Deployment deployment = ResourceManager.getClient().getDeployment(namespaceName, name);
+        Deployment deployment = ResourceManager.getKubeClient().getDeployment(namespaceName, name);
         LabelSelector selector = deployment.getSpec().getSelector();
         return PodUtils.podSnapshot(namespaceName, selector);
     }
@@ -118,7 +118,7 @@ public class DeploymentUtils {
      */
     public static boolean depHasRolled(String namespaceName, String name, Map<String, String> snapshot) {
         LOGGER.debug("Existing snapshot: {}/{}", namespaceName, new TreeMap<>(snapshot));
-        Map<String, String> map = PodUtils.podSnapshot(namespaceName, ResourceManager.getClient().getDeployment(namespaceName, name).getSpec().getSelector());
+        Map<String, String> map = PodUtils.podSnapshot(namespaceName, ResourceManager.getKubeClient().getDeployment(namespaceName, name).getSpec().getSelector());
         LOGGER.debug("Current  snapshot: {}/{}", namespaceName, new TreeMap<>(map));
         int current = map.size();
         map.keySet().retainAll(snapshot.keySet());

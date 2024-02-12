@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -212,5 +213,29 @@ public final class TestUtils {
             path = path.resolve(testMethod.replace("(", "").replace(")", ""));
         }
         return path;
+    }
+
+    /**
+     * Repeat command n-times
+     *
+     * @param retry count of remaining retries
+     * @param fn request function
+     * @return The value from the first successful call to the callable
+     */
+    public static <T> T runUntilPass(int retry, Callable<T> fn) {
+        for (int i = 0; i < retry; i++) {
+            try {
+                LOGGER.debug("Running command, attempt: {}", i);
+                return fn.call();
+            } catch (Exception | Error ex) {
+                LOGGER.warn("Command failed: {}", ex.getMessage());
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        throw new IllegalStateException(String.format("Command wasn't pass in %s attempts", retry));
     }
 }

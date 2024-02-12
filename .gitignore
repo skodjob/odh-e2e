@@ -3,6 +3,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 src/main/resources/install-files
+pom.xml.versionsBackup*
 
 ### IntelliJ IDEA ###
 .idea/
@@ -37,4 +38,5 @@ build/
 
 ## Suite specific files
 **/*.kubeconfig
-env
+*.env
+config.yaml

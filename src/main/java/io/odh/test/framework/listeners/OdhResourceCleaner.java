@@ -4,6 +4,7 @@
  */
 package io.odh.test.framework.listeners;
 
+import io.odh.test.Environment;
 import io.odh.test.platform.KubeUtils;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -12,6 +13,8 @@ public class OdhResourceCleaner implements AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext extensionContext) {
-        KubeUtils.clearOdhRemainingResources();
+        if (!Environment.SKIP_INSTALL_OPERATOR) {
+            KubeUtils.clearOdhRemainingResources();
+        }
     }
 }
