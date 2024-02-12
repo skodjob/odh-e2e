@@ -11,6 +11,7 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
+import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
@@ -40,11 +41,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kubeflow.v1.Notebook;
 import org.kubeflow.v1.NotebookBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
 
 public class NotebookST extends StandardAbstract {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(NotebookST.class);
 
     private static final String DS_PROJECT_NAME = "test-notebooks";
 
@@ -91,6 +96,10 @@ public class NotebookST extends StandardAbstract {
 
     @BeforeAll
     void deployDataScienceCluster() {
+        if (Environment.SKIP_DEPLOY_DSCI_DSC) {
+            LOGGER.info("DSCI and DSC deploy is skipped");
+            return;
+        }
         // Create DSCI
         DSCInitialization dsci = DscUtils.getBasicDSCI();
 

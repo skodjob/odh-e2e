@@ -8,6 +8,7 @@ import java.util.Map;
 
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
+import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
@@ -19,8 +20,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 @Disabled("Disabled because of the https://issues.redhat.com/browse/RHOAIENG-499")
+@DisabledIfEnvironmentVariable(
+        named = Environment.SKIP_DEPLOY_DSCI_DSC_ENV,
+        matches = "true",
+        disabledReason = "Default DSCI and DSC deployed no need to run test")
 public class UninstallST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-uninstall";

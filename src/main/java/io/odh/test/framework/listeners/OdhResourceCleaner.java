@@ -13,7 +13,7 @@ public class OdhResourceCleaner implements AfterAllCallback {
 
     @Override
     public void afterAll(ExtensionContext extensionContext) {
-        if (!Environment.SKIP_INSTALL_OPERATOR) {
+        if (!Environment.SKIP_INSTALL_OPERATOR && !Environment.SKIP_DEPLOY_DSCI_DSC) {
             KubeUtils.clearOdhRemainingResources();
         }
     }

@@ -49,6 +49,7 @@ public class Environment {
      * Install operator odh/rhoai
      */
     private static final String SKIP_INSTALL_OPERATOR_ENV = "SKIP_INSTALL_OPERATOR";
+    public static final String SKIP_DEPLOY_DSCI_DSC_ENV = "SKIP_DEPLOY_DSCI_DSC";
 
     /**
      * Install bundle files
@@ -81,6 +82,7 @@ public class Environment {
 
     //Install
     public static final boolean SKIP_INSTALL_OPERATOR = getOrDefault(SKIP_INSTALL_OPERATOR_ENV, Boolean::valueOf, false);
+    public static final boolean SKIP_DEPLOY_DSCI_DSC = getOrDefault(SKIP_DEPLOY_DSCI_DSC_ENV, Boolean::valueOf, false);
 
     // YAML Bundle
     public static final String INSTALL_FILE_PATH = getOrDefault(INSTALL_FILE_ENV, TestConstants.LATEST_BUNDLE_DEPLOY_FILE);

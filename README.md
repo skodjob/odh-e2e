@@ -25,6 +25,7 @@ E2E test suite for opendatahub using fabric8 kubernetes client
 * **KUBE_URL** - url of the cluster (api url)
 * **PRODUCT** - odh or rhoai
 * **SKIP_INSTALL_OPERATOR** - skip odh/rhoai operator install
+* **SKIP_DEPLOY_DSCI_DSC** - skip odh/rhoai deploy of DSCI and DSC
 * **INSTALL_FILE** - yaml definition of operator (default is downloaded latest)
 * **INSTALL_FILE_PREVIOUS** - yaml definition of operator for upgrade testing (default is downloaded latest released)
 * **OPERATOR_IMAGE_OVERRIDE** - image override in yaml definition
