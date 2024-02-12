@@ -131,8 +131,7 @@ public class ResourceManager {
             }
 
             if (type == null) {
-                if (resource instanceof Deployment) {
-                    Deployment deployment = (Deployment) resource;
+                if (resource instanceof Deployment deployment) {
                     if (client.getClient().apps().deployments().resource(deployment).get() != null) {
                         client.getClient().apps().deployments().resource(deployment).update();
                     } else {

@@ -80,8 +80,7 @@ public class BundleInstall {
     private void modifyOperatorImage() {
         if (Environment.OPERATOR_IMAGE_OVERRIDE != null && this.modifyOperatorImage) {
             for (HasMetadata r : resources) {
-                if (r instanceof Deployment) {
-                    Deployment d = (Deployment) r;
+                if (r instanceof Deployment d) {
                     d.getSpec().getTemplate().getSpec().getContainers().get(0).setImage(Environment.OPERATOR_IMAGE_OVERRIDE);
                 }
             }
