@@ -28,12 +28,34 @@ import io.odh.test.TestUtils;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
+import io.odh.test.utils.DscUtils;
+import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
+import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.CodeflareBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Dashboard;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.DashboardBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Datasciencepipelines;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.DatasciencepipelinesBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.RayBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.TrustyaiBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplication;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
+import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
@@ -67,8 +89,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class PipelineServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServerST.class);
 
+    private static final String DS_PROJECT_NAME = "test-pipelines";
+
     private final ResourceManager resourceManager = ResourceManager.getInstance();
     private final KubernetesClient client = ResourceManager.getKubeClient().getClient();
+
+    @BeforeAll
+    void deployDataScienceCluster() {
+        // Create DSCI
+        DSCInitialization dsci = DscUtils.getBasicDSCI();
+        // Create DSC
+        DataScienceCluster dsc = DscUtils.getBasicDSC(DS_PROJECT_NAME);
+
+        ResourceManager.getInstance().createResourceWithWait(dsci);
+        ResourceManager.getInstance().createResourceWithWait(dsc);
+    }
 
     /// ODS-2206 - Verify user can create and run a data science pipeline in DS Project
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
