@@ -74,7 +74,7 @@ public class PipelineServerST extends StandardAbstract {
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
     /// https://issues.redhat.com/browse/RHODS-5133
     @Test
-    void verifyUserCanCreateRunAndDeleteADSPipelineFromDSProject() throws IOException {
+    void testUserCanCreateRunAndDeleteADSPipelineFromDSProject() throws IOException {
         OpenShiftClient ocClient = (OpenShiftClient) client;
 
         final String pipelineTestName = "pipeline-test-name";
