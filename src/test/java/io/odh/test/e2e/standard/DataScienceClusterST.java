@@ -4,6 +4,7 @@
  */
 package io.odh.test.e2e.standard;
 
+import io.odh.test.Environment;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
@@ -20,10 +21,15 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Wo
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag(TestSuite.SMOKE)
+@DisabledIfEnvironmentVariable(
+        named = Environment.SKIP_DEPLOY_DSCI_DSC_ENV,
+        matches = "true",
+        disabledReason = "Default DSCI and DSC deployed no need to run test")
 public class DataScienceClusterST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-dsp";
