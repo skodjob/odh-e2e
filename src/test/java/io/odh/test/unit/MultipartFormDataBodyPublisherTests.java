@@ -6,10 +6,12 @@
 package io.odh.test.unit;
 
 import com.sun.net.httpserver.HttpServer;
+import io.odh.test.TestSuite;
 import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
 import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -30,6 +32,7 @@ import java.util.regex.Pattern;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@Tag(TestSuite.UNIT)
 public class MultipartFormDataBodyPublisherTests {
     @Test
     public void testStringPart() throws IOException {
