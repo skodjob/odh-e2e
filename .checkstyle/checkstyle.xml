@@ -123,6 +123,11 @@
 
         <!-- Make the @SuppressWarnings annotations available to Checkstyle -->
         <module name="SuppressWarningsHolder" />
+
+        <!-- Modern Java features -->
+        <module name="IllegalType">
+            <property name="illegalClassNames" value="var"/>
+        </module>
     </module>
 
     <!-- Filter out Checkstyle warnings that have been suppressed with the @SuppressWarnings annotation -->
