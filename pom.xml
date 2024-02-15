@@ -58,6 +58,7 @@
         <maven.checkstyle.version>3.3.1</maven.checkstyle.version>
         <maven.download.plugin.version>1.7.1</maven.download.plugin.version>
         <commons.io.version>2.15.1</commons.io.version>
+        <jsr305.version>3.0.2</jsr305.version>
     </properties>
 
     <repositories>
@@ -167,6 +168,12 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons.io.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>${jsr305.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
