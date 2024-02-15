@@ -207,7 +207,7 @@ public class PipelineServerST extends StandardAbstract {
 
             KFPv1Client.Pipeline importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, prjTitle, pipelineTestFilepath);
 
-            List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines(prjTitle);
+            List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines();
             assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
 
             KFPv1Client.PipelineRun pipelineRun = kfpv1Client.runPipeline(pipelineTestRunBasename, importedPipeline.id, "Immediate");
@@ -223,9 +223,8 @@ public class PipelineServerST extends StandardAbstract {
 //        Verify Pipeline Run Deployment Is Successful    project_title=${prjTitle}
 //    ...    workflow_name=${workflow_name}
 
-            kfpv1Client.deletePipelineRun();
-            kfpv1Client.deletePipeline();
-            kfpv1Client.deletePipelineServer();
+            kfpv1Client.deletePipelineRun(pipelineRun.id);
+            kfpv1Client.deletePipeline(importedPipeline.id);
         }
     }
 
@@ -369,17 +368,33 @@ class KFPv1Client {
         return run.get();
     }
 
-    public void deletePipelineRun() {
+    @SneakyThrows
+    public void deletePipelineRun(String runId) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/apis/v1beta1/runs/" + runId))
+                .DELETE()
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
+                .build();
+        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(200, reply.statusCode(), reply.body());
     }
 
-    public void deletePipeline() {
+    @SneakyThrows
+    public void deletePipeline(String pipelineId) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/apis/v1beta1/pipelines/" + pipelineId))
+                .DELETE()
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
+                .build();
+        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        Assertions.assertEquals(200, reply.statusCode(), reply.body());
     }
 
     public void deletePipelineServer() {
     }
 
     /// helpers for reading json responses
-    /// there should be openapi spec, so this can be generated
+    /// there is openapi spec, so this can be generated
 
     static class PipelineResponse {
         public List<Pipeline> pipelines;
