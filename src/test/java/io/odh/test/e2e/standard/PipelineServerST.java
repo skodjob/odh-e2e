@@ -217,9 +217,6 @@ public class PipelineServerST extends StandardAbstract {
             List<KFPv1Client.PipelineRun> status = kfpv1Client.getPipelineRunStatus();
             assertThat(status.stream().filter(r -> r.id.equals(pipelineRun.id)).map(r -> r.status).findFirst().get(), Matchers.is("Succeeded"));
 
-//        Pipeline Run Should Be Listed    name=${pipelineTestRunBasename}
-//    ...    pipeline_name=${pipelineTestName}
-
 //        Verify Pipeline Run Deployment Is Successful    project_title=${prjTitle}
 //    ...    workflow_name=${workflow_name}
 
