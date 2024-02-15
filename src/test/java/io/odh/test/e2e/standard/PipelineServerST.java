@@ -200,7 +200,7 @@ public class PipelineServerST extends StandardAbstract {
         Resource<Route> route = ocClient.routes()
                 .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
 
-        // TODO actually I don't know how to do oauth, so lets forward a port
+        // TODO(jdanek) I don't know how to do oauth, so lets forward a port
         ServiceResource<Service> svc = client.services().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
         try (LocalPortForward portForward = svc.portForward(8888, 0)) {
             KFPv1Client kfpv1Client = new KFPv1Client("http://localhost:%d".formatted(portForward.getLocalPort()));
