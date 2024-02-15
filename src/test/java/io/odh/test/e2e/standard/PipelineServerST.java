@@ -104,6 +104,7 @@ public class PipelineServerST extends StandardAbstract {
         final String pipelineTestDesc = "pipeline-test-desc";
         final String prjTitle = "pipeline-test";
         final String pipelineTestFilepath = "src/test/resources/pipelines/iris_pipeline_compiled.yaml";
+        final String pipelineWorkflowName = "iris-pipeline";
         final String pipelineTestRunBasename = "pipeline-test-run-basename";
 
         final String secretName = "secret-name";
@@ -218,17 +219,41 @@ public class PipelineServerST extends StandardAbstract {
             assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
 
             KFPv1Client.PipelineRun pipelineRun = kfpv1Client.runPipeline(pipelineTestRunBasename, importedPipeline.id, "Immediate");
+            Assertions.assertTrue(pipelineRun.pipelineSpec.workflowManifest.contains(pipelineWorkflowName));
 
             kfpv1Client.waitForPipelineRun(pipelineRun.id);
 
             List<KFPv1Client.PipelineRun> status = kfpv1Client.getPipelineRunStatus();
             assertThat(status.stream().filter(r -> r.id.equals(pipelineRun.id)).map(r -> r.status).findFirst().get(), Matchers.is("Succeeded"));
 
-//        Verify Pipeline Run Deployment Is Successful    project_title=${prjTitle}
-//    ...    workflow_name=${workflow_name}
+            checkPipelineRunK8sDeployments(prjTitle, pipelineWorkflowName + "-" + pipelineRun.id.substring(0, 5));
 
             kfpv1Client.deletePipelineRun(pipelineRun.id);
             kfpv1Client.deletePipeline(importedPipeline.id);
+        }
+    }
+
+    private void checkPipelineRunK8sDeployments(String prjTitle, String workflowName) {
+        var tektonTaskPods = List.of(
+                client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-data-prep"),
+                client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-train-model"),
+                client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-evaluate-model"),
+                client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-validate-model")
+        );
+
+        for (var pods : tektonTaskPods) {
+            var podList = pods.list().getItems();
+            Assertions.assertEquals(1, podList.size());
+            Assertions.assertEquals("Succeeded", podList.get(0).getStatus().getPhase());
+
+            List<ContainerStatus> containerStatuses = podList.get(0).getStatus().getContainerStatuses();
+            Assertions.assertNotEquals(0, containerStatuses.size());
+            for (var containerStatus : containerStatuses){
+                ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
+                Assertions.assertNotNull(terminated);
+                Assertions.assertEquals(0, terminated.getExitCode());
+                Assertions.assertEquals("Completed", terminated.getReason());
+            }
         }
     }
 
@@ -432,5 +457,7 @@ class KFPv1Client {
     static class PipelineSpec {
         public String pipelineId;
         public String pipelineName;
+
+        public String workflowManifest;
     }
 }
