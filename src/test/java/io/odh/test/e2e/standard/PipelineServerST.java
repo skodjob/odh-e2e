@@ -225,8 +225,11 @@ public class PipelineServerST extends StandardAbstract {
 
             kfpv1Client.waitForPipelineRun(pipelineRun.id);
 
-            List<KFPv1Client.PipelineRun> status = kfpv1Client.getPipelineRunStatus();
-            assertThat(status.stream().filter(r -> r.id.equals(pipelineRun.id)).map(r -> r.status).findFirst().get(), Matchers.is("Succeeded"));
+            List<KFPv1Client.PipelineRun> statuses = kfpv1Client.getPipelineRunStatus();
+            assertThat(statuses.stream()
+                    .filter(run -> run.id.equals(pipelineRun.id))
+                    .map(run -> run.status)
+                    .findFirst().get(), Matchers.is("Succeeded"));
 
             checkPipelineRunK8sDeployments(prjTitle, pipelineWorkflowName + "-" + pipelineRun.id.substring(0, 5));
 
@@ -300,7 +303,7 @@ class KFPv1Client {
     }
 
     @SneakyThrows
-    Pipeline importPipeline(String name, String description, String project, String filePath) {
+    Pipeline importPipeline(String name, String description, String filePath) {
         MultipartFormDataBodyPublisher requestBody = new MultipartFormDataBodyPublisher()
                 .addFile("uploadfile", Path.of(filePath), "application/yaml");
 
@@ -382,11 +385,23 @@ class KFPv1Client {
                 Assertions.assertEquals(reply.statusCode(), 200, reply.body());
                 run.set(objectMapper.readValue(reply.body(), ApiRunDetail.class).run);
                 String status = run.get().status;
-                if (status.equals("Failed")) { // todo possible statuses?
-                    throw new AssertionError("Pipeline run failed: " + status.toString() + run.get().error);
+                if (status == null) {
+                    return false; // e.g. pod has not been deployed
                 }
-                // "Running"
-                return status.equals("Succeeded");
+                // https://github.com/kubeflow/pipelines/issues/7705
+                switch(status) {
+                    case "Succeeded":
+                        return true;
+                    case "Pending":
+                    case "Running":
+                        return false;
+                    case "Skipped":
+                    case "Failed":
+                    case "Error":
+                        throw new AssertionError("Pipeline run failed: " + status + run.get().error);
+                    default:
+                        throw new AssertionError("Unexpected pipeline run status: " + status + run.get().error);
+                }
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException e) {
