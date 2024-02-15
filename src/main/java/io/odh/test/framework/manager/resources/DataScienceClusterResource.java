@@ -84,12 +84,6 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
 //                dscReady = dscReady && rayStatus.equals("True");
 //            }
 //
-//            // Wait for TrustyAi
-//            if (resource.getSpec().getComponents().getTrustyai().getManagementState().equals(Trustyai.ManagementState.MANAGED)) {
-//                String trustyAiStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "trustyaiReady").getStatus();
-//                LOGGER.debug("DataScienceCluster {} TrustyAI status: {}", resource.getMetadata().getName(), trustyAiStatus);
-//                dscReady = dscReady && trustyAiStatus.equals("True");
-//            }
 //
 //            // Wait for KServe
 //            if (resource.getSpec().getComponents().getKserve().getManagementState().equals(Kserve.ManagementState.MANAGED)) {

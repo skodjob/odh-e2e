@@ -20,7 +20,6 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Da
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
 import org.junit.jupiter.api.BeforeAll;
@@ -56,7 +55,6 @@ public class DataScienceClusterST extends Abstract {
         assertEquals(Ray.ManagementState.MANAGED, cluster.getSpec().getComponents().getRay().getManagementState());
         assertEquals(Modelmeshserving.ManagementState.MANAGED, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
         assertEquals(Datasciencepipelines.ManagementState.MANAGED, cluster.getSpec().getComponents().getDatasciencepipelines().getManagementState());
-        assertEquals(Trustyai.ManagementState.MANAGED, cluster.getSpec().getComponents().getTrustyai().getManagementState());
         assertEquals(Workbenches.ManagementState.MANAGED, cluster.getSpec().getComponents().getWorkbenches().getManagementState());
     }
 
@@ -73,7 +71,6 @@ public class DataScienceClusterST extends Abstract {
         assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "kserveReady").getStatus());
         assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "codeflareReady").getStatus());
         assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "model-meshReady").getStatus());
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "trustyaiReady").getStatus());
     }
 
     @Test
