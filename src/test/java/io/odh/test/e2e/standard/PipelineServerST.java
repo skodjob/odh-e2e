@@ -22,6 +22,7 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.ServiceResource;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
+import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
@@ -78,6 +79,11 @@ public class PipelineServerST extends StandardAbstract {
 
     @BeforeAll
     void deployDataScienceCluster() {
+        if (Environment.SKIP_DEPLOY_DSCI_DSC) {
+            LOGGER.info("DSCI and DSC deploy is skipped");
+            return;
+        }
+
         // Create DSCI
         DSCInitialization dsci = DscUtils.getBasicDSCI();
         // Create DSC
