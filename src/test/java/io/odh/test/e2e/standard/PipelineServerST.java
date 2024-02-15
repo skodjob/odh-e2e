@@ -14,12 +14,16 @@ import io.fabric8.kubernetes.api.model.EndpointSubset;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.LocalPortForward;
+import io.fabric8.kubernetes.client.dsl.FilterWatchListDeletable;
+import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.ServiceResource;
 import io.fabric8.openshift.api.model.Route;
@@ -230,21 +234,21 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     private void checkPipelineRunK8sDeployments(String prjTitle, String workflowName) {
-        var tektonTaskPods = List.of(
+        List<FilterWatchListDeletable<Pod, PodList, PodResource>> tektonTaskPods = List.of(
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-data-prep"),
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-train-model"),
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-evaluate-model"),
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-validate-model")
         );
 
-        for (var pods : tektonTaskPods) {
-            var podList = pods.list().getItems();
+        for (FilterWatchListDeletable<Pod, PodList, PodResource> pods : tektonTaskPods) {
+            List<Pod> podList = pods.list().getItems();
             Assertions.assertEquals(1, podList.size());
             Assertions.assertEquals("Succeeded", podList.get(0).getStatus().getPhase());
 
             List<ContainerStatus> containerStatuses = podList.get(0).getStatus().getContainerStatuses();
             Assertions.assertNotEquals(0, containerStatuses.size());
-            for (var containerStatus : containerStatuses){
+            for (ContainerStatus containerStatus : containerStatuses){
                 ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
                 Assertions.assertNotNull(terminated);
                 Assertions.assertEquals(0, terminated.getExitCode());
