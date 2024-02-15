@@ -10,11 +10,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import io.odh.test.TestUtils;
 import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
-import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -64,7 +64,7 @@ public class KFPv1Client {
     }
 
     @SneakyThrows
-    public @NonNull List<Pipeline> listPipelines() {
+    public @Nonnull List<Pipeline> listPipelines() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/apis/v1beta1/pipelines"))
                 .GET()
