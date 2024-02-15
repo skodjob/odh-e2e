@@ -4,10 +4,6 @@
  */
 package io.odh.test.e2e.standard;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import io.fabric8.kubernetes.api.model.ContainerStateTerminated;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
 import io.fabric8.kubernetes.api.model.EndpointSubset;
@@ -31,14 +27,13 @@ import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
+import io.odh.test.platform.KFPv1Client;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplication;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
-import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,22 +42,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.file.Path;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
-import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @ExtendWith(ResourceManagerDeleteHandler.class)
@@ -281,188 +265,3 @@ public class PipelineServerST extends StandardAbstract {
     }
 }
 
-class KFPv1Client {
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
-
-    private final String baseUrl;
-
-    public KFPv1Client(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
-    @SneakyThrows
-    Pipeline importPipeline(String name, String description, String filePath) {
-        MultipartFormDataBodyPublisher requestBody = new MultipartFormDataBodyPublisher()
-                .addFile("uploadfile", Path.of(filePath), "application/yaml");
-
-        HttpRequest createPipelineRequest = HttpRequest.newBuilder()
-                .uri(new URI(baseUrl + "/apis/v1beta1/pipelines/upload?name=%s&description=%s".formatted(name, description)))
-                .header("Content-Type", requestBody.contentType())
-                .POST(requestBody)
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
-
-        assertThat(responseCreate.body(), responseCreate.statusCode(), Matchers.is(200));
-
-        return objectMapper.readValue(responseCreate.body(), Pipeline.class);
-    }
-
-    @SneakyThrows
-    public @Nonnull List<Pipeline> listPipelines() {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/apis/v1beta1/pipelines"))
-                .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-
-        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        Assertions.assertEquals(reply.statusCode(), 200, reply.body());
-
-        PipelineResponse json = objectMapper.readValue(reply.body(), PipelineResponse.class);
-        List<Pipeline> pipelines = json.pipelines;
-
-        return pipelines == null ? Collections.emptyList() : pipelines;
-    }
-
-    @SneakyThrows
-    public PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, String immediate) {
-        Assertions.assertEquals(immediate, "Immediate");
-
-        PipelineRun pipelineRun = new PipelineRun();
-        pipelineRun.name = pipelineTestRunBasename;
-        pipelineRun.pipelineSpec = new PipelineSpec();
-        pipelineRun.pipelineSpec.pipelineId = pipelineId;
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/apis/v1beta1/runs"))
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(pipelineRun)))
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        Assertions.assertEquals(reply.statusCode(), 200, reply.body());
-        return objectMapper.readValue(reply.body(), ApiRunDetail.class).run;
-    }
-
-    @SneakyThrows
-    public List<PipelineRun> getPipelineRunStatus() {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/apis/v1beta1/runs"))
-                .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        Assertions.assertEquals(reply.statusCode(), 200, reply.body());
-        return objectMapper.readValue(reply.body(), ApiListRunsResponse.class).runs;
-    }
-
-    @SneakyThrows
-    public PipelineRun waitForPipelineRun(String pipelineRunId) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/apis/v1beta1/runs/" + pipelineRunId))
-                .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-
-        AtomicReference<PipelineRun> run = new AtomicReference<>();
-        TestUtils.waitFor("pipelineRun to complete", 5000, 10 * 60 * 1000, () -> {
-            HttpResponse<String> reply = null;
-            try {
-                reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                Assertions.assertEquals(reply.statusCode(), 200, reply.body());
-                run.set(objectMapper.readValue(reply.body(), ApiRunDetail.class).run);
-                String status = run.get().status;
-                if (status == null) {
-                    return false; // e.g. pod has not been deployed
-                }
-                // https://github.com/kubeflow/pipelines/issues/7705
-                return switch (status) {
-                    case "Succeeded" -> true;
-                    case "Pending", "Running" -> false;
-                    case "Skipped", "Failed", "Error" ->
-                            throw new AssertionError("Pipeline run failed: " + status + run.get().error);
-                    default -> throw new AssertionError("Unexpected pipeline run status: " + status + run.get().error);
-                };
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        return run.get();
-    }
-
-    @SneakyThrows
-    public void deletePipelineRun(String runId) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/apis/v1beta1/runs/" + runId))
-                .DELETE()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        Assertions.assertEquals(200, reply.statusCode(), reply.body());
-    }
-
-    @SneakyThrows
-    public void deletePipeline(String pipelineId) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/apis/v1beta1/pipelines/" + pipelineId))
-                .DELETE()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        Assertions.assertEquals(200, reply.statusCode(), reply.body());
-    }
-
-    /// helpers for reading json responses
-    /// there is openapi spec, so this can be generated
-
-    static class PipelineResponse {
-        public List<Pipeline> pipelines;
-        public int totalSize;
-    }
-
-    static class Pipeline {
-        public String id;
-        public String name;
-    }
-
-    static class ApiRunDetail {
-        public PipelineRun run;
-    }
-
-    static class ApiListRunsResponse {
-        public List<PipelineRun> runs;
-        public int totalSize;
-        public String nextPageToken;
-    }
-
-    static class PipelineRun {
-        public String id;
-        public String name;
-        public PipelineSpec pipelineSpec;
-
-        public String createdAt;
-        public String scheduledAt;
-        public String finishedAt;
-        public String status;
-        public String error;
-    }
-
-    static class PipelineSpec {
-        public String pipelineId;
-        public String pipelineName;
-
-        public String workflowManifest;
-    }
-}
