@@ -15,15 +15,12 @@ import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodList;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.LocalPortForward;
-import io.fabric8.kubernetes.client.dsl.FilterWatchListDeletable;
-import io.fabric8.kubernetes.client.dsl.PodResource;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.ServiceResource;
 import io.fabric8.openshift.api.model.Route;
@@ -60,6 +57,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
@@ -234,19 +232,18 @@ public class PipelineServerST extends StandardAbstract {
     }
 
     private void checkPipelineRunK8sDeployments(String prjTitle, String workflowName) {
-        List<FilterWatchListDeletable<Pod, PodList, PodResource>> tektonTaskPods = List.of(
+        List<List<Pod>> tektonTaskPods = Stream.of(
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-data-prep"),
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-train-model"),
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-evaluate-model"),
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-validate-model")
-        );
+        ).map(pod -> pod.list().getItems()).toList();
 
-        for (FilterWatchListDeletable<Pod, PodList, PodResource> pods : tektonTaskPods) {
-            List<Pod> podList = pods.list().getItems();
-            Assertions.assertEquals(1, podList.size());
-            Assertions.assertEquals("Succeeded", podList.get(0).getStatus().getPhase());
+        for (List<Pod> pods : tektonTaskPods) {
+            Assertions.assertEquals(1, pods.size());
+            Assertions.assertEquals("Succeeded", pods.get(0).getStatus().getPhase());
 
-            List<ContainerStatus> containerStatuses = podList.get(0).getStatus().getContainerStatuses();
+            List<ContainerStatus> containerStatuses = pods.get(0).getStatus().getContainerStatuses();
             Assertions.assertNotEquals(0, containerStatuses.size());
             for (ContainerStatus containerStatus : containerStatuses){
                 ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
