@@ -61,15 +61,6 @@ import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-/**
- * Q2: how to deal with jsons from kf pipeline?
- * fabric8 uses jackson; either use ad hoc, or generate client from openapi/swagger
- * rest-assured can read json fields using string paths (example in its readme)
- *
- * try graalpython and simply use python client from java :P
- * https://kf-pipelines.readthedocs.io/en/latest/source/kfp.client.html
- */
-
 @ExtendWith(ResourceManagerDeleteHandler.class)
 public class PipelineServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServerST.class);
@@ -170,7 +161,7 @@ public class PipelineServerST extends StandardAbstract {
                     .endMlmd()
                     .withNewObjectStorage()
                         .withDisableHealthCheck(false)
-                        // todo: ods-ci uses aws, I think minio is more appropriate here
+                        // NOTE: ods-ci uses aws, but minio is more appropriate here
                         .withNewMinio()
                             .withDeploy(true)
                             .withImage("quay.io/minio/minio")
@@ -215,7 +206,7 @@ public class PipelineServerST extends StandardAbstract {
                 }
             }
 
-            KFPv1Client.Pipeline importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, prjTitle, pipelineTestFilepath);
+            KFPv1Client.Pipeline importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, pipelineTestFilepath);
 
             List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines();
             assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
