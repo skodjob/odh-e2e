@@ -47,6 +47,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -54,6 +55,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -313,7 +315,7 @@ class KFPv1Client {
     }
 
     @SneakyThrows
-    public List<Pipeline> listPipelines() {
+    public @Nonnull List<Pipeline> listPipelines() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/apis/v1beta1/pipelines"))
                 .GET()
@@ -326,7 +328,7 @@ class KFPv1Client {
         PipelineResponse json = objectMapper.readValue(reply.body(), PipelineResponse.class);
         List<Pipeline> pipelines = json.pipelines;
 
-        return pipelines;
+        return pipelines == null ? Collections.emptyList() : pipelines;
     }
 
     @SneakyThrows
