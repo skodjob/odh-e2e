@@ -247,7 +247,7 @@ public class PipelineServerST extends StandardAbstract {
 
             List<ContainerStatus> containerStatuses = pods.get(0).getStatus().getContainerStatuses();
             Assertions.assertNotEquals(0, containerStatuses.size());
-            for (ContainerStatus containerStatus : containerStatuses){
+            for (ContainerStatus containerStatus : containerStatuses) {
                 ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
                 Assertions.assertNotNull(terminated);
                 Assertions.assertEquals(0, terminated.getExitCode());
