@@ -383,19 +383,13 @@ class KFPv1Client {
                     return false; // e.g. pod has not been deployed
                 }
                 // https://github.com/kubeflow/pipelines/issues/7705
-                switch(status) {
-                    case "Succeeded":
-                        return true;
-                    case "Pending":
-                    case "Running":
-                        return false;
-                    case "Skipped":
-                    case "Failed":
-                    case "Error":
-                        throw new AssertionError("Pipeline run failed: " + status + run.get().error);
-                    default:
-                        throw new AssertionError("Unexpected pipeline run status: " + status + run.get().error);
-                }
+                return switch (status) {
+                    case "Succeeded" -> true;
+                    case "Pending", "Running" -> false;
+                    case "Skipped", "Failed", "Error" ->
+                            throw new AssertionError("Pipeline run failed: " + status + run.get().error);
+                    default -> throw new AssertionError("Unexpected pipeline run status: " + status + run.get().error);
+                };
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             } catch (InterruptedException e) {
