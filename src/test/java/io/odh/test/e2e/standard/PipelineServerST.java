@@ -205,6 +205,13 @@ public class PipelineServerST extends StandardAbstract {
         try (LocalPortForward portForward = svc.portForward(8888, 0)) {
             KFPv1Client kfpv1Client = new KFPv1Client("http://localhost:%d".formatted(portForward.getLocalPort()));
 
+            // WORKAROUND(RHOAIENG-3250): delete sample pipeline present on ODH
+            if (Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)) {
+                for (KFPv1Client.Pipeline pipeline : kfpv1Client.listPipelines()) {
+                    kfpv1Client.deletePipeline(pipeline.id);
+                }
+            }
+
             KFPv1Client.Pipeline importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, prjTitle, pipelineTestFilepath);
 
             List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines();
@@ -284,7 +291,7 @@ class KFPv1Client {
     }
 
     @SneakyThrows
-    public List<Pipeline> listPipelines(String prjTitle) {
+    public List<Pipeline> listPipelines() {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/apis/v1beta1/pipelines"))
                 .GET()
@@ -385,9 +392,6 @@ class KFPv1Client {
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(200, reply.statusCode(), reply.body());
-    }
-
-    public void deletePipelineServer() {
     }
 
     /// helpers for reading json responses
