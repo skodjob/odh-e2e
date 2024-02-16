@@ -32,8 +32,6 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Mo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.RayBuilder;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.TrustyaiBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
@@ -131,9 +129,6 @@ public class NotebookST extends StandardAbstract {
                         )
                         .withRay(
                             new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
-                        )
-                        .withTrustyai(
-                            new TrustyaiBuilder().withManagementState(Trustyai.ManagementState.MANAGED).build()
                         )
                         .build())
                 .endSpec()

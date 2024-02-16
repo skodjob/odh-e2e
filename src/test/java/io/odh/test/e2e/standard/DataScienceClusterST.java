@@ -16,7 +16,6 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Da
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Trustyai;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import org.junit.jupiter.api.Tag;
@@ -54,6 +53,5 @@ public class DataScienceClusterST extends StandardAbstract {
         assertEquals(Workbenches.ManagementState.MANAGED, cluster.getSpec().getComponents().getWorkbenches().getManagementState());
         assertEquals(Modelmeshserving.ManagementState.MANAGED, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
         assertEquals(Ray.ManagementState.MANAGED, cluster.getSpec().getComponents().getRay().getManagementState());
-        assertEquals(Trustyai.ManagementState.MANAGED, cluster.getSpec().getComponents().getTrustyai().getManagementState());
     }
 }
