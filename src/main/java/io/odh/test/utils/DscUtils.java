@@ -27,6 +27,7 @@ import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import io.opendatahub.dscinitialization.v1.DSCInitializationBuilder;
 import io.opendatahub.dscinitialization.v1.dscinitializationspec.Monitoring;
 import io.opendatahub.dscinitialization.v1.dscinitializationspec.ServiceMesh;
+import io.opendatahub.dscinitialization.v1.dscinitializationspec.TrustedCABundle;
 import io.opendatahub.dscinitialization.v1.dscinitializationspec.servicemesh.ControlPlane;
 
 public class DscUtils {
@@ -50,6 +51,9 @@ public class DscUtils {
                 .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
                 .endControlPlane()
                 .endServiceMesh()
+                .withNewTrustedCABundle()
+                .withManagementState(TrustedCABundle.ManagementState.REMOVED)
+                .endTrustedCABundle()
                 .endSpec()
                 .build();
     }
