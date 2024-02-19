@@ -16,12 +16,28 @@ import io.odh.test.utils.DscUtils;
 import io.odh.test.utils.NamespaceUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.skodjob.annotations.Contact;
+import io.skodjob.annotations.Desc;
+import io.skodjob.annotations.Step;
+import io.skodjob.annotations.SuiteDoc;
+import io.skodjob.annotations.TestDoc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
+@SuiteDoc(
+    description = @Desc("Verifies that uninstall process removes all resources created by ODH installation"),
+    beforeTestSteps = {
+        @Step(value = "Deploy Pipelines Operator", expected = "Pipelines operator is available on the cluster"),
+        @Step(value = "Deploy ServiceMesh Operator", expected = "ServiceMesh operator is available on the cluster"),
+        @Step(value = "Deploy Serverless Operator", expected = "Serverless operator is available on the cluster"),
+        @Step(value = "Install ODH operator", expected = "Operator is up and running and is able to serve it's operands"),
+        @Step(value = "Deploy DSCI", expected = "DSCI is created and ready"),
+        @Step(value = "Deploy DSC", expected = "DSC is created and ready")
+    }
+)
 @Disabled("Disabled because of the https://issues.redhat.com/browse/RHOAIENG-499")
 @DisabledIfEnvironmentVariable(
         named = Environment.SKIP_DEPLOY_DSCI_DSC_ENV,
@@ -41,6 +57,16 @@ public class UninstallST extends StandardAbstract {
      *
      * Known issue <a href="https://issues.redhat.com/browse/RHOAIENG-499">RHOAIENG-499</a>
      */
+    @TestDoc(
+        description = @Desc("Check that user can create, run and deleted DataSciencePipeline from a DataScience project"),
+        contact = @Contact(name = "Jan Stourac", email = "jstourac@redhat.com"),
+        steps = {
+            @Step(value = "Create uninstall configmap", expected = "ConfigMap exists"),
+            @Step(value = "Wait for controllers namespace deletion", expected = "Controllers namespace is deleted"),
+            @Step(value = "Remove Operator namespace", expected = "Operator namespace is deleted"),
+            @Step(value = "Check that all related namespaces are deleted (monitoring, notebooks, controllers)", expected = "All related namespaces are deleted")
+        }
+    )
     @Test
     void testUninstallSimpleScenario() {
         if (!ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE)

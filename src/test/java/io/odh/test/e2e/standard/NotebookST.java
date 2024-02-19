@@ -35,6 +35,11 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ra
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.skodjob.annotations.Contact;
+import io.skodjob.annotations.Desc;
+import io.skodjob.annotations.Step;
+import io.skodjob.annotations.SuiteDoc;
+import io.skodjob.annotations.TestDoc;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kubeflow.v1.Notebook;
@@ -45,6 +50,20 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
+@SuiteDoc(
+    description = @Desc("Verifies deployments of Notebooks via GitOps approach"),
+    beforeTestSteps = {
+        @Step(value = "Deploy Pipelines Operator", expected = "Pipelines operator is available on the cluster"),
+        @Step(value = "Deploy ServiceMesh Operator", expected = "ServiceMesh operator is available on the cluster"),
+        @Step(value = "Deploy Serverless Operator", expected = "Serverless operator is available on the cluster"),
+        @Step(value = "Install ODH operator", expected = "Operator is up and running and is able to serve it's operands"),
+        @Step(value = "Deploy DSCI", expected = "DSCI is created and ready"),
+        @Step(value = "Deploy DSC", expected = "DSC is created and ready")
+    },
+    afterTestSteps = {
+        @Step(value = "Delete ODH operator and all created resources", expected = "Operator is removed and all other resources as well")
+    }
+)
 public class NotebookST extends StandardAbstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NotebookST.class);
@@ -53,6 +72,17 @@ public class NotebookST extends StandardAbstract {
 
     private static final String NTB_NAME = "test-odh-notebook";
     private static final String NTB_NAMESPACE = "test-odh-notebook";
+
+    @TestDoc(
+        description = @Desc("Create simple Notebook with all needed resources and see if Operator creates it properly"),
+        contact = @Contact(name = "Jakub Stejskal", email = "jstejska@redhat.com"),
+        steps = {
+            @Step(value = "Create namespace for Notebook resources with proper name, labels and annotations", expected = "Namespace is created"),
+            @Step(value = "Create PVC with proper labels and data for Notebook", expected = "PVC is created"),
+            @Step(value = "Create Notebook resource with Pytorch image in pre-defined namespace", expected = "Notebook resource is created"),
+            @Step(value = "Wait for Notebook pods readiness", expected = "Notebook pods are up and running, Notebook is in ready state")
+        }
+    )
     @Test
     void testCreateSimpleNotebook() throws IOException {
         // Create namespace

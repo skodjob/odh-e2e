@@ -34,6 +34,11 @@ import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipel
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.skodjob.annotations.Contact;
+import io.skodjob.annotations.Desc;
+import io.skodjob.annotations.Step;
+import io.skodjob.annotations.SuiteDoc;
+import io.skodjob.annotations.TestDoc;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -49,6 +54,20 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@SuiteDoc(
+    description = @Desc("Verifies simple setup of ODH by spin-up operator, setup DSCI, and setup DSC."),
+    beforeTestSteps = {
+        @Step(value = "Deploy Pipelines Operator", expected = "Pipelines operator is available on the cluster"),
+        @Step(value = "Deploy ServiceMesh Operator", expected = "ServiceMesh operator is available on the cluster"),
+        @Step(value = "Deploy Serverless Operator", expected = "Serverless operator is available on the cluster"),
+        @Step(value = "Install ODH operator", expected = "Operator is up and running and is able to serve it's operands"),
+        @Step(value = "Deploy DSCI", expected = "DSCI is created and ready"),
+        @Step(value = "Deploy DSC", expected = "DSC is created and ready")
+    },
+    afterTestSteps = {
+        @Step(value = "Delete ODH operator and all created resources", expected = "Operator is removed and all other resources as well")
+    }
+)
 @ExtendWith(ResourceManagerDeleteHandler.class)
 public class PipelineServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServerST.class);
@@ -77,6 +96,22 @@ public class PipelineServerST extends StandardAbstract {
     /// ODS-2206 - Verify user can create and run a data science pipeline in DS Project
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
     /// https://issues.redhat.com/browse/RHODS-5133
+    @TestDoc(
+        description = @Desc("Check that user can create, run and deleted DataSciencePipeline from a DataScience project"),
+        contact = @Contact(name = "Jiri Danek", email = "jdanek@redhat.com"),
+        steps = {
+            @Step(value = "Create namespace for DataSciencePipelines application with proper name, labels and annotations", expected = "Namespace is created"),
+            @Step(value = "Create Minio secret with proper data for access s3", expected = "Secret is created"),
+            @Step(value = "Create DataSciencePipelines application with configuration for new Minio instance and new MariaDB instance", expected = "Notebook resource is created"),
+            @Step(value = "Wait for DataSciencePipelines server readiness", expected = "DSPA endpoint is available and it return proper data"),
+            @Step(value = "Import pipeline to a pipeline server via API", expected = "Pipeline is imported"),
+            @Step(value = "List imported pipeline via API", expected = "Server return list with imported pipeline info"),
+            @Step(value = "Trigger pipeline run for imported pipeline", expected = "Pipeline is triggered"),
+            @Step(value = "Wait for pipeline success", expected = "Pipeline succeeded"),
+            @Step(value = "Delete pipeline run", expected = "Pipeline run is deleted"),
+            @Step(value = "Delete pipeline", expected = "Pipeline is deleted"),
+        }
+    )
     @Test
     void testUserCanCreateRunAndDeleteADSPipelineFromDSProject() throws IOException {
         OpenShiftClient ocClient = (OpenShiftClient) client;

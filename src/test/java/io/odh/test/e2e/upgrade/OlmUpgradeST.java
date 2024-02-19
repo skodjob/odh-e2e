@@ -16,6 +16,12 @@ import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.odh.test.utils.UpgradeUtils;
+import io.skodjob.annotations.Contact;
+import io.skodjob.annotations.Desc;
+import io.skodjob.annotations.Step;
+import io.skodjob.annotations.SuiteDoc;
+import io.skodjob.annotations.TestDoc;
+import io.skodjob.annotations.TestTag;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -25,6 +31,17 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
+@SuiteDoc(
+    description = @Desc("Verifies upgrade path from previously released version to latest available build. Operator installation and upgrade is done via OLM."),
+    beforeTestSteps = {
+        @Step(value = "Deploy Pipelines Operator", expected = "Pipelines operator is available on the cluster"),
+        @Step(value = "Deploy ServiceMesh Operator", expected = "ServiceMesh operator is available on the cluster"),
+        @Step(value = "Deploy Serverless Operator", expected = "Serverless operator is available on the cluster")
+    },
+    tags = {
+        @TestTag(value = TestSuite.OLM_UPGRADE)
+    }
+)
 @Tag(TestSuite.OLM_UPGRADE)
 public class OlmUpgradeST extends UpgradeAbstract {
 
@@ -33,6 +50,23 @@ public class OlmUpgradeST extends UpgradeAbstract {
 
     private final String startingVersion = Environment.OLM_UPGRADE_STARTING_VERSION;
 
+    @TestDoc(
+        description = @Desc("Creates default DSCI and DSC and see if operator configure everything properly. Check that operator set status of the resources properly."),
+        contact = @Contact(name = "Jakub Stejskal", email = "jstejska@redhat.com"),
+        steps = {
+            @Step(value = "Install operator via OLM with manual approval and specific version", expected = "Operator is up and running"),
+            @Step(value = "Deploy DSC (see UpgradeAbstract for more info)", expected = "DSC is created and ready"),
+            @Step(value = "Deploy Notebook to namespace test-odh-notebook-upgrade", expected = "All related pods are up and running. Notebook is in ready state."),
+            @Step(value = "Approve install plan for new version", expected = "Install plan is approved"),
+            @Step(value = "Wait for RollingUpdate of Operator pod to a new version", expected = "Operator update is finished and pod is up and running"),
+            @Step(value = "Verify that Dashboard pods are stable for 2 minutes", expected = "Dashboard pods are stable por 2 minutes after upgrade"),
+            @Step(value = "Verify that Notebook pods are stable for 2 minutes", expected = "Notebook pods are stable por 2 minutes after upgrade"),
+            @Step(value = "Check that ODH operator doesn't contain any error logs", expected = "ODH operator log is error free")
+        },
+        tags = {
+            @TestTag(value = TestSuite.OLM_UPGRADE)
+        }
+    )
     @Test
     void testUpgradeOlm() throws IOException, InterruptedException {
         String ntbName = "test-odh-notebook";

@@ -14,6 +14,12 @@ import io.odh.test.install.BundleInstall;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.odh.test.utils.UpgradeUtils;
+import io.skodjob.annotations.Contact;
+import io.skodjob.annotations.Desc;
+import io.skodjob.annotations.Step;
+import io.skodjob.annotations.SuiteDoc;
+import io.skodjob.annotations.TestDoc;
+import io.skodjob.annotations.TestTag;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -24,6 +30,20 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
+@SuiteDoc(
+    description = @Desc("Verifies upgrade path from previously released version to latest available build. Operator installation and upgrade is done via bundle of yaml files."),
+    beforeTestSteps = {
+        @Step(value = "Deploy Pipelines Operator", expected = "Pipelines operator is available on the cluster"),
+        @Step(value = "Deploy ServiceMesh Operator", expected = "ServiceMesh operator is available on the cluster"),
+        @Step(value = "Deploy Serverless Operator", expected = "Serverless operator is available on the cluster")
+    },
+    afterTestSteps = {
+        @Step(value = "Delete all ODH related resources in the cluster", expected = "All ODH related resources are gone")
+    },
+    tags = {
+        @TestTag(value = TestSuite.BUNDLE_UPGRADE)
+    }
+)
 @Tag(TestSuite.BUNDLE_UPGRADE)
 public class BundleUpgradeST extends UpgradeAbstract {
 
@@ -39,6 +59,23 @@ public class BundleUpgradeST extends UpgradeAbstract {
         }
     }
 
+    @TestDoc(
+        description = @Desc("Creates default DSCI and DSC and see if operator configure everything properly. Check that operator set status of the resources properly."),
+        contact = @Contact(name = "Jakub Stejskal", email = "jstejska@redhat.com"),
+        steps = {
+            @Step(value = "Install operator via bundle of yaml files with specific version", expected = "Operator is up and running"),
+            @Step(value = "Deploy DSC (see UpgradeAbstract for more info)", expected = "DSC is created and ready"),
+            @Step(value = "Deploy Notebook to namespace test-odh-notebook-upgrade", expected = "All related pods are up and running. Notebook is in ready state."),
+            @Step(value = "Apply latest yaml files with latest Operator version", expected = "Yaml file is applied"),
+            @Step(value = "Wait for RollingUpdate of Operator pod to a new version", expected = "Operator update is finished and pod is up and running"),
+            @Step(value = "Verify that Dashboard pods are stable for 2 minutes", expected = "Dashboard pods are stable por 2 minutes after upgrade"),
+            @Step(value = "Verify that Notebook pods are stable for 2 minutes", expected = "Notebook pods are stable por 2 minutes after upgrade"),
+            @Step(value = "Check that ODH operator doesn't contain any error logs", expected = "ODH operator log is error free")
+        },
+        tags = {
+            @TestTag(value = TestSuite.BUNDLE_UPGRADE)
+        }
+    )
     @Test
     void testUpgradeBundle() throws IOException {
         LOGGER.info("Install base version");
