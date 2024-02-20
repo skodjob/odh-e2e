@@ -59,6 +59,7 @@
         <maven.download.plugin.version>1.7.1</maven.download.plugin.version>
         <commons.io.version>2.15.1</commons.io.version>
         <jsr305.version>3.0.2</jsr305.version>
+        <docs.generator.version>0.0.4-SNAPSHOT</docs.generator.version>
     </properties>
 
     <repositories>
@@ -176,6 +177,11 @@
             <version>${jsr305.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>io.skodjob</groupId>
+            <artifactId>test-docs-generator-maven-plugin</artifactId>
+            <version>${docs.generator.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -292,11 +298,43 @@
                     <skipCache>true</skipCache>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.skodjob</groupId>
+                <artifactId>test-docs-generator-maven-plugin</artifactId>
+                <version>${docs.generator.version}</version>
+                <executions>
+                    <execution>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>test-docs-generator</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <testsPath>./src/test/java/io/odh/test</testsPath>
+                    <docsPath>./docs/</docsPath>
+                    <generateFmf>false</generateFmf>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <profiles>
-
         <profile>
             <id>none</id>
             <properties>

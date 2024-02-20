@@ -18,12 +18,33 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Mo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.skodjob.annotations.Contact;
+import io.skodjob.annotations.Desc;
+import io.skodjob.annotations.Step;
+import io.skodjob.annotations.SuiteDoc;
+import io.skodjob.annotations.TestDoc;
+import io.skodjob.annotations.TestTag;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuiteDoc(
+    description = @Desc("Verifies simple setup of ODH by spin-up operator, setup DSCI, and setup DSC."),
+    beforeTestSteps = {
+        @Step(value = "Deploy Pipelines Operator", expected = "Pipelines operator is available on the cluster"),
+        @Step(value = "Deploy ServiceMesh Operator", expected = "ServiceMesh operator is available on the cluster"),
+        @Step(value = "Deploy Serverless Operator", expected = "Serverless operator is available on the cluster"),
+        @Step(value = "Install ODH operator", expected = "Operator is up and running and is able to serve it's operands")
+    },
+    afterTestSteps = {
+        @Step(value = "Delete ODH operator and all created resources", expected = "Operator is removed and all other resources as well")
+    },
+    tags = {
+        @TestTag(value = TestSuite.SMOKE)
+    }
+)
 @Tag(TestSuite.SMOKE)
 @DisabledIfEnvironmentVariable(
         named = Environment.SKIP_DEPLOY_DSCI_DSC_ENV,
@@ -33,6 +54,18 @@ public class DataScienceClusterST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-dsp";
 
+    @TestDoc(
+        description = @Desc("Creates default DSCI and DSC and see if operator configure everything properly. Check that operator set status of the resources properly."),
+        contact = @Contact(name = "David Kornel", email = "dkornel@redhat.com"),
+        steps = {
+            @Step(value = "Create default DSCI", expected = "DSCI is created and ready"),
+            @Step(value = "Create default DSC", expected = "DSC is created and ready"),
+            @Step(value = "Check that DSC has expected states for all components", expected = "DSC status is set properly based on configuration")
+        },
+        tags = {
+            @TestTag(value = TestSuite.SMOKE)
+        }
+    )
     @Test
     void createDataScienceCluster() {
 

@@ -78,3 +78,10 @@ During failures all logs relevant logs are collected and stored in `target/logs`
 As part of `target/logs` you can find file `config.yaml` that contains all env variables used by the test run. 
 You can easily re-use it by pass path to the file into `ENV_FILE` environment variable. 
 Note that we suggest to copy the file outside the target dir.
+
+## Testing docs
+We are using [test-metadata-generator](https://github.com/skodjob/test-metadata-generator) maven plugin for annotating tests and generate test documentation from it.
+The docs are generated with every build and the changes should be committed when there are some.
+
+The plugin is still under development so the format could change.
+For more info see the plugin repository on GitHub.
