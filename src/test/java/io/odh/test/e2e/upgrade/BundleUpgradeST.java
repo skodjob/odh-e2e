@@ -61,7 +61,7 @@ public class BundleUpgradeST extends UpgradeAbstract {
 
     @TestDoc(
         description = @Desc("Creates default DSCI and DSC and see if operator configure everything properly. Check that operator set status of the resources properly."),
-        contact = @Contact(name = "Jakub Stejskal", email = "jstejska@redhat.com"),
+        contact = @Contact(name = "David Kornel", email = "dkornel@redhat.com"),
         steps = {
             @Step(value = "Install operator via bundle of yaml files with specific version", expected = "Operator is up and running"),
             @Step(value = "Deploy DSC (see UpgradeAbstract for more info)", expected = "DSC is created and ready"),

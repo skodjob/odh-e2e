@@ -26,7 +26,7 @@
 
 **Description:** Creates default DSCI and DSC and see if operator configure everything properly. Check that operator set status of the resources properly.
 
-**Contact:** `Jakub Stejskal <jstejska@redhat.com>`
+**Contact:** `David Kornel <dkornel@redhat.com>`
 
 **Steps:**
 

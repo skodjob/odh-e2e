@@ -102,8 +102,8 @@ public class PipelineServerST extends StandardAbstract {
         steps = {
             @Step(value = "Create namespace for DataSciencePipelines application with proper name, labels and annotations", expected = "Namespace is created"),
             @Step(value = "Create Minio secret with proper data for access s3", expected = "Secret is created"),
-            @Step(value = "Create DataSciencePipelines application with configuration for new Minio instance and new MariaDB instance", expected = "Notebook resource is created"),
-            @Step(value = "Wait for DataSciencePipelines server readiness", expected = "DSPA endpoint is available and it return proper data"),
+            @Step(value = "Create DataSciencePipelinesApplication with configuration for new Minio instance and new MariaDB instance", expected = "DataSciencePipelinesApplication resource is created"),
+            @Step(value = "Wait for DataSciencePipelines server readiness", expected = "DSP API endpoint is available and it return proper data"),
             @Step(value = "Import pipeline to a pipeline server via API", expected = "Pipeline is imported"),
             @Step(value = "List imported pipeline via API", expected = "Server return list with imported pipeline info"),
             @Step(value = "Trigger pipeline run for imported pipeline", expected = "Pipeline is triggered"),

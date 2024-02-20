@@ -33,8 +33,8 @@
 | - | - | - |
 | 1. | Create namespace for DataSciencePipelines application with proper name, labels and annotations | Namespace is created |
 | 2. | Create Minio secret with proper data for access s3 | Secret is created |
-| 3. | Create DataSciencePipelines application with configuration for new Minio instance and new MariaDB instance | Notebook resource is created |
-| 4. | Wait for DataSciencePipelines server readiness | DSPA endpoint is available and it return proper data |
+| 3. | Create DataSciencePipelinesApplication with configuration for new Minio instance and new MariaDB instance | DataSciencePipelinesApplication resource is created |
+| 4. | Wait for DataSciencePipelines server readiness | DSP API endpoint is available and it return proper data |
 | 5. | Import pipeline to a pipeline server via API | Pipeline is imported |
 | 6. | List imported pipeline via API | Server return list with imported pipeline info |
 | 7. | Trigger pipeline run for imported pipeline | Pipeline is triggered |
