@@ -31,6 +31,7 @@ public class TestConstants {
     public static final String OPENSHIFT_MARKETPLACE_NS = "openshift-marketplace";
     public static final String OPENSHIFT_OPERATORS_NS = "openshift-operators";
     public static final String REDHAT_CATALOG = "redhat-operators";
+    public static final String COMMUNITY_CATALOG = "community-operators";
     public static final String CHANNEL_STABLE = "stable";
     public static final String CHANNEL_LATEST = "latest";
 
