@@ -64,11 +64,18 @@
 
     <repositories>
         <repository>
-            <id>github</id>
+            <id>opendatahub-crds</id>
             <name>GitHub Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/skodjob/opendatahub-crds</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>test-metadata-generator</id>
+            <name>GitHub Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/skodjob/test-metadata-generator</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
         <dependency>
