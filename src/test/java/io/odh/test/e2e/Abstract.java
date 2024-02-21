@@ -8,6 +8,7 @@ import io.odh.test.framework.listeners.ResourceManagerContextHandler;
 import io.odh.test.framework.listeners.TestVisualSeparator;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.listeners.TestExceptionCallbackListener;
+import io.odh.test.framework.manager.requirements.AuthorinoOperator;
 import io.odh.test.framework.manager.requirements.PipelinesOperator;
 import io.odh.test.framework.manager.requirements.ServerlessOperator;
 import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
@@ -29,5 +30,6 @@ public abstract class Abstract implements TestVisualSeparator {
         PipelinesOperator.deployOperator();
         ServiceMeshOperator.deployOperator();
         ServerlessOperator.deployOperator();
+        AuthorinoOperator.deployOperator();
     }
 }
