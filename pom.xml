@@ -64,7 +64,7 @@
 
     <repositories>
         <repository>
-            <id>openshift-crds</id>
+            <id>opendatahub-crds</id>
             <name>GitHub Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/skodjob/opendatahub-crds</url>
         </repository>

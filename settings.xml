@@ -1,7 +1,7 @@
 <settings>
     <servers>
         <server>
-            <id>openshift-crds</id>
+            <id>opendatahub-crds</id>
             <username>x-access-token</username>
             <password>${env.GITHUB_TOKEN}</password>
         </server>
