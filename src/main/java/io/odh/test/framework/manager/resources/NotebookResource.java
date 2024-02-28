@@ -26,18 +26,18 @@ import org.apache.commons.io.IOUtils;
 public class NotebookResource implements ResourceType<Notebook> {
 
     private static final String REGISTRY_PATH = "image-registry.openshift-image-registry.svc:5000";
-    public static final String PYTORCH_IMAGE = "pytorch";
-    public static final String PYTORCH_2023_2_TAG = "2023.2";
+    public static final String JUPYTER_MINIMAL_IMAGE = "jupyter-minimal-notebook";
+    public static final String JUPYTER_MINIMAL_2023_2_TAG = "2023.2";
     private static final Map<String, String> ODH_IMAGES_MAP;
 
     static {
-        ODH_IMAGES_MAP = Map.<String, String>of(PYTORCH_IMAGE, "jupyter-pytorch-notebook");
+        ODH_IMAGES_MAP = Map.<String, String>of(JUPYTER_MINIMAL_IMAGE, "jupyter-minimal-notebook");
     }
 
     private static final Map<String, String> RHOAI_IMAGES_MAP;
 
     static {
-        RHOAI_IMAGES_MAP = Map.<String, String>of(PYTORCH_IMAGE, "pytorch");
+        RHOAI_IMAGES_MAP = Map.<String, String>of(JUPYTER_MINIMAL_IMAGE, "s2i-minimal-notebook");
     }
     private static final String NOTEBOOK_TEMPLATE_PATH = "notebook.yaml";
     @Override
