@@ -292,7 +292,7 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>https://gist.githubusercontent.com/Frawless/51ab2d3b9fcdcf4348c0c46a4785dfaf/raw/b54e22385b455c0538c5bbc90fc221d68fcd4e09/odh</url>
+                            <url>https://raw.githubusercontent.com/skodjob/deployment-hub/ce402e75018fac3aa16a51d47fe2dc4d69749523/open-data-hub/install/deploy.yaml</url>
                             <outputDirectory>${project.resources[0].directory}/install-files</outputDirectory>
                             <outputFileName>released.yaml</outputFileName>
                         </configuration>
