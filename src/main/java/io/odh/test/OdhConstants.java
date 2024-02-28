@@ -34,8 +34,8 @@ public class OdhConstants {
     private static final String ODH_OLM_OPERATOR_CHANNEL = "fast";
     private static final String ODH_DSCI_NAME = "default";
     // TODO - should be changed after 2.5 release
-    private static final String ODH_OLM_OPERATOR_VERSION = "v2.4.0";
-    private static final String ODH_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "v2.4.0";
+    private static final String ODH_OLM_OPERATOR_VERSION = "v2.8.0";
+    private static final String ODH_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "v2.8.0";
 
     // RHOAI
     private static final String RHOAI_CONTROLLERS_NAMESPACE = "redhat-ods-applications";
