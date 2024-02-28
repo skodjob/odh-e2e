@@ -111,7 +111,7 @@ public class NotebookST extends StandardAbstract {
                 .build();
         ResourceManager.getInstance().createResourceWithoutWait(pvc);
 
-        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.PYTORCH_IMAGE, NotebookResource.PYTORCH_2023_2_TAG);
+        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.JUPYTER_MINIMAL_IMAGE, NotebookResource.JUPYTER_MINIMAL_2023_2_TAG);
         Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME, notebookImage)).build();
         ResourceManager.getInstance().createResourceWithoutWait(notebook);
 
