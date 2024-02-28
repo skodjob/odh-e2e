@@ -41,7 +41,7 @@ public class KubeUtils {
      */
     public static void deleteDefaultDSCI() {
         LOGGER.info("Clearing DSCI ...");
-        ResourceManager.getKubeCmdClient().exec(false, "delete", "dsci", "--all");
+        ResourceManager.getKubeCmdClient().exec(false, true, Long.valueOf(TestConstants.GLOBAL_TIMEOUT).intValue(),  "delete", "dsci", "--all");
     }
 
     public static void waitForInstallPlan(String namespace, String csvName) {

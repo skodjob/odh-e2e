@@ -266,6 +266,12 @@ public abstract class BaseCmdKubeClient<K extends BaseCmdKubeClient<K>> implemen
     }
 
     @Override
+    public ExecResult exec(boolean throwError, boolean logToOutput, int timeout, String... command) {
+        List<String> cmd = command(asList(command), false);
+        return Exec.exec(null, cmd, timeout, logToOutput, throwError);
+    }
+
+    @Override
     public ExecResult execInCurrentNamespace(String... commands) {
         return Exec.exec(namespacedCommand(commands));
     }

@@ -145,6 +145,17 @@ public interface KubeCmdClient<K extends KubeCmdClient<K>> {
     ExecResult exec(boolean throwError, boolean logToOutput, String... command);
 
     /**
+     * Execute the given {@code command}. You can specify if potential failure will thrown the exception or not.
+     *
+     * @param throwError  parameter which control thrown exception in case of failure
+     * @param command     The command
+     * @param timeout     tiemout in ms
+     * @param logToOutput determines if we want to print whole output of command
+     * @return The process result.
+     */
+    ExecResult exec(boolean throwError, boolean logToOutput, int timeout, String... command);
+
+    /**
      * Get the content of the given {@code resource} with the given {@code name} as YAML.
      *
      * @param resource     The type of resource (e.g. "cm").
