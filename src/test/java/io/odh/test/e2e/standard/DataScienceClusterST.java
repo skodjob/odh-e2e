@@ -14,6 +14,7 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Co
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Dashboard;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Datasciencepipelines;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kueue;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
@@ -86,5 +87,6 @@ public class DataScienceClusterST extends StandardAbstract {
         assertEquals(Workbenches.ManagementState.MANAGED, cluster.getSpec().getComponents().getWorkbenches().getManagementState());
         assertEquals(Modelmeshserving.ManagementState.MANAGED, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
         assertEquals(Ray.ManagementState.MANAGED, cluster.getSpec().getComponents().getRay().getManagementState());
+        assertEquals(Kueue.ManagementState.MANAGED, cluster.getSpec().getComponents().getKueue().getManagementState());
     }
 }

@@ -84,6 +84,12 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
 //                dscReady = dscReady && rayStatus.equals("True");
 //            }
 //
+//            // Wait for Kueue
+//            if (resource.getSpec().getComponents().getKueue().getManagementState().equals(Kueue.ManagementState.MANAGED)) {
+//                String kueueStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "kueueReady").getStatus();
+//                LOGGER.debug("DataScienceCluster {} Kueue status: {}", resource.getMetadata().getName(), kueueStatus);
+//                dscReady = dscReady && kueueStatus.equals("True");
+//            }
 //
 //            // Wait for KServe
 //            if (resource.getSpec().getComponents().getKserve().getManagementState().equals(Kserve.ManagementState.MANAGED)) {
