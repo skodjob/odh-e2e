@@ -29,6 +29,8 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Da
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.DatasciencepipelinesBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kserve;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KserveBuilder;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Kueue;
+import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.KueueBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Modelmeshserving;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.ModelmeshservingBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
@@ -68,6 +70,9 @@ public abstract class UpgradeAbstract extends Abstract {
                     )
                     .withKserve(
                         new KserveBuilder().withManagementState(Kserve.ManagementState.REMOVED).build()
+                    )
+                    .withKueue(
+                        new KueueBuilder().withManagementState(Kueue.ManagementState.MANAGED).build()
                     )
                     .withCodeflare(
                         new CodeflareBuilder().withManagementState(Codeflare.ManagementState.MANAGED).build()
