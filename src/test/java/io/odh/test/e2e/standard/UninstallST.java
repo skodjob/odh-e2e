@@ -12,6 +12,7 @@ import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.install.InstallTypes;
 import io.odh.test.utils.DscUtils;
 import io.odh.test.utils.NamespaceUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -23,9 +24,9 @@ import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.api.condition.EnabledIf;
 
 @SuiteDoc(
     description = @Desc("Verifies that uninstall process removes all resources created by ODH installation"),
@@ -38,7 +39,7 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
         @Step(value = "Deploy DSC", expected = "DSC is created and ready")
     }
 )
-@Disabled("Disabled because of the https://issues.redhat.com/browse/RHOAIENG-499")
+@EnabledIf("installMethodIsOlm")
 @DisabledIfEnvironmentVariable(
         named = Environment.SKIP_DEPLOY_DSCI_DSC_ENV,
         matches = "true",
@@ -69,23 +70,24 @@ public class UninstallST extends StandardAbstract {
     )
     @Test
     void testUninstallSimpleScenario() {
-        if (!ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE)
+        if (ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE)
                 .list("configmap").contains(DELETE_CONFIG_MAP_NAME)) {
-            ConfigMap cm = new ConfigMapBuilder()
-                    .withNewMetadata()
-                    .withName(DELETE_CONFIG_MAP_NAME)
-                    .withNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE)
-                    .withAnnotations(Map.ofEntries(Map.entry(DELETE_ANNOTATION, "true")))
-                    .endMetadata()
-                    .build();
-            ResourceManager.getInstance().createResourceWithWait(cm);
-        } else {
             Assertions.fail(String.format("The configmap '%s' is present on the cluster before the uninstall test started!", DELETE_CONFIG_MAP_NAME));
         }
 
+        // https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2-latest/html-single/installing_and_uninstalling_openshift_ai_self-managed/index#uninstalling-openshift-ai-self-managed-using-CLI_uninstalling-openshift-ai-self-managed
+        ConfigMap cm = new ConfigMapBuilder()
+                .withNewMetadata()
+                .withName(DELETE_CONFIG_MAP_NAME)
+                .withNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE)
+                .withLabels(Map.ofEntries(Map.entry(DELETE_ANNOTATION, "true")))
+                .endMetadata()
+                .build();
+        ResourceManager.getInstance().createResourceWithWait(cm);
+
         // Now the product should start to uninstall, let's wait a bit and check the result.
         TestUtils.waitFor(String.format("the '%s' namespace to be removed as operator is being uninstalled",
-                        OdhConstants.CONTROLLERS_NAMESPACE), 2000, 20000,
+                        OdhConstants.CONTROLLERS_NAMESPACE), 2000, 120 * 1000,
                 () -> !ResourceManager.getKubeClient().namespaceExists(OdhConstants.CONTROLLERS_NAMESPACE));
 
         // Let's remove the operator namespace now
@@ -121,5 +123,9 @@ public class UninstallST extends StandardAbstract {
         // Deploy DSCI,DSC
         ResourceManager.getInstance().createResourceWithWait(dsci);
         ResourceManager.getInstance().createResourceWithWait(dsc);
+    }
+
+    static boolean installMethodIsOlm() {
+        return Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString());
     }
 }
