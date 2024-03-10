@@ -7,12 +7,15 @@ package io.odh.test.e2e.continuous;
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
+import io.odh.test.install.InstallTypes;
 import io.odh.test.platform.KubeUtils;
+import io.odh.test.utils.CsvUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Dashboard;
@@ -26,6 +29,8 @@ import io.opendatahub.v1alpha.OdhDashboardConfig;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -56,7 +61,14 @@ public class DataScienceClusterST extends Abstract {
         assertEquals(Ray.ManagementState.MANAGED, cluster.getSpec().getComponents().getRay().getManagementState());
         assertEquals(Modelmeshserving.ManagementState.MANAGED, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
         assertEquals(Datasciencepipelines.ManagementState.MANAGED, cluster.getSpec().getComponents().getDatasciencepipelines().getManagementState());
-        assertEquals(Kueue.ManagementState.MANAGED, cluster.getSpec().getComponents().getKueue().getManagementState());
+        if (!Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)
+                && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
+                && Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv()).equals("2.7.0")) {
+            // https://issues.redhat.com/browse/RHOAIENG-3234 Remove Kueue from RHOAI 2.7
+            assertNull(cluster.getSpec().getComponents().getKueue());
+        } else {
+            assertEquals(Kueue.ManagementState.MANAGED, cluster.getSpec().getComponents().getKueue().getManagementState());
+        }
         assertEquals(Workbenches.ManagementState.MANAGED, cluster.getSpec().getComponents().getWorkbenches().getManagementState());
     }
 

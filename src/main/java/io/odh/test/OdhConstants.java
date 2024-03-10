@@ -49,9 +49,9 @@ public class OdhConstants {
     private static final String RHOAI_OLM_OPERATOR_DEPLOYMENT_NAME = "rhods-operator";
     private static final String RHOAI_OLM_SOURCE_NAME = "redhat-operators";
     private static final String RHOAI_OLM_APP_BUNDLE_PREFIX = "rhods-operator";
-    private static final String RHOAI_OLM_OPERATOR_CHANNEL = "stable";
-    private static final String RHOAI_OLM_OPERATOR_VERSION = "2.6.0";
-    private static final String RHOAI_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "2.5.0";
+    private static final String RHOAI_OLM_OPERATOR_CHANNEL = "fast";
+    private static final String RHOAI_OLM_OPERATOR_VERSION = "2.7.0";
+    private static final String RHOAI_OLM_UPGRADE_STARTING_OPERATOR_VERSION = "2.6.0";
     private static final String RHOAI_MONITORING_NAMESPACE = "redhat-ods-monitoring";
 
     // Public part

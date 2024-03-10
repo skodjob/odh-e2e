@@ -8,6 +8,8 @@ import io.odh.test.Environment;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
+import io.odh.test.install.InstallTypes;
+import io.odh.test.utils.CsvUtils;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
@@ -29,7 +31,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
+import java.util.Objects;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SuiteDoc(
     description = @Desc("Verifies simple setup of ODH by spin-up operator, setup DSCI, and setup DSC."),
@@ -87,6 +92,13 @@ public class DataScienceClusterST extends StandardAbstract {
         assertEquals(Workbenches.ManagementState.MANAGED, cluster.getSpec().getComponents().getWorkbenches().getManagementState());
         assertEquals(Modelmeshserving.ManagementState.MANAGED, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
         assertEquals(Ray.ManagementState.MANAGED, cluster.getSpec().getComponents().getRay().getManagementState());
-        assertEquals(Kueue.ManagementState.MANAGED, cluster.getSpec().getComponents().getKueue().getManagementState());
+        if (!Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)
+                && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
+                && Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv()).equals("2.7.0")) {
+            // https://issues.redhat.com/browse/RHOAIENG-3234 Remove Kueue from RHOAI 2.7
+            assertNull(cluster.getSpec().getComponents().getKueue());
+        } else {
+            assertEquals(Kueue.ManagementState.MANAGED, cluster.getSpec().getComponents().getKueue().getManagementState());
+        }
     }
 }
