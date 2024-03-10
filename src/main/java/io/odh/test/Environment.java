@@ -69,12 +69,13 @@ public class Environment {
     private static final String OPERATOR_INSTALL_TYPE_ENV = "OPERATOR_INSTALL_TYPE";
     private static final String OLM_UPGRADE_STARTING_VERSION_ENV = "OLM_UPGRADE_STARTING_VERSION";
 
-    public static final String PRODUCT_DEFAULT = "odh";
+    public static final String PRODUCT_ODH = "odh";
+    public static final String PRODUCT_RHOAI = "rhoai";
 
     /**
      * Set values
      */
-    public static final String PRODUCT = getOrDefault(PRODUCT_ENV, PRODUCT_DEFAULT);
+    public static final String PRODUCT = getOrDefault(PRODUCT_ENV, PRODUCT_ODH);
     public static final String RUN_USER = getOrDefault("USER", null);
     public static final String KUBE_USERNAME = getOrDefault(USERNAME_ENV, null);
     public static final String KUBE_PASSWORD = getOrDefault(PASSWORD_ENV, null);

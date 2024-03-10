@@ -61,7 +61,7 @@ public class DataScienceClusterST extends Abstract {
         assertEquals(Ray.ManagementState.MANAGED, cluster.getSpec().getComponents().getRay().getManagementState());
         assertEquals(Modelmeshserving.ManagementState.MANAGED, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
         assertEquals(Datasciencepipelines.ManagementState.MANAGED, cluster.getSpec().getComponents().getDatasciencepipelines().getManagementState());
-        if (!Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)
+        if (!Environment.PRODUCT.equals(Environment.PRODUCT_ODH)
                 && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
                 && Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv()).equals("2.7.0")) {
             // https://issues.redhat.com/browse/RHOAIENG-3234 Remove Kueue from RHOAI 2.7

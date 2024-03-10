@@ -91,7 +91,7 @@ public class NotebookResource implements ResourceType<Notebook> {
     }
 
     public static String getNotebookImage(String imageName, String imageTag) {
-        if (Objects.equals(Environment.PRODUCT, Environment.PRODUCT_DEFAULT)) {
+        if (Objects.equals(Environment.PRODUCT, Environment.PRODUCT_ODH)) {
             return REGISTRY_PATH + "/" + OdhConstants.CONTROLLERS_NAMESPACE + "/" + ODH_IMAGES_MAP.get(imageName) + ":" + imageTag;
         } else {
             return REGISTRY_PATH + "/" + OdhConstants.CONTROLLERS_NAMESPACE + "/" + RHOAI_IMAGES_MAP.get(imageName) + ":" + imageTag;

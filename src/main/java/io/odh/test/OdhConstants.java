@@ -87,7 +87,7 @@ public class OdhConstants {
 
     private static <T> T getOdhOrRhoai(String var, T odhValue, T rhoaiValue) {
         T returnValue = odhValue;
-        if (!Objects.equals(Environment.PRODUCT, Environment.PRODUCT_DEFAULT)) {
+        if (!Objects.equals(Environment.PRODUCT, Environment.PRODUCT_ODH)) {
             returnValue = rhoaiValue;
         }
         VALUES.put(var, String.valueOf(returnValue));

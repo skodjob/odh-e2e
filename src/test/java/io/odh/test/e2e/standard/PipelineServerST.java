@@ -223,7 +223,7 @@ public class PipelineServerST extends StandardAbstract {
             KFPv1Client kfpv1Client = new KFPv1Client("http://localhost:%d".formatted(portForward.getLocalPort()));
 
             // WORKAROUND(RHOAIENG-3250): delete sample pipeline present on ODH
-            if (Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)) {
+            if (Environment.PRODUCT.equals(Environment.PRODUCT_ODH)) {
                 for (KFPv1Client.Pipeline pipeline : kfpv1Client.listPipelines()) {
                     kfpv1Client.deletePipeline(pipeline.id);
                 }

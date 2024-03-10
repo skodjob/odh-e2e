@@ -121,7 +121,7 @@ public abstract class UpgradeAbstract extends Abstract {
 
         String notebookImage = NotebookResource.getNotebookImage(NotebookResource.JUPYTER_MINIMAL_IMAGE, NotebookResource.JUPYTER_MINIMAL_2023_2_TAG);
         Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage)).build();
-        if (!Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)) {
+        if (!Environment.PRODUCT.equals(Environment.PRODUCT_ODH)) {
             notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage))
                     .editSpec()
                     .editNotebookspecTemplate()
