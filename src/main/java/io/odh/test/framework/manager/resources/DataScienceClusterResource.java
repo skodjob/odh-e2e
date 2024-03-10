@@ -113,6 +113,22 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
             // Check that DSC reconciliation has been successfully finalized
             // https://github.com/red-hat-data-services/rhods-operator/blob/rhoai-2.8/controllers/datasciencecluster/datasciencecluster_controller.go#L257
 
+            // Wait for standard Kubernetes condition types (status for the whole DSC)
+            record ConditionExpectation(String conditionType, String expectedStatus) { }
+            List<ConditionExpectation> conditionExpectations = List.of(
+                    new ConditionExpectation("Available", "True"),
+                    new ConditionExpectation("Progressing", "False"),
+                    new ConditionExpectation("Degraded", "False"),
+                    new ConditionExpectation("Upgradeable", "True")
+            );
+            for (ConditionExpectation conditionExpectation : conditionExpectations) {
+                String conditionType = conditionExpectation.conditionType;
+                String expectedStatus = conditionExpectation.expectedStatus;
+                String conditionStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), conditionType).getStatus();
+                LOGGER.debug("DataScienceCluster {} {} status: {}", resource.getMetadata().getName(), conditionType, conditionStatus);
+                dscReady = dscReady && Objects.equals(conditionStatus, expectedStatus);
+            }
+
             // Wait for ReconcileComplete condition (for the whole DSC)
             String reconcileStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "ReconcileComplete").getStatus();
             LOGGER.debug("DataScienceCluster {} ReconcileComplete status: {}", resource.getMetadata().getName(), reconcileStatus);
