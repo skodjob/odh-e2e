@@ -24,6 +24,7 @@ E2E test suite for opendatahub using fabric8 kubernetes client
 * **KUBE_TOKEN** - token of kube access (use instead of username/password)
 * **KUBE_URL** - url of the cluster (api url)
 * **PRODUCT** - odh or rhoai
+* **SKIP_INSTALL_OPERATOR_DEPS** - skip installation of the odh/rhoai operator dependencies
 * **SKIP_INSTALL_OPERATOR** - skip odh/rhoai operator install
 * **SKIP_DEPLOY_DSCI_DSC** - skip odh/rhoai deploy of DSCI and DSC
 * **INSTALL_FILE** - yaml definition of operator (default is downloaded latest)
