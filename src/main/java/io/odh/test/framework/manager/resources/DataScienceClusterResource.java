@@ -5,6 +5,8 @@
 package io.odh.test.framework.manager.resources;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
+import io.fabric8.kubernetes.api.model.events.v1.Event;
+import io.fabric8.kubernetes.client.dsl.EventingAPIGroupDSL;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.OdhConstants;
@@ -17,6 +19,9 @@ import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Objects;
 
 public class DataScienceClusterResource implements ResourceType<DataScienceCluster> {
 
@@ -104,6 +109,25 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
 //                LOGGER.debug("DataScienceCluster {} DataSciencePipelines status: {}", resource.getMetadata().getName(), pipelinesStatus);
 //                dscReady = dscReady && pipelinesStatus.equals("True");
 //            }
+
+            // Check that DSC reconciliation has been successfully finalized
+            // https://github.com/red-hat-data-services/rhods-operator/blob/rhoai-2.8/controllers/datasciencecluster/datasciencecluster_controller.go#L257
+
+            // Wait for ReconcileComplete condition (for the whole DSC)
+            String reconcileStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "ReconcileComplete").getStatus();
+            LOGGER.debug("DataScienceCluster {} ReconcileComplete status: {}", resource.getMetadata().getName(), reconcileStatus);
+            dscReady = dscReady && reconcileStatus.equals("True");
+
+            // Wait for DataScienceClusterCreationSuccessful event
+            EventingAPIGroupDSL eventsClient = ResourceManager.getKubeClient().getClient().events();
+            List<Event> resourceEvents = eventsClient.v1().events().inAnyNamespace().withNewFilter()
+                    .withField("regarding.name", resource.getMetadata().getName())
+                    .withField("regarding.uid", resource.getMetadata().getUid())
+                    .endFilter().list().getItems();
+            LOGGER.debug("DataScienceCluster {} events: {}", resource.getMetadata().getName(), resourceEvents.stream().map(Event::getReason).toList());
+            boolean hasCreationSuccessfulEvent = resourceEvents.stream()
+                    .anyMatch(resourceEvent -> Objects.equals(resourceEvent.getReason(), OdhConstants.DSC_CREATION_SUCCESSFUL_EVENT_NAME));
+            dscReady = dscReady && hasCreationSuccessfulEvent;
 
             return dscReady;
         }, () -> { });

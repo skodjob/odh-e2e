@@ -55,6 +55,8 @@ public class OdhConstants {
     private static final String RHOAI_MONITORING_NAMESPACE = "redhat-ods-monitoring";
 
     // Public part
+    public static final String DSC_CREATION_SUCCESSFUL_EVENT_NAME = "DataScienceClusterCreationSuccessful";
+
     public static final String CODEFLARE_DEPLOYMENT_NAME = "codeflare-operator-manager";
     public static final String DS_PIPELINES_OPERATOR = "data-science-pipelines-operator-controller-manager";
     public static final String ETCD = "etcd";
