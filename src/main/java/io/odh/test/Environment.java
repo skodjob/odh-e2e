@@ -48,6 +48,7 @@ public class Environment {
     /**
      * Install operator odh/rhoai
      */
+    private static final String SKIP_INSTALL_OPERATOR_DEPS_ENV = "SKIP_INSTALL_OPERATOR_DEPS";
     private static final String SKIP_INSTALL_OPERATOR_ENV = "SKIP_INSTALL_OPERATOR";
     public static final String SKIP_DEPLOY_DSCI_DSC_ENV = "SKIP_DEPLOY_DSCI_DSC";
 
@@ -81,6 +82,7 @@ public class Environment {
     public static final String KUBE_URL = getOrDefault(URL_ENV, null);
 
     //Install
+    public static final boolean SKIP_INSTALL_OPERATOR_DEPS = getOrDefault(SKIP_INSTALL_OPERATOR_DEPS_ENV, Boolean::valueOf, false);
     public static final boolean SKIP_INSTALL_OPERATOR = getOrDefault(SKIP_INSTALL_OPERATOR_ENV, Boolean::valueOf, false);
     public static final boolean SKIP_DEPLOY_DSCI_DSC = getOrDefault(SKIP_DEPLOY_DSCI_DSC_ENV, Boolean::valueOf, false);
 
