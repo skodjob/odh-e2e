@@ -23,9 +23,11 @@ import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuiteDoc(
     description = @Desc("Verifies that uninstall process removes all resources created by ODH installation"),
@@ -38,12 +40,13 @@ import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
         @Step(value = "Deploy DSC", expected = "DSC is created and ready")
     }
 )
-@Disabled("Disabled because of the https://issues.redhat.com/browse/RHOAIENG-499")
+@DisabledIf(value = "isOdhTested", disabledReason = "This test needs to be modified to work on ODH.")
 @DisabledIfEnvironmentVariable(
         named = Environment.SKIP_DEPLOY_DSCI_DSC_ENV,
         matches = "true",
         disabledReason = "Default DSCI and DSC deployed no need to run test")
 public class UninstallST extends StandardAbstract {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UninstallST.class);
 
     private static final String DS_PROJECT_NAME = "test-uninstall";
     private static final String DELETE_CONFIG_MAP_NAME = "delete-self-managed-odh";
@@ -52,7 +55,7 @@ public class UninstallST extends StandardAbstract {
     /**
      * Following the official Uninstallation steps for RHOAI:
      * <pre>
-     * <a href="https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2.5/html-single/installing_and_uninstalling_openshift_ai_self-managed/index#installing-openshift-ai-self-managed_uninstalling-openshift-ai-self-managed">Uninstalling Red Hat OpenShift AI Self-Managed by using the CLI</a>
+     * <a href="https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2-latest/html-single/installing_and_uninstalling_openshift_ai_self-managed/index#installing-openshift-ai-self-managed_uninstalling-openshift-ai-self-managed">Uninstalling Red Hat OpenShift AI Self-Managed by using the CLI</a>
      * </pre>
      *
      * Known issue <a href="https://issues.redhat.com/browse/RHOAIENG-499">RHOAIENG-499</a>
@@ -63,56 +66,75 @@ public class UninstallST extends StandardAbstract {
         steps = {
             @Step(value = "Create uninstall configmap", expected = "ConfigMap exists"),
             @Step(value = "Wait for controllers namespace deletion", expected = "Controllers namespace is deleted"),
-            @Step(value = "Remove Operator namespace", expected = "Operator namespace is deleted"),
-            @Step(value = "Check that all related namespaces are deleted (monitoring, notebooks, controllers)", expected = "All related namespaces are deleted")
+            @Step(value = "Check that relevant resources are deleted (Subscription, InstallPlan, CSV)", expected = "All relevant resources are deleted"),
+            @Step(value = "Check that all related namespaces are deleted (monitoring, notebooks, controllers)", expected = "All related namespaces are deleted"),
+            @Step(value = "Remove Operator namespace", expected = "Operator namespace is deleted")
         }
     )
     @Test
     void testUninstallSimpleScenario() {
-        if (!ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE)
-                .list("configmap").contains(DELETE_CONFIG_MAP_NAME)) {
-            ConfigMap cm = new ConfigMapBuilder()
-                    .withNewMetadata()
-                    .withName(DELETE_CONFIG_MAP_NAME)
-                    .withNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE)
-                    .withAnnotations(Map.ofEntries(Map.entry(DELETE_ANNOTATION, "true")))
-                    .endMetadata()
-                    .build();
-            ResourceManager.getInstance().createResourceWithWait(cm);
-        } else {
-            Assertions.fail(String.format("The configmap '%s' is present on the cluster before the uninstall test started!", DELETE_CONFIG_MAP_NAME));
+        if (ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+                "configmap").contains(DELETE_CONFIG_MAP_NAME)) {
+            Assertions.fail(
+                    String.format("The ConfigMap '%s' is present on the cluster before the uninstall test started!",
+                            DELETE_CONFIG_MAP_NAME));
         }
+
+        ConfigMap cm = new ConfigMapBuilder()
+                .withNewMetadata()
+                .withName(DELETE_CONFIG_MAP_NAME)
+                .withNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE)
+                .withLabels(Map.ofEntries(Map.entry(DELETE_ANNOTATION, "true")))
+                .endMetadata()
+                .build();
+        ResourceManager.getInstance().createResourceWithWait(cm);
 
         // Now the product should start to uninstall, let's wait a bit and check the result.
         TestUtils.waitFor(String.format("the '%s' namespace to be removed as operator is being uninstalled",
-                        OdhConstants.CONTROLLERS_NAMESPACE), 2000, 20000,
+                        OdhConstants.CONTROLLERS_NAMESPACE), 2000, 120_000,
                 () -> !ResourceManager.getKubeClient().namespaceExists(OdhConstants.CONTROLLERS_NAMESPACE));
 
-        // Let's remove the operator namespace now
-        ResourceManager.getKubeCmdClient().deleteNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE);
-        NamespaceUtils.waitForNamespaceDeletion(OdhConstants.OLM_OPERATOR_NAMESPACE);
-
-        // Check that all other expected resources have been deleted
+        // Operator itself should delete the CSV, Subscription and InstallPlan
         Assertions.assertTrue(ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
-                "subscriptions").isEmpty(), "The operator subscription is still present!");
-        Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.MONITORING_NAMESPACE),
-                String.format("Namespace '%s' hasn't been removed by the operator uninstall operation!",
-                        OdhConstants.MONITORING_NAMESPACE));
-        Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.NOTEBOOKS_NAMESPACE),
-                String.format("Namespace '%s' hasn't been removed by the operator uninstall operation!",
-                        OdhConstants.NOTEBOOKS_NAMESPACE));
+                "subscriptions").isEmpty(), "The operator Subscription is still present!");
+        Assertions.assertTrue(ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+                "installplan").isEmpty(), "The operator InstallPlan is still present!");
+        Assertions.assertFalse(ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+                "csv").stream().anyMatch(s -> s.toString().contains(OdhConstants.OLM_OPERATOR_NAME)),
+                "The operator CSV is still present!");
 
-        // Following should be removed and we actually checked above already, so maybe remove from here TODO
-        Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.CONTROLLERS_NAMESPACE),
-                String.format("Namespace '%s' hasn't been removed by the operator uninstall operation!",
-                        OdhConstants.CONTROLLERS_NAMESPACE));
-        Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.OLM_OPERATOR_NAMESPACE),
-                String.format("Namespace '%s' hasn't been removed!",
-                        OdhConstants.OLM_OPERATOR_NAMESPACE));
+        // TODO Check that the config map is deleted also
+        // Looks like operator don't touch this.
+        // This is deleted together with the operator namespace deletion for RHOAI, but what about ODH?
+//        Assertions.assertFalse(ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list("configmap").stream().anyMatch(s -> s.toString().equals(DELETE_CONFIG_MAP_NAME)),
+//                "The operator deletion ConfigMap is still present!");
+
+        // Let's remove the operator namespace now
+        if (Environment.PRODUCT.equals(Environment.PRODUCT_ODH)) {
+            LOGGER.info(String.format("Tested product is ODH - skipping removal of the '%s' namespace.", OdhConstants.OLM_OPERATOR_NAMESPACE));
+
+            // In case of ODH the subscription, CSV and install plan aren't removed since we don't remove the namespace
+            // as it is included in `openshift-operators` which is common namespaces for multiple other operators.
+        } else {
+            // Check that all other expected resources have been deleted
+            Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.MONITORING_NAMESPACE),
+                    String.format("Namespace '%s' hasn't been removed by the operator uninstall operation!",
+                            OdhConstants.MONITORING_NAMESPACE));
+            Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.NOTEBOOKS_NAMESPACE),
+                    String.format("Namespace '%s' hasn't been removed by the operator uninstall operation!",
+                            OdhConstants.NOTEBOOKS_NAMESPACE));
+
+            ResourceManager.getKubeCmdClient().deleteNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE);
+            NamespaceUtils.waitForNamespaceDeletion(OdhConstants.OLM_OPERATOR_NAMESPACE);
+        }
     }
 
     @BeforeAll
     void deployDataScienceCluster() {
+        if (Environment.SKIP_DEPLOY_DSCI_DSC) {
+            LOGGER.info("DSCI and DSC deploy is skipped");
+            return;
+        }
         // Create DSCI
         DSCInitialization dsci = DscUtils.getBasicDSCI();
         // Create DSC
@@ -121,5 +143,9 @@ public class UninstallST extends StandardAbstract {
         // Deploy DSCI,DSC
         ResourceManager.getInstance().createResourceWithWait(dsci);
         ResourceManager.getInstance().createResourceWithWait(dsc);
+    }
+
+    static boolean isOdhTested() {
+        return Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_ODH);
     }
 }
