@@ -34,6 +34,8 @@ import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipel
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.qameta.allure.Issue;
+import io.qameta.allure.TmsLink;
 import io.skodjob.annotations.Contact;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
@@ -93,9 +95,9 @@ public class PipelineServerST extends StandardAbstract {
         ResourceManager.getInstance().createResourceWithWait(dsc);
     }
 
-    /// ODS-2206 - Verify user can create and run a data science pipeline in DS Project
-    /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
-    /// https://issues.redhat.com/browse/RHODS-5133
+    @Issue("RHODS-5133")
+    @TmsLink("ODS-2206") // Verify user can create and run a data science pipeline in DS Project
+    @TmsLink("ODS-2226") // Verify user can delete components of data science pipeline from DS Pipelines page
     @TestDoc(
         description = @Desc("Check that user can create, run and deleted DataSciencePipeline from a DataScience project"),
         contact = @Contact(name = "Jiri Danek", email = "jdanek@redhat.com"),
@@ -252,6 +254,7 @@ public class PipelineServerST extends StandardAbstract {
         }
     }
 
+    @io.qameta.allure.Step
     private void checkPipelineRunK8sDeployments(String prjTitle, String workflowName) {
         List<List<Pod>> tektonTaskPods = Stream.of(
                 client.pods().inNamespace(prjTitle).withLabel("tekton.dev/taskRun=" + workflowName + "-data-prep"),
@@ -275,6 +278,7 @@ public class PipelineServerST extends StandardAbstract {
         }
     }
 
+    @io.qameta.allure.Step
     private static void waitForEndpoints(Resource<Endpoints> endpoints) {
         TestUtils.waitFor("pipelines svc to come up", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             try {
