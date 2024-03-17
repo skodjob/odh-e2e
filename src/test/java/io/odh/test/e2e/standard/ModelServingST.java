@@ -67,6 +67,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static io.odh.test.TestConstants.GLOBAL_POLL_INTERVAL_SHORT;
+import static io.odh.test.TestConstants.GLOBAL_TIMEOUT;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -236,7 +238,7 @@ public class ModelServingST extends StandardAbstract {
                 .sslContext(sslContext)
                 .build();
 
-        TestUtils.waitFor("route to be available", 2000, DEFAULT_TIMEOUT_UNIT.toMillis(DEFAULT_TIMEOUT_DURATION), () -> {
+        TestUtils.waitFor("route to be available", GLOBAL_POLL_INTERVAL_SHORT, GLOBAL_TIMEOUT, () -> {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl))
                     .GET()
