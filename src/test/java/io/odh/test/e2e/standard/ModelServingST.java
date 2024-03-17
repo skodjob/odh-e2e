@@ -31,6 +31,7 @@ import io.odh.test.TestUtils;
 import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.utils.DscUtils;
+import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
 import io.skodjob.annotations.Contact;
@@ -207,6 +208,13 @@ public class ModelServingST extends StandardAbstract {
                 .endSpec()
                 .build();
         ResourceManager.getInstance().createResourceWithWait(inferenceService);
+
+        String namespace = "knative-serving";
+        LOGGER.info("Waiting for pods readiness in {}", namespace);
+        PodUtils.waitForPodsReady(namespace, true, () -> {
+            ResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "pods");
+            ResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "events");
+        });
 
         Route route = kubeClient.routes().inNamespace(projectName).withName(modelName).get();
         queryModelAndCheckMnistInference("https://" + route.getSpec().getHost() + route.getSpec().getPath());
