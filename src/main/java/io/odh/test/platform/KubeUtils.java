@@ -26,6 +26,10 @@ public class KubeUtils {
         return conditions.stream().filter(c -> c.getType().equals(type)).findFirst().orElseGet(null);
     }
 
+    public static io.kserve.serving.v1beta1.inferenceservicestatus.Conditions getInferenceServiceConditionByType(List<io.kserve.serving.v1beta1.inferenceservicestatus.Conditions> conditions, String type) {
+        return conditions.stream().filter(c -> c.getType().equals(type)).findFirst().orElseGet(null);
+    }
+
     public static void clearOdhRemainingResources() {
         ResourceManager.getKubeClient().getClient().apiextensions().v1().customResourceDefinitions().list().getItems()
                 .stream().filter(crd -> crd.getMetadata().getName().contains("opendatahub.io")).toList()

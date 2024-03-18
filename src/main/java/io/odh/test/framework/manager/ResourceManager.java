@@ -15,6 +15,7 @@ import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
 import io.odh.test.framework.manager.resources.DataScienceInitializationResource;
+import io.odh.test.framework.manager.resources.InferenceServiceResource;
 import io.odh.test.framework.manager.resources.NamespaceResource;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.framework.manager.resources.OperatorGroupResource;
@@ -80,6 +81,7 @@ public class ResourceManager {
         new DataScienceClusterResource(),
         new DataScienceInitializationResource(),
         new NotebookResource(),
+        new InferenceServiceResource(),
     };
 
     public final void switchToTestResourceStack() {
