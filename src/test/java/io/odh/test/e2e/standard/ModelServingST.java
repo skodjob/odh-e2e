@@ -131,6 +131,7 @@ public class ModelServingST extends StandardAbstract {
         final String runtimeName = "some-runtime";
         final String modelName = "some-model";
 
+        // https://github.com/onnx/models/blob/main/validated/vision/classification/mnist/README.md
         final String modelStorageUrl = "https://github.com/onnx/models/blob/bec48b6a70e5e9042c0badbaafefe4454e072d08/validated/vision/classification/mnist/model/mnist-8.onnx?raw=true";
         final String modelInputPath = "modelmesh/modelmesh-mnist-input.json";
         final String expectedModelOutput = "\"data\":[-8.233052,-7.7497034,-3.42368,12.363029,-12.079105,17.266596,-10.570976,0.71307594,3.321714,1.362123]";
@@ -203,7 +204,6 @@ public class ModelServingST extends StandardAbstract {
                 .withVersion("1")
                 .endModelFormat()
                 .withRuntime(runtimeName)
-                // https://github.com/onnx/models/blob/main/validated/vision/classification/mnist/README.md
                 .withStorageUri(modelStorageUrl)
                 .endPredictorModel()
                 .endInferenceservicespecPredictor()
