@@ -86,3 +86,16 @@ The docs are generated with every build and the changes should be committed when
 
 The plugin is still under development so the format could change.
 For more info see the plugin repository on GitHub.
+
+## Allure reports
+Enable the `-Pallure` Maven profile to collect testrun data for Allure reporting.
+
+```commandline
+GITHUB_TOKEN="your_github_read_token" mvn verify -Pstandard -Pallure
+```
+
+Then use the Allure Maven plugin to open a HTML report with the results in a web browser.
+
+```commandline
+GITHUB_TOKEN="your_github_read_token" mvn allure:serve
+```

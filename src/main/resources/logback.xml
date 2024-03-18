@@ -27,4 +27,7 @@
 
     <logger name="io.fabric8.kubernetes.client" level="OFF"/>
 
+    <!-- processing of hamcrest assertions outputs useless ERROR messages -->
+    <logger name="io.qameta.allure.AllureLifecycle" level="OFF"/>
+
 </configuration>
