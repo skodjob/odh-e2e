@@ -28,7 +28,6 @@ import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.utils.DscUtils;
 import io.odh.test.utils.PodUtils;
@@ -44,7 +43,6 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +74,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity"})
 @SuiteDoc(
-    description = @Desc("Verifies simple setup of ODH by spin-up operator, setup DSCI, and setup DSC."),
+    description = @Desc("Verifies simple setup of ODH for model serving by spin-up operator, setup DSCI, and setup DSC."),
     beforeTestSteps = {
         @Step(value = "Deploy Pipelines Operator", expected = "Pipelines operator is available on the cluster"),
         @Step(value = "Deploy ServiceMesh Operator", expected = "ServiceMesh operator is available on the cluster"),
@@ -89,7 +87,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
         @Step(value = "Delete ODH operator and all created resources", expected = "Operator is removed and all other resources as well")
     }
 )
-@ExtendWith(ResourceManagerDeleteHandler.class)
 public class ModelServingST extends StandardAbstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ModelServingST.class);
@@ -134,6 +131,10 @@ public class ModelServingST extends StandardAbstract {
         final String runtimeName = "some-runtime";
         final String modelName = "some-model";
 
+        final String modelStorageUrl = "https://github.com/onnx/models/blob/bec48b6a70e5e9042c0badbaafefe4454e072d08/validated/vision/classification/mnist/model/mnist-8.onnx?raw=true";
+        final String modelInputPath = "modelmesh/modelmesh-mnist-input.json";
+        final String expectedModelOutput = "\"data\":[-8.233052,-7.7497034,-3.42368,12.363029,-12.079105,17.266596,-10.570976,0.71307594,3.321714,1.362123]";
+
         // create project
         Namespace ns = new NamespaceBuilder()
                 .withNewMetadata()
@@ -177,6 +178,7 @@ public class ModelServingST extends StandardAbstract {
                 .addToRequests("cpu", new IntOrString("1"))
                 .addToRequests("memory", new IntOrString("4Gi"))
                 .endContainersResources()
+                // server would not start without this storage
                 .addToVolumeMounts(new VolumeMountsBuilder().withMountPath("/dev/shm").withName("shm").build())
                 .endServingruntimespecContainer()
                 .addToVolumes(new VolumesBuilder().withName("shm").withEmptyDir(new EmptyDirBuilder().withMedium("Memory").withSizeLimit(new IntOrString("2Gi")).build()).build())
@@ -202,7 +204,7 @@ public class ModelServingST extends StandardAbstract {
                 .endModelFormat()
                 .withRuntime(runtimeName)
                 // https://github.com/onnx/models/blob/main/validated/vision/classification/mnist/README.md
-                .withStorageUri("https://github.com/onnx/models/blob/bec48b6a70e5e9042c0badbaafefe4454e072d08/validated/vision/classification/mnist/model/mnist-8.onnx?raw=true")
+                .withStorageUri(modelStorageUrl)
                 .endPredictorModel()
                 .endInferenceservicespecPredictor()
                 .endSpec()
@@ -217,7 +219,9 @@ public class ModelServingST extends StandardAbstract {
         });
 
         Route route = kubeClient.routes().inNamespace(projectName).withName(modelName).get();
-        queryModelAndCheckMnistInference("https://" + route.getSpec().getHost() + route.getSpec().getPath());
+        String modelServerUrl = "https://" + route.getSpec().getHost() + route.getSpec().getPath();
+
+        queryModelAndCheckMnistInference(modelServerUrl, modelInputPath, expectedModelOutput);
     }
 
     ServingRuntime processModelServerTemplate(String templateName) {
@@ -237,7 +241,7 @@ public class ModelServingST extends StandardAbstract {
     }
 
     @SneakyThrows
-    void queryModelAndCheckMnistInference(String baseUrl) {
+    void queryModelAndCheckMnistInference(String baseUrl, String modelInputPath, String expectedModelOutput) {
         SSLContext sslContext = getSSLContextFromSecret();
 
         final HttpClient httpClient = HttpClient.newBuilder()
@@ -265,14 +269,13 @@ public class ModelServingST extends StandardAbstract {
                 // this is the Content-Type header that `curl --data` sets by default
                 .header("Content-Type", "application/x-www-form-urlencoded")
                 .POST(HttpRequest.BodyPublishers.ofInputStream(
-                        () -> this.getClass().getClassLoader().getResourceAsStream("modelmesh/modelmesh-mnist-input.json")))
+                        () -> this.getClass().getClassLoader().getResourceAsStream(modelInputPath)))
                 .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> inferResponse = httpClient.send(inferRequest, HttpResponse.BodyHandlers.ofString());
 
         assertThat(inferResponse.body(), inferResponse.statusCode(), Matchers.is(200));
-        assertThat(inferResponse.body(), Matchers.containsString(
-                "\"data\":[-8.233052,-7.7497034,-3.42368,12.363029,-12.079105,17.266596,-10.570976,0.71307594,3.321714,1.362123]"));
+        assertThat(inferResponse.body(), Matchers.containsString(expectedModelOutput));
     }
 
     private <T> T castResource(KubernetesResource value, Class<T> type) {
