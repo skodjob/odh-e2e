@@ -192,7 +192,7 @@ public class PipelineV2ServerST extends StandardAbstract {
         final String pipelineTestFilepath = "src/test/resources/pipelines/iris_pipeline_compiled_kfpv2.yaml";
         final String pipelineTestRunBasename = "pipeline-test-run-basename";
 
-        final String secretName = "mlpipeline-minio-artifact"; // todo: can't use custom name in v2, bug?
+        final String secretName = "mlpipeline-minio-artifact"; // TODO(jdanek): can't use custom name in v2, bug?
 
         Allure.step("Setup CRs", () -> {
             Allure.step("Create Data Science Project");
