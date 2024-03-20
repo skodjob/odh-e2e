@@ -74,6 +74,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@SuppressWarnings({"checkstyle:ClassFanOutComplexity"})
 @SuiteDoc(
     description = @Desc("Verifies simple setup of ODH by spin-up operator, setup DSCI, and setup DSC."),
     beforeTestSteps = {
@@ -181,9 +182,8 @@ public class PipelineV2ServerST extends StandardAbstract {
             @Step(value = "Delete pipeline", expected = "Pipeline is deleted"),
         }
     )
-
     @Test
-    void testUserCanCreateRunAndDeleteADSPipelineFromDSProject() throws IOException {
+    void testUserCanOperateDSv2PipelineFromDSProject() throws IOException {
         OpenShiftClient ocClient = (OpenShiftClient) client;
 
         final String pipelineTestName = "pipeline-test-name";
@@ -303,7 +303,7 @@ public class PipelineV2ServerST extends StandardAbstract {
             KFPv2Client kfpClient = new KFPv2Client("http://localhost:%d".formatted(portForward.getLocalPort()));
 
             // WORKAROUND(RHOAIENG-3250): delete sample pipeline present on ODH
-            if (Environment.PRODUCT.equals(Environment.PRODUCT_DEFAULT)) {
+            if (Environment.PRODUCT.equals(Environment.PRODUCT_ODH)) {
                 for (KFPv2Client.Pipeline pipeline : kfpClient.listPipelines()) {
                     kfpClient.deletePipeline(pipeline.pipelineId);
                 }
@@ -334,10 +334,9 @@ public class PipelineV2ServerST extends StandardAbstract {
             assertThat(statuses.stream()
                     .filter(run -> run.runId.equals(pipelineRun.runId))
                     .map(run -> run.state)
-                    .findFirst().get(), Matchers.is("SUCCEEDED"));
+                    .findFirst().orElseThrow(), Matchers.is("SUCCEEDED"));
 
-            // todo: don't know where to get what used to be `pipelineRun.runId.substring(0, 5)`
-//        checkPipelineRunK8sDeployments(prjTitle, pipelineWorkflowName + "-" + pipelineRun.runId.substring(0, 5));
+            checkPipelineRunK8sDeployments(prjTitle, pipelineRun.runId);
 
             kfpClient.deletePipelineRun(pipelineRun.runId);
             for (KFPv2Client.PipelineVersion pipelineVersion : kfpClient.listPipelineVersions(importedPipeline.pipelineId)) {
@@ -347,8 +346,8 @@ public class PipelineV2ServerST extends StandardAbstract {
         }
     }
 
-    private void checkPipelineRunK8sDeployments(String prjTitle, String workflowName) {
-        List<Pod> argoTaskPods = client.pods().inNamespace(prjTitle).withLabel("workflows.argoproj.io/workflow=" + workflowName).list().getItems();
+    private void checkPipelineRunK8sDeployments(String prjTitle, String runId) {
+        List<Pod> argoTaskPods = client.pods().inNamespace(prjTitle).withLabel("pipeline/runid=" + runId).list().getItems();
         Assertions.assertEquals(4, argoTaskPods.size());
 
         for (Pod pod : argoTaskPods) {
@@ -364,6 +363,7 @@ public class PipelineV2ServerST extends StandardAbstract {
             }
         }
 
+        final String workflowName = argoTaskPods.get(0).getMetadata().getLabels().get("workflows.argoproj.io/workflow");
         List<String> expectedNodeNames = List.of(
                 workflowName + ".root.data-prep-driver",
                 workflowName + ".root.train-model-driver",

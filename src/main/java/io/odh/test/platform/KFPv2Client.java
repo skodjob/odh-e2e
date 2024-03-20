@@ -106,7 +106,7 @@ public class KFPv2Client {
         PipelineRun pipelineRun = new PipelineRun();
         pipelineRun.displayName = pipelineTestRunBasename;
         pipelineRun.pipelineVersionReference = new PipelineVersionReference();
-        pipelineRun.pipelineVersionReference.pipeline_id = pipelineId;
+        pipelineRun.pipelineVersionReference.pipelineId = pipelineId;
         if (parameters != null) {
             pipelineRun.runtimeConfig = new RuntimeConfig();
             pipelineRun.runtimeConfig.parameters = parameters;
