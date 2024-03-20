@@ -54,6 +54,7 @@ import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipel
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.qameta.allure.Allure;
 import io.skodjob.annotations.Contact;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
@@ -194,105 +195,102 @@ public class PipelineV2ServerST extends StandardAbstract {
 
         final String secretName = "mlpipeline-minio-artifact"; // todo: can't use custom name in v2, bug?
 
-        // create project
-        Namespace ns = new NamespaceBuilder()
-            .withNewMetadata()
-            .withName(prjTitle)
-            .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
-            .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
-            .endMetadata()
-            .build();
-        ResourceManager.getInstance().createResourceWithWait(ns);
-
-        // create minio secret
-        Secret secret = new SecretBuilder()
+        Allure.step("Setup CRs", () -> {
+            Allure.step("Create Data Science Project");
+            Namespace ns = new NamespaceBuilder()
                 .withNewMetadata()
-                    .withName(secretName)
-                    .addToLabels("opendatahub.io/dashboard", "true")
-                    .withNamespace(prjTitle)
+                .withName(prjTitle)
+                .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
+                .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
                 .endMetadata()
-                .addToStringData("AWS_ACCESS_KEY_ID", "KEY007")
-                .addToStringData("AWS_S3_BUCKET", "HolyGrail")
-                .addToStringData("AWS_SECRET_ACCESS_KEY", "gimmeAccessPlz")
-                .withType("Opaque")
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(secret);
+            ResourceManager.getInstance().createResourceWithWait(ns);
 
-        // configure pipeline server (with minio, not AWS bucket)
-        DataSciencePipelinesApplication dspa = new DataSciencePipelinesApplicationBuilder()
-                .withNewMetadata()
-                    .withName("pipelines-definition")
-                    .withNamespace(prjTitle)
-                .endMetadata()
-                .withNewSpec()
-                    // https://github.com/opendatahub-io/data-science-pipelines-operator/blob/main/config/samples/v2/dspa-simple/dspa_simple.yaml
-                    .withDspVersion("v2")
-                    .withNewMlpipelineUI()
-                        .withImage("quay.io/opendatahub/ds-pipelines-frontend:latest")
-                    .endMlpipelineUI()
-                    // todo: v1 values below, this will need review and updating
-                    .withNewApiServer()
-                        .withApplyTektonCustomResource(true)
-                        .withArchiveLogs(false)
-                        .withAutoUpdatePipelineDefaultVersion(true)
-                        .withCollectMetrics(true)
-                        .withDbConfigConMaxLifetimeSec(120L)
-                        .withDeploy(true)
-                        .withEnableOauth(true)
-                        .withEnableSamplePipeline(false)
-                        .withInjectDefaultScript(true)
-                        .withStripEOF(true)
-                        .withTerminateStatus(ApiServer.TerminateStatus.CANCELLED)
-                        .withTrackArtifacts(true)
-                    .endApiServer()
-                    .withNewDatabase()
-                        .withDisableHealthCheck(false)
-                        .withNewMariaDB()
-                            .withDeploy(true)
-                            .withPipelineDBName("mlpipeline")
-                            .withNewPvcSize("10Gi")
-                            .withUsername("mlpipeline")
-                        .endMariaDB()
-                    .endDatabase()
-                    // todo: 2024-03-04T08:12:51Z    INFO    Encountered error when parsing CR:
-                    // [MLMD explicitly disabled in DSPA, but is a required component for V2 Pipelines]
-                    // {"namespace": "pipeline-test", "dspa_name": "pipelines-definition"}               │
-                    .withNewMlmd()
-                        .withDeploy(true)
-                    .endMlmd()
-                    .withNewObjectStorage()
-                        .withDisableHealthCheck(false)
-                        // NOTE: ods-ci uses aws, but minio is more appropriate here
-                        // todo: │   Warning  Failed          7s (x4 over 44s)   kubelet            Error: secret "mlpipeline-minio-artifact" not found
-                        .withNewMinio()
-                            .withDeploy(true)
-                            .withImage("quay.io/minio/minio")
-                            .withNewPvcSize("1Gi")
-                            .withBucket("HolyGrail")
-                            .withNewS3CredentialsSecret()
-                                .withAccessKey("AWS_ACCESS_KEY_ID")
-                                .withSecretKey("AWS_SECRET_ACCESS_KEY")
-                                .withSecretName(secretName)
-                            .endMinioS3CredentialsSecret()
-                        .endMinio()
-                    .endObjectStorage()
-                    .withNewPersistenceAgent()
-                        .withDeploy(true)
-                        .withNumWorkers(2L)
-                    .endPersistenceAgent()
-                    .withNewScheduledWorkflow()
-                        .withCronScheduleTimezone("UTC")
-                        .withDeploy(true)
-                    .endScheduledWorkflow()
-                .endSpec()
-                .build();
-        ResourceManager.getInstance().createResourceWithWait(dspa);
+            Allure.step("Create Minio secret");
+            Secret secret = new SecretBuilder()
+                    .withNewMetadata()
+                        .withName(secretName)
+                        .addToLabels("opendatahub.io/dashboard", "true")
+                        .withNamespace(prjTitle)
+                    .endMetadata()
+                    .addToStringData("AWS_ACCESS_KEY_ID", "KEY007")
+                    .addToStringData("AWS_S3_BUCKET", "HolyGrail")
+                    .addToStringData("AWS_SECRET_ACCESS_KEY", "gimmeAccessPlz")
+                    .withType("Opaque")
+                    .build();
+            ResourceManager.getInstance().createResourceWithWait(secret);
 
-        // wait for pipeline api server to come up
+            Allure.step("Create DataSciencePipelinesApplication instance with build-in Minio enabled");
+            DataSciencePipelinesApplication dspa = new DataSciencePipelinesApplicationBuilder()
+                    .withNewMetadata()
+                        .withName("pipelines-definition")
+                        .withNamespace(prjTitle)
+                    .endMetadata()
+                    .withNewSpec()
+                        // https://github.com/opendatahub-io/data-science-pipelines-operator/blob/main/config/samples/v2/dspa-simple/dspa_simple.yaml
+                        .withDspVersion("v2")
+                        .withNewMlpipelineUI()
+                            .withImage("quay.io/opendatahub/ds-pipelines-frontend:latest")
+                        .endMlpipelineUI()
+                        // TODO(jdanek): v1 values below, this will need review and updating closer to release
+                        .withNewApiServer()
+                            .withApplyTektonCustomResource(true)
+                            .withArchiveLogs(false)
+                            .withAutoUpdatePipelineDefaultVersion(true)
+                            .withCollectMetrics(true)
+                            .withDbConfigConMaxLifetimeSec(120L)
+                            .withDeploy(true)
+                            .withEnableOauth(true)
+                            .withEnableSamplePipeline(false)
+                            .withInjectDefaultScript(true)
+                            .withStripEOF(true)
+                            .withTerminateStatus(ApiServer.TerminateStatus.CANCELLED)
+                            .withTrackArtifacts(true)
+                        .endApiServer()
+                        .withNewDatabase()
+                            .withDisableHealthCheck(false)
+                            .withNewMariaDB()
+                                .withDeploy(true)
+                                .withPipelineDBName("mlpipeline")
+                                .withNewPvcSize("10Gi")
+                                .withUsername("mlpipeline")
+                            .endMariaDB()
+                        .endDatabase()
+                        .withNewMlmd()
+                            .withDeploy(true)
+                        .endMlmd()
+                        .withNewObjectStorage()
+                            .withDisableHealthCheck(false)
+                            .withNewMinio()
+                                .withDeploy(true)
+                                .withImage("quay.io/minio/minio")
+                                .withNewPvcSize("1Gi")
+                                .withBucket("HolyGrail")
+                                .withNewS3CredentialsSecret()
+                                    .withAccessKey("AWS_ACCESS_KEY_ID")
+                                    .withSecretKey("AWS_SECRET_ACCESS_KEY")
+                                    .withSecretName(secretName)
+                                .endMinioS3CredentialsSecret()
+                            .endMinio()
+                        .endObjectStorage()
+                        .withNewPersistenceAgent()
+                            .withDeploy(true)
+                            .withNumWorkers(2L)
+                        .endPersistenceAgent()
+                        .withNewScheduledWorkflow()
+                            .withCronScheduleTimezone("UTC")
+                            .withDeploy(true)
+                        .endScheduledWorkflow()
+                    .endSpec()
+                    .build();
+            ResourceManager.getInstance().createResourceWithWait(dspa);
+        });
+
+        Allure.step("Wait for Pipeline API server to come up");
         Resource<Endpoints> endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
         waitForEndpoints(endpoints);
 
-        // connect to the api server we just created, route not available unless I enable oauth
+        Allure.step("Connect to the API server");
         Resource<Route> route = ocClient.routes()
                 .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
 
@@ -345,6 +343,7 @@ public class PipelineV2ServerST extends StandardAbstract {
         }
     }
 
+    @io.qameta.allure.Step
     private void checkPipelineRunK8sDeployments(String prjTitle, String runId) {
         List<Pod> argoTaskPods = client.pods().inNamespace(prjTitle).withLabel("pipeline/runid=" + runId).list().getItems();
         Assertions.assertEquals(7, argoTaskPods.size());
@@ -377,6 +376,7 @@ public class PipelineV2ServerST extends StandardAbstract {
         Assertions.assertIterableEquals(expectedNodeNames.stream().sorted().toList(), argoNodeNames.stream().sorted().toList(), argoNodeNames.toString());
     }
 
+    @io.qameta.allure.Step
     private static void waitForEndpoints(Resource<Endpoints> endpoints) {
         TestUtils.waitFor("pipelines svc to come up", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             try {
