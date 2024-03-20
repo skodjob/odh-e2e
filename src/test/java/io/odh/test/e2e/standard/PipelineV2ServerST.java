@@ -189,8 +189,7 @@ public class PipelineV2ServerST extends StandardAbstract {
         final String pipelineTestName = "pipeline-test-name";
         final String pipelineTestDesc = "pipeline-test-desc";
         final String prjTitle = "pipeline-test";
-        final String pipelineTestFilepath = "src/test/resources/pipelines/better_v2.yaml";
-        final String pipelineWorkflowName = "iris-training-pipeline";
+        final String pipelineTestFilepath = "src/test/resources/pipelines/iris_pipeline_compiled_kfpv2.yaml";
         final String pipelineTestRunBasename = "pipeline-test-run-basename";
 
         final String secretName = "mlpipeline-minio-artifact"; // todo: can't use custom name in v2, bug?
