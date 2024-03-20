@@ -70,7 +70,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
         @Step(value = "Delete ODH operator and all created resources", expected = "Operator is removed and all other resources as well")
     }
 )
-@ExtendWith(ResourceManagerDeleteHandler.class)
 public class PipelineServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServerST.class);
 
