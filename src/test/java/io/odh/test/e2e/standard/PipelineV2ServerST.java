@@ -96,7 +96,6 @@ public class PipelineV2ServerST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-pipelines";
 
-    private final ResourceManager resourceManager = ResourceManager.getInstance();
     private final KubernetesClient client = ResourceManager.getKubeClient().getClient();
 
     @BeforeAll
