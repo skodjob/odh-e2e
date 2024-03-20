@@ -347,7 +347,7 @@ public class PipelineV2ServerST extends StandardAbstract {
 
     private void checkPipelineRunK8sDeployments(String prjTitle, String runId) {
         List<Pod> argoTaskPods = client.pods().inNamespace(prjTitle).withLabel("pipeline/runid=" + runId).list().getItems();
-        Assertions.assertEquals(4, argoTaskPods.size());
+        Assertions.assertEquals(7, argoTaskPods.size());
 
         for (Pod pod : argoTaskPods) {
             Assertions.assertEquals("Succeeded", pod.getStatus().getPhase());
@@ -364,10 +364,13 @@ public class PipelineV2ServerST extends StandardAbstract {
 
         final String workflowName = argoTaskPods.get(0).getMetadata().getLabels().get("workflows.argoproj.io/workflow");
         List<String> expectedNodeNames = List.of(
-                workflowName + ".root.data-prep-driver",
+                workflowName + ".root-driver",
+                workflowName + ".root.create-dataset-driver",
+                workflowName + ".root.create-dataset.executor",
+                workflowName + ".root.normalize-dataset-driver",
+                workflowName + ".root.normalize-dataset.executor",
                 workflowName + ".root.train-model-driver",
-                workflowName + ".root.data-prep.executor",
-                workflowName + ".root-driver");
+                workflowName + ".root.train-model.executor");
         List<String> argoNodeNames = argoTaskPods.stream()
                 .map(pod -> pod.getMetadata().getAnnotations().get("workflows.argoproj.io/node-name"))
                 .toList();
