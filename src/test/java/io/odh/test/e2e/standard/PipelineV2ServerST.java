@@ -299,18 +299,7 @@ public class PipelineV2ServerST extends StandardAbstract {
             KFPv2Client kfpClient = new KFPv2Client("http://localhost:%d".formatted(portForward.getLocalPort()));
 
             // WORKAROUND(RHOAIENG-3250): delete sample pipeline present on ODH
-            if (Environment.PRODUCT.equals(Environment.PRODUCT_ODH)) {
-                for (KFPv2Client.Pipeline pipeline : kfpClient.listPipelines()) {
-                    kfpClient.deletePipeline(pipeline.pipelineId);
-                }
-            }
-
-            for (KFPv2Client.Pipeline pipeline : kfpClient.listPipelines()) {
-                for (KFPv2Client.PipelineVersion pipelineVersion : kfpClient.listPipelineVersions(pipeline.pipelineId)) {
-                    kfpClient.deletePipelineVersion(pipeline.pipelineId, pipelineVersion.pipelineVersionId);
-                }
-                kfpClient.deletePipeline(pipeline.pipelineId);
-            }
+            deletePreexistingPipelinesAndVersions(kfpClient);
 
             KFPv2Client.Pipeline importedPipeline = kfpClient.importPipeline(pipelineTestName, pipelineTestDesc, pipelineTestFilepath);
 
@@ -339,6 +328,16 @@ public class PipelineV2ServerST extends StandardAbstract {
                 kfpClient.deletePipelineVersion(importedPipeline.pipelineId, pipelineVersion.pipelineVersionId);
             }
             kfpClient.deletePipeline(importedPipeline.pipelineId);
+        }
+    }
+
+    @io.qameta.allure.Step
+    private static void deletePreexistingPipelinesAndVersions(KFPv2Client kfpClient) {
+        for (KFPv2Client.Pipeline pipeline : kfpClient.listPipelines()) {
+            for (KFPv2Client.PipelineVersion pipelineVersion : kfpClient.listPipelineVersions(pipeline.pipelineId)) {
+                kfpClient.deletePipelineVersion(pipeline.pipelineId, pipelineVersion.pipelineVersionId);
+            }
+            kfpClient.deletePipeline(pipeline.pipelineId);
         }
     }
 
