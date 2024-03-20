@@ -130,6 +130,7 @@ public class PipelineV2ServerST extends StandardAbstract {
                                 .withCodeflare(
                                         new CodeflareBuilder().withManagementState(Codeflare.ManagementState.MANAGED).build()
                                 )
+                                // TODO(jdanek): remove devFlags prior to release, when KFPv2 is the default
                                 .withDatasciencepipelines(
                                         new DatasciencepipelinesBuilder()
                                                 .withManagementState(Datasciencepipelines.ManagementState.MANAGED)
