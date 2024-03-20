@@ -145,9 +145,8 @@ public class KFPv2Client {
 
         AtomicReference<PipelineRun> run = new AtomicReference<>();
         TestUtils.waitFor("pipelineRun to complete", 5000, 10 * 60 * 1000, () -> {
-            HttpResponse<String> reply = null;
             try {
-                reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 Assertions.assertEquals(reply.statusCode(), 200, reply.body());
                 run.set(objectMapper.readValue(reply.body(), PipelineRun.class));
                 String state = run.get().state;
