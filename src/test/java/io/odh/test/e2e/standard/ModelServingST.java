@@ -39,8 +39,6 @@ import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import lombok.SneakyThrows;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -70,7 +68,7 @@ import static io.odh.test.TestConstants.GLOBAL_POLL_INTERVAL_SHORT;
 import static io.odh.test.TestConstants.GLOBAL_TIMEOUT;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity"})
 @SuiteDoc(
@@ -227,11 +225,11 @@ public class ModelServingST extends StandardAbstract {
     ServingRuntime processModelServerTemplate(String templateName) {
         TemplateResource templateResource = kubeClient.templates().inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(templateName);
         Template template = templateResource.get();
-        Assertions.assertNotNull(template);
-        Assertions.assertEquals(0, template.getParameters().size());
+        assertThat(template).isNotNull();
+        assertThat(template.getParameters()).isEmpty();
 
         List<HasMetadata> instances = templateResource.process().getItems();
-        Assertions.assertEquals(1, instances.size());
+        assertThat(instances).hasSize(1);
         return instances.stream().map(it -> {
             GenericKubernetesResource genericKubernetesResource = (GenericKubernetesResource) it;
             // WORKAROUND(RHOAIENG-4547) ServingRuntime should not have top level `labels` key
@@ -274,8 +272,8 @@ public class ModelServingST extends StandardAbstract {
                 .build();
         HttpResponse<String> inferResponse = httpClient.send(inferRequest, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(inferResponse.body(), inferResponse.statusCode(), Matchers.is(200));
-        assertThat(inferResponse.body(), Matchers.containsString(expectedModelOutput));
+        assertThat(inferResponse.statusCode()).as(inferResponse.body()).isEqualTo(200);
+        assertThat(inferResponse.body()).contains(expectedModelOutput);
     }
 
     private <T> T castResource(KubernetesResource value, Class<T> type) {
