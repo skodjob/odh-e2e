@@ -40,6 +40,8 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -67,6 +69,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 )
 public class PipelineServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServerST.class);
+
+    @InjectSoftAssertions
+    private SoftAssertions softly;
 
     private static final String DS_PROJECT_NAME = "test-pipelines";
 
@@ -258,16 +263,16 @@ public class PipelineServerST extends StandardAbstract {
         ).map(pod -> pod.list().getItems()).toList();
 
         for (List<Pod> pods : tektonTaskPods) {
-            assertThat(pods).hasSize(1);
-            assertThat(pods.get(0).getStatus().getPhase()).isEqualTo("Succeeded");
+            softly.assertThat(pods).hasSize(1);
+            softly.assertThat(pods.get(0).getStatus().getPhase()).isEqualTo("Succeeded");
 
             List<ContainerStatus> containerStatuses = pods.get(0).getStatus().getContainerStatuses();
-            assertThat(containerStatuses).isNotEmpty();
+            softly.assertThat(containerStatuses).isNotEmpty();
             for (ContainerStatus containerStatus : containerStatuses) {
                 ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
-                assertThat(terminated).isNotNull();
-                assertThat(terminated.getExitCode()).isEqualTo(0);
-                assertThat(terminated.getReason()).isEqualTo("Completed");
+                softly.assertThat(terminated).isNotNull();
+                softly.assertThat(terminated.getExitCode()).isEqualTo(0);
+                softly.assertThat(terminated.getReason()).isEqualTo("Completed");
             }
         }
     }

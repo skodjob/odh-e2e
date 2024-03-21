@@ -39,6 +39,8 @@ import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import lombok.SneakyThrows;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -88,6 +90,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ModelServingST extends StandardAbstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ModelServingST.class);
+
+    @InjectSoftAssertions
+    private SoftAssertions softly;
 
     private static final String DS_PROJECT_NAME = "test-model-serving";
 
@@ -229,7 +234,7 @@ public class ModelServingST extends StandardAbstract {
         assertThat(template.getParameters()).isEmpty();
 
         List<HasMetadata> instances = templateResource.process().getItems();
-        assertThat(instances).hasSize(1);
+        softly.assertThat(instances).hasSize(1);
         return instances.stream().map(it -> {
             GenericKubernetesResource genericKubernetesResource = (GenericKubernetesResource) it;
             // WORKAROUND(RHOAIENG-4547) ServingRuntime should not have top level `labels` key
@@ -272,8 +277,8 @@ public class ModelServingST extends StandardAbstract {
                 .build();
         HttpResponse<String> inferResponse = httpClient.send(inferRequest, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(inferResponse.statusCode()).as(inferResponse.body()).isEqualTo(200);
-        assertThat(inferResponse.body()).contains(expectedModelOutput);
+        softly.assertThat(inferResponse.statusCode()).as(inferResponse.body()).isEqualTo(200);
+        softly.assertThat(inferResponse.body()).contains(expectedModelOutput);
     }
 
     private <T> T castResource(KubernetesResource value, Class<T> type) {
