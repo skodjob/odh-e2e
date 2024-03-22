@@ -4,6 +4,10 @@
  */
 package io.odh.test.platform;
 
+import io.fabric8.kubernetes.api.model.EndpointSubset;
+import io.fabric8.kubernetes.api.model.Endpoints;
+import io.fabric8.kubernetes.client.KubernetesClientException;
+import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
@@ -63,5 +67,29 @@ public class KubeUtils {
     }
 
     private KubeUtils() {
+    }
+
+    public static void waitForEndpoints(String name, Resource<Endpoints> endpoints) {
+        TestUtils.waitFor("%s service endpoints to come up".formatted(name), TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+            try {
+                Endpoints endpointset = endpoints.get();
+                if (endpointset == null) {
+                    return false;
+                }
+                List<EndpointSubset> subsets = endpointset.getSubsets();
+                if (subsets.isEmpty()) {
+                    return false;
+                }
+                for (EndpointSubset subset : subsets) {
+                    return !subset.getAddresses().isEmpty();
+                }
+            } catch (KubernetesClientException e) {
+                if (e.getCode() == 404) {
+                    return false;
+                }
+                throw e;
+            }
+            return false;
+        });
     }
 }
