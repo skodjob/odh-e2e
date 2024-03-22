@@ -6,7 +6,6 @@ package io.odh.test.e2e.standard;
 
 import io.fabric8.kubernetes.api.model.ContainerStateTerminated;
 import io.fabric8.kubernetes.api.model.ContainerStatus;
-import io.fabric8.kubernetes.api.model.EndpointSubset;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
@@ -15,7 +14,6 @@ import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.LocalPortForward;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.ServiceResource;
@@ -23,10 +21,9 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
-import io.odh.test.TestConstants;
-import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.KFPv2Client;
+import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -285,7 +282,7 @@ public class PipelineV2ServerST extends StandardAbstract {
 
         Allure.step("Wait for Pipeline API server to come up");
         Resource<Endpoints> endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
-        waitForEndpoints(endpoints);
+        KubeUtils.waitForEndpoints("pipelines", endpoints);
 
         Allure.step("Connect to the API server");
         Resource<Route> route = ocClient.routes()
@@ -370,30 +367,5 @@ public class PipelineV2ServerST extends StandardAbstract {
                 .map(pod -> pod.getMetadata().getAnnotations().get("workflows.argoproj.io/node-name"))
                 .toList();
         Assertions.assertIterableEquals(expectedNodeNames.stream().sorted().toList(), argoNodeNames.stream().sorted().toList(), argoNodeNames.toString());
-    }
-
-    @io.qameta.allure.Step
-    private static void waitForEndpoints(Resource<Endpoints> endpoints) {
-        TestUtils.waitFor("pipelines svc to come up", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
-            try {
-                Endpoints endpointset = endpoints.get();
-                if (endpointset == null) {
-                    return false;
-                }
-                List<EndpointSubset> subsets = endpointset.getSubsets();
-                if (subsets.isEmpty()) {
-                    return false;
-                }
-                for (EndpointSubset subset : subsets) {
-                    return !subset.getAddresses().isEmpty();
-                }
-            } catch (KubernetesClientException e) {
-                if (e.getCode() == 404) {
-                    return false;
-                }
-                throw e;
-            }
-            return false;
-        });
     }
 }
