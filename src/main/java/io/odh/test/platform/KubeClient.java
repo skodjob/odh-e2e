@@ -92,23 +92,7 @@ public class KubeClient {
     }
 
     private Config getConfig() {
-        if (Environment.KUBE_USERNAME != null
-                && Environment.KUBE_PASSWORD != null
-                && Environment.KUBE_URL != null) {
-            Exec.exec(Arrays.asList("oc", "login", "-u", Environment.KUBE_USERNAME,
-                    "-p", Environment.KUBE_PASSWORD,
-                    "--insecure-skip-tls-verify",
-                    "--kubeconfig", Environment.USER_PATH + "/test.kubeconfig",
-                    Environment.KUBE_URL));
-            kubeconfigPath = Environment.USER_PATH + "/test.kubeconfig";
-            return new ConfigBuilder()
-                    .withUsername(Environment.KUBE_USERNAME)
-                    .withPassword(Environment.KUBE_PASSWORD)
-                    .withMasterUrl(Environment.KUBE_URL)
-                    .withDisableHostnameVerification(true)
-                    .withTrustCerts(true)
-                    .build();
-        } else if (Environment.KUBE_URL != null
+        if (Environment.KUBE_URL != null
                 && Environment.KUBE_TOKEN != null) {
             Exec.exec(Arrays.asList("oc", "login", "--token", Environment.KUBE_TOKEN,
                     "--insecure-skip-tls-verify",

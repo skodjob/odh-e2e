@@ -27,6 +27,7 @@
 | - | - | - |
 | 1. | Create uninstall configmap | ConfigMap exists |
 | 2. | Wait for controllers namespace deletion | Controllers namespace is deleted |
-| 3. | Remove Operator namespace | Operator namespace is deleted |
+| 3. | Check that relevant resources are deleted (Subscription, InstallPlan, CSV) | All relevant resources are deleted |
 | 4. | Check that all related namespaces are deleted (monitoring, notebooks, controllers) | All related namespaces are deleted |
+| 5. | Remove Operator namespace | Operator namespace is deleted |
 
