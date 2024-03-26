@@ -38,8 +38,6 @@ public class Environment {
     public static final String USER_PATH = System.getProperty("user.dir");
 
     private static final String CONFIG_FILE_PATH_ENV = "ENV_FILE";
-    private static final String USERNAME_ENV = "KUBE_USERNAME";
-    private static final String PASSWORD_ENV = "KUBE_PASSWORD";
     private static final String TOKEN_ENV = "KUBE_TOKEN";
     private static final String URL_ENV = "KUBE_URL";
     private static final String PRODUCT_ENV = "PRODUCT";
@@ -77,8 +75,6 @@ public class Environment {
      */
     public static final String PRODUCT = getOrDefault(PRODUCT_ENV, PRODUCT_ODH);
     public static final String RUN_USER = getOrDefault("USER", null);
-    public static final String KUBE_USERNAME = getOrDefault(USERNAME_ENV, null);
-    public static final String KUBE_PASSWORD = getOrDefault(PASSWORD_ENV, null);
     public static final String KUBE_TOKEN = getOrDefault(TOKEN_ENV, null);
     public static final String KUBE_URL = getOrDefault(URL_ENV, null);
 
