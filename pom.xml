@@ -63,6 +63,7 @@
         <aspectj.version>1.9.21.2</aspectj.version>
         <allure.version>2.25.0</allure.version>
         <allure.maven.version>2.12.0</allure.maven.version>
+        <assertj.version>3.24.2</assertj.version>
     </properties>
 
     <repositories>
@@ -173,6 +174,12 @@
             <artifactId>hamcrest</artifactId>
             <scope>compile</scope>
             <version>${hamcrest.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -471,6 +478,11 @@
                 <dependency>
                     <groupId>io.qameta.allure</groupId>
                     <artifactId>allure-hamcrest</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>io.qameta.allure</groupId>
+                    <artifactId>allure-assertj</artifactId>
                     <scope>runtime</scope>
                 </dependency>
                 <dependency>

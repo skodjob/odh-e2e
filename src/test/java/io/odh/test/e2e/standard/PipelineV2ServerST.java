@@ -56,8 +56,8 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -66,9 +66,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity"})
 @SuiteDoc(
@@ -87,6 +86,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 )
 public class PipelineV2ServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineV2ServerST.class);
+
+    @InjectSoftAssertions
+    private SoftAssertions softly;
 
     private static final String DS_PROJECT_NAME = "test-pipelines";
 
@@ -299,7 +301,7 @@ public class PipelineV2ServerST extends StandardAbstract {
             KFPv2Client.Pipeline importedPipeline = kfpClient.importPipeline(pipelineTestName, pipelineTestDesc, pipelineTestFilepath);
 
             List<KFPv2Client.Pipeline> pipelines = kfpClient.listPipelines();
-            assertThat(pipelines.stream().map(p -> p.displayName).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
+            assertThat(pipelines).extracting(p -> p.displayName).contains(pipelineTestName);
 
             Map<String, Object> parameters = Map.of(
                     "min_max_scaler", false,
@@ -311,10 +313,10 @@ public class PipelineV2ServerST extends StandardAbstract {
             kfpClient.waitForPipelineRun(pipelineRun.runId);
 
             List<KFPv2Client.PipelineRun> statuses = kfpClient.getPipelineRunStatus();
-            assertThat(statuses.stream()
-                    .filter(run -> run.runId.equals(pipelineRun.runId))
-                    .map(run -> run.state)
-                    .findFirst().orElseThrow(), Matchers.is("SUCCEEDED"));
+            assertThat(statuses)
+                    .filteredOn(run -> run.runId.equals(pipelineRun.runId))
+                    .extracting(run -> run.state)
+                    .singleElement().isEqualTo("SUCCEEDED");
 
             checkPipelineRunK8sDeployments(prjTitle, pipelineRun.runId);
 
@@ -339,18 +341,18 @@ public class PipelineV2ServerST extends StandardAbstract {
     @io.qameta.allure.Step
     private void checkPipelineRunK8sDeployments(String prjTitle, String runId) {
         List<Pod> argoTaskPods = client.pods().inNamespace(prjTitle).withLabel("pipeline/runid=" + runId).list().getItems();
-        Assertions.assertEquals(7, argoTaskPods.size());
+        softly.assertThat(argoTaskPods).hasSize(7);
 
         for (Pod pod : argoTaskPods) {
-            Assertions.assertEquals("Succeeded", pod.getStatus().getPhase());
+            softly.assertThat(pod.getStatus().getPhase()).isEqualTo("Succeeded");
 
             List<ContainerStatus> containerStatuses = pod.getStatus().getContainerStatuses();
-            Assertions.assertNotEquals(0, containerStatuses.size());
+            softly.assertThat(containerStatuses).isNotEmpty();
             for (ContainerStatus containerStatus : containerStatuses) {
                 ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
-                Assertions.assertNotNull(terminated);
-                Assertions.assertEquals(0, terminated.getExitCode());
-                Assertions.assertEquals("Completed", terminated.getReason());
+                softly.assertThat(terminated).isNotNull();
+                softly.assertThat(terminated.getExitCode()).isEqualTo(0);
+                softly.assertThat(terminated.getReason()).isEqualTo("Completed");
             }
         }
 
@@ -366,6 +368,6 @@ public class PipelineV2ServerST extends StandardAbstract {
         List<String> argoNodeNames = argoTaskPods.stream()
                 .map(pod -> pod.getMetadata().getAnnotations().get("workflows.argoproj.io/node-name"))
                 .toList();
-        Assertions.assertIterableEquals(expectedNodeNames.stream().sorted().toList(), argoNodeNames.stream().sorted().toList(), argoNodeNames.toString());
+        softly.assertThat(argoNodeNames).containsExactlyInAnyOrderElementsOf(expectedNodeNames);
     }
 }

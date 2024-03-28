@@ -37,8 +37,8 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
+import org.assertj.core.api.junit.jupiter.InjectSoftAssertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -46,10 +46,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SuiteDoc(
     description = @Desc("Verifies simple setup of ODH by spin-up operator, setup DSCI, and setup DSC."),
@@ -67,6 +66,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 )
 public class PipelineServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServerST.class);
+
+    @InjectSoftAssertions
+    private SoftAssertions softly;
 
     private static final String DS_PROJECT_NAME = "test-pipelines";
 
@@ -228,18 +230,18 @@ public class PipelineServerST extends StandardAbstract {
             KFPv1Client.Pipeline importedPipeline = kfpv1Client.importPipeline(pipelineTestName, pipelineTestDesc, pipelineTestFilepath);
 
             List<KFPv1Client.Pipeline> pipelines = kfpv1Client.listPipelines();
-            assertThat(pipelines.stream().map(p -> p.name).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
+            assertThat(pipelines).extracting(p -> p.name).contains(pipelineTestName);
 
             KFPv1Client.PipelineRun pipelineRun = kfpv1Client.runPipeline(pipelineTestRunBasename, importedPipeline.id, "Immediate");
-            Assertions.assertTrue(pipelineRun.pipelineSpec.workflowManifest.contains(pipelineWorkflowName));
+            assertThat(pipelineRun.pipelineSpec.workflowManifest).contains(pipelineWorkflowName);
 
             kfpv1Client.waitForPipelineRun(pipelineRun.id);
 
             List<KFPv1Client.PipelineRun> statuses = kfpv1Client.getPipelineRunStatus();
-            assertThat(statuses.stream()
-                    .filter(run -> run.id.equals(pipelineRun.id))
-                    .map(run -> run.status)
-                    .findFirst().get(), Matchers.is("Succeeded"));
+            assertThat(statuses)
+                    .filteredOn(run -> run.id.equals(pipelineRun.id))
+                    .extracting(run -> run.status)
+                    .singleElement().isEqualTo("Succeeded");
 
             checkPipelineRunK8sDeployments(prjTitle, pipelineWorkflowName + "-" + pipelineRun.id.substring(0, 5));
 
@@ -258,16 +260,16 @@ public class PipelineServerST extends StandardAbstract {
         ).map(pod -> pod.list().getItems()).toList();
 
         for (List<Pod> pods : tektonTaskPods) {
-            Assertions.assertEquals(1, pods.size());
-            Assertions.assertEquals("Succeeded", pods.get(0).getStatus().getPhase());
+            softly.assertThat(pods).hasSize(1);
+            softly.assertThat(pods.get(0).getStatus().getPhase()).isEqualTo("Succeeded");
 
             List<ContainerStatus> containerStatuses = pods.get(0).getStatus().getContainerStatuses();
-            Assertions.assertNotEquals(0, containerStatuses.size());
+            softly.assertThat(containerStatuses).isNotEmpty();
             for (ContainerStatus containerStatus : containerStatuses) {
                 ContainerStateTerminated terminated = containerStatus.getState().getTerminated();
-                Assertions.assertNotNull(terminated);
-                Assertions.assertEquals(0, terminated.getExitCode());
-                Assertions.assertEquals("Completed", terminated.getReason());
+                softly.assertThat(terminated).isNotNull();
+                softly.assertThat(terminated.getExitCode()).isEqualTo(0);
+                softly.assertThat(terminated.getReason()).isEqualTo("Completed");
             }
         }
     }
