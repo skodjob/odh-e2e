@@ -67,6 +67,8 @@ public class OdhConstants {
     public static final String ODH_MODEL_OPERATOR = "odh-model-controller";
     public static final String ODH_NOTEBOOK_OPERATOR = "odh-notebook-controller-manager";
     public static final String KUEUE_OPERATOR = "kueue-controller-manager";
+    public static final String KNATIVE_SERVING_NAMESPACE = "knative-serving";
+    public static final String ISTIO_SYSTEM_NAMESPACE = "istio-system";
 
     public static final String CONTROLLERS_NAMESPACE = getOdhOrRhoai("CONTROLLERS_NAMESPACE", ODH_CONTROLLERS_NAMESPACE, RHOAI_CONTROLLERS_NAMESPACE);
     public static final String DASHBOARD_ROUTE_NAME = getOdhOrRhoai("DASHBOARD_ROUTE_NAME", ODH_DASHBOARD_ROUTE_NAME, RHOAI_DASHBOARD_ROUTE_NAME);
