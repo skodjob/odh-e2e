@@ -4,6 +4,7 @@
  */
 package io.odh.test.platform;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class KFPv2Client {
     private final ObjectMapper objectMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
             .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
     private final HttpClient httpClient = HttpClient.newBuilder()
             .version(HttpClient.Version.HTTP_2)
