@@ -13,6 +13,7 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
+import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.platform.KubeUtils;
 import io.odh.test.platform.RayClient;
@@ -106,6 +107,9 @@ public class DistributedST extends StandardAbstract {
         Allure.step("Determine API route");
         Route route = kubeClient.routes().inNamespace(projectName).withName("ray-dashboard-koranteng").get();
         String url = "http://" + route.getStatus().getIngress().get(0).getHost();
+
+        Allure.step("Wait for service availability");
+        TestUtils.waitForServiceNotUnavailable(url);
 
         Allure.step("Run workload through Ray API", () -> {
             RayClient ray = new RayClient(url);

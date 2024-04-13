@@ -17,6 +17,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -29,6 +33,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BooleanSupplier;
+
+import static io.odh.test.TestConstants.GLOBAL_POLL_INTERVAL_SHORT;
+import static io.odh.test.TestConstants.GLOBAL_TIMEOUT;
 
 @SuppressWarnings({"checkstyle:ClassFanOutComplexity"})
 public final class TestUtils {
@@ -120,6 +127,33 @@ public final class TestUtils {
                 return deadline - System.currentTimeMillis();
             }
         }
+    }
+
+    /**
+     * Polls the given HTTP {@code url} until it gives != 503 status code
+     */
+    public static void waitForServiceNotUnavailable(String url) {
+        final HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+        waitForServiceNotUnavailable(httpClient, url);
+    }
+
+    public static void waitForServiceNotUnavailable(HttpClient httpClient, String url) {
+        TestUtils.waitFor("service to be not unavailable", GLOBAL_POLL_INTERVAL_SHORT, GLOBAL_TIMEOUT, () -> {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
+                    .build();
+            try {
+                HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+                return response.statusCode() != 503; // Service Unavailable
+            } catch (IOException | InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(new ThreadFactory() {
