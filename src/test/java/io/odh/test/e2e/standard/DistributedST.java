@@ -8,7 +8,9 @@ import dev.codeflare.workload.v1beta1.AppWrapper;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Namespace;
 import io.fabric8.kubernetes.api.model.NamespaceBuilder;
+import io.fabric8.kubernetes.api.model.apiextensions.v1.CustomResourceDefinition;
 import io.fabric8.kubernetes.client.dsl.Resource;
+import io.fabric8.kubernetes.client.dsl.base.CustomResourceDefinitionContext;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
@@ -31,6 +33,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+
+import static io.odh.test.TestConstants.GLOBAL_TIMEOUT;
 
 @SuiteDoc(
     description = @Desc("Verifies simple setup of ODH for distributed workloads by spin-up operator, setup DSCI, and setup DSC."),
@@ -86,18 +93,27 @@ public class DistributedST extends StandardAbstract {
         final String projectName = "test-codeflare";
 
         Allure.step("Setup resources", () -> {
-            Allure.step("Create namespace");
-            Namespace ns = new NamespaceBuilder()
-                    .withNewMetadata()
-                    .withName(projectName)
-                    .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
-                    .endMetadata()
-                    .build();
-            ResourceManager.getInstance().createResourceWithWait(ns);
+            Allure.step("Create namespace", () -> {
+                Namespace ns = new NamespaceBuilder()
+                        .withNewMetadata()
+                        .withName(projectName)
+                        .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
+                        .endMetadata()
+                        .build();
+                ResourceManager.getInstance().createResourceWithWait(ns);
+            });
 
-            Allure.step("Create AppWrapper from yaml file");
-            AppWrapper koranteng = kubeClient.resources(AppWrapper.class).load(this.getClass().getResource("/codeflare/koranteng.yaml")).item();
-            ResourceManager.getInstance().createResourceWithWait(koranteng);
+            Allure.step("Wait for AppWrapper CRD to be created", () -> {
+                CustomResourceDefinition appWrapperCrd = CustomResourceDefinitionContext.v1CRDFromCustomResourceType(AppWrapper.class).build();
+                kubeClient.apiextensions().v1().customResourceDefinitions()
+                        .resource(appWrapperCrd)
+                        .waitUntilCondition(crdIsEstablishedPredicate(), GLOBAL_TIMEOUT, TimeUnit.MILLISECONDS);
+            });
+
+            Allure.step("Create AppWrapper from yaml file", () -> {
+                AppWrapper koranteng = kubeClient.resources(AppWrapper.class).load(this.getClass().getResource("/codeflare/koranteng.yaml")).item();
+                ResourceManager.getInstance().createResourceWithWait(koranteng);
+            });
         });
 
         Allure.step("Wait for Ray API endpoint");
@@ -119,5 +135,11 @@ public class DistributedST extends StandardAbstract {
 
             Assertions.assertEquals("7\n", logs);
         });
+    }
+
+    private static Predicate<CustomResourceDefinition> crdIsEstablishedPredicate() {
+        return c -> c != null && c.getStatus() != null && c.getStatus().getConditions() != null
+                && c.getStatus().getConditions().stream()
+                .anyMatch(crdc -> crdc.getType().equals("Established") && crdc.getStatus().equals("True"));
     }
 }
