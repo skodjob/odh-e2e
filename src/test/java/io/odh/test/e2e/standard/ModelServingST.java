@@ -49,7 +49,6 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -66,8 +65,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static io.odh.test.TestConstants.GLOBAL_POLL_INTERVAL_SHORT;
-import static io.odh.test.TestConstants.GLOBAL_TIMEOUT;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_DURATION;
 import static io.odh.test.TestUtils.DEFAULT_TIMEOUT_UNIT;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -250,19 +247,7 @@ public class ModelServingST extends StandardAbstract {
                 .sslContext(sslContext)
                 .build();
 
-        TestUtils.waitFor("route to be available", GLOBAL_POLL_INTERVAL_SHORT, GLOBAL_TIMEOUT, () -> {
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(baseUrl))
-                    .GET()
-                    .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                    .build();
-            try {
-                HttpResponse<Void> response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
-                return response.statusCode() != 503; // Service Unavailable
-            } catch (IOException | InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        TestUtils.waitForServiceNotUnavailable(httpClient, baseUrl);
 
         HttpRequest inferRequest = HttpRequest.newBuilder()
                 .uri(new URI("%s/infer".formatted(baseUrl)))
