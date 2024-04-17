@@ -31,15 +31,15 @@ public class RayClient {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
             .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private final HttpClient httpClient;
 
     private final String baseUrl;
+    private final String oauthToken;
 
-    public RayClient(String baseUrl) {
+    public RayClient(HttpClient httpClient, String baseUrl, String oauthToken) {
         this.baseUrl = baseUrl;
+        this.oauthToken = oauthToken;
+        this.httpClient = httpClient;
     }
 
     /**
@@ -51,28 +51,25 @@ public class RayClient {
                 "runtime_env", Map.of(),
                 "metadata", Map.of("job_submission_id", "123456"));
 
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest.Builder request = buildRequest()
                 .uri(URI.create(baseUrl + "/api/jobs/"))
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
-                .build();
-        HttpResponse<String> result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
+        HttpResponse<String> result = httpClient.send(request.build(), HttpResponse.BodyHandlers.ofString());
         Map data = objectMapper.readValue(result.body(), Map.class);
 
         return (String) data.get("job_id");
     }
 
     public void waitForJob(String jobId) {
-        HttpRequest request2 = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/api/jobs/%s".formatted(jobId)))
                 .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
 
         TestUtils.waitFor("ray job to finish executing", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             HttpResponse<String> result;
             try {
-                result = httpClient.send(request2, HttpResponse.BodyHandlers.ofString());
+                result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -96,13 +93,21 @@ public class RayClient {
 
     @SneakyThrows
     public String getJobLogs(String jobId) {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/api/jobs/%s/logs".formatted(jobId)))
                 .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         Map data = objectMapper.readValue(result.body(), Map.class);
         return (String) data.get("logs");
+    }
+
+    private HttpRequest.Builder buildRequest() {
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()));
+        if (oauthToken != null) {
+            requestBuilder.header("Authorization", "Bearer " + oauthToken);
+        }
+        return requestBuilder;
     }
 }
