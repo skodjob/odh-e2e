@@ -37,9 +37,9 @@ public class RayClient {
     private final String oauthToken;
 
     public RayClient(HttpClient httpClient, String baseUrl, String oauthToken) {
+        this.httpClient = httpClient;
         this.baseUrl = baseUrl;
         this.oauthToken = oauthToken;
-        this.httpClient = httpClient;
     }
 
     /**
