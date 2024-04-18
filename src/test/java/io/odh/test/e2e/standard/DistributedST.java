@@ -24,9 +24,11 @@ import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestUtils;
 import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.install.InstallTypes;
 import io.odh.test.platform.KubeUtils;
 import io.odh.test.platform.RayClient;
 import io.odh.test.platform.TlsUtils;
+import io.odh.test.utils.CsvUtils;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
@@ -46,6 +48,7 @@ import io.x_k8s.kueue.v1beta1.ResourceFlavorBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +57,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -115,6 +119,7 @@ public class DistributedST extends StandardAbstract {
         }
     )
     @Test
+    @DisabledIf(value = "isAppWrapperNotDeployed", disabledReason = "Newer versions of ODH moved from AppWrapper to RayCluster and Kueue.")
     void testDistributedWorkloadWithAppWrapper() throws Exception {
         final String projectName = "test-codeflare";
 
@@ -330,5 +335,18 @@ public class DistributedST extends StandardAbstract {
 
             Assertions.assertEquals("7\n", logs);
         });
+    }
+
+    static boolean isAppWrapperNotDeployed() {
+        CsvUtils.Version minimalOdhVersion = CsvUtils.Version.fromString("2.10.0");
+        CsvUtils.Version minimalRhoaiVersion = CsvUtils.Version.fromString("2.9.0");
+
+        return (Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_ODH)
+                    && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
+                    && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(minimalOdhVersion) >= 0)
+                ||
+               (Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_RHOAI)
+                       && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
+                       && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(minimalRhoaiVersion) >= 0);
     }
 }
