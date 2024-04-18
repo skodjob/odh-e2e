@@ -51,10 +51,11 @@ public class RayClient {
                 "runtime_env", Map.of(),
                 "metadata", Map.of("job_submission_id", "123456"));
 
-        HttpRequest.Builder request = buildRequest()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/api/jobs/"))
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
-        HttpResponse<String> result = httpClient.send(request.build(), HttpResponse.BodyHandlers.ofString());
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+                .build();
+        HttpResponse<String> result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         Map data = objectMapper.readValue(result.body(), Map.class);
 
         return (String) data.get("job_id");
