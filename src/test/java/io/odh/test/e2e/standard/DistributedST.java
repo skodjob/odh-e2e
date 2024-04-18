@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIf;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +120,7 @@ public class DistributedST extends StandardAbstract {
         }
     )
     @Test
-    @DisabledIf(value = "isAppWrapperNotDeployed", disabledReason = "Newer versions of ODH moved from AppWrapper to RayCluster and Kueue.")
+    @EnabledIf(value = "isAppWrapperDeployed", disabledReason = "Newer versions of ODH moved from AppWrapper to RayCluster and Kueue.")
     void testDistributedWorkloadWithAppWrapper() throws Exception {
         final String projectName = "test-codeflare";
 
@@ -337,16 +338,16 @@ public class DistributedST extends StandardAbstract {
         });
     }
 
-    static boolean isAppWrapperNotDeployed() {
-        CsvUtils.Version minimalOdhVersion = CsvUtils.Version.fromString("2.10.0");
-        CsvUtils.Version minimalRhoaiVersion = CsvUtils.Version.fromString("2.9.0");
+    static boolean isAppWrapperDeployed() {
+        CsvUtils.Version maxOdhVersion = CsvUtils.Version.fromString("2.10.0");
+        CsvUtils.Version maxRhoaiVersion = CsvUtils.Version.fromString("2.9.0");
 
         return (Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_ODH)
                     && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
-                    && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(minimalOdhVersion) >= 0)
+                    && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(maxOdhVersion) < 0)
                 ||
                (Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_RHOAI)
                        && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
-                       && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(minimalRhoaiVersion) >= 0);
+                       && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(maxRhoaiVersion) < 0);
     }
 }
