@@ -48,6 +48,7 @@ import io.x_k8s.kueue.v1beta1.ResourceFlavorBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,6 +191,7 @@ public class DistributedST extends StandardAbstract {
         }
     )
     @Test
+    @DisabledIf(value = "isAppWrapperDeployed", disabledReason = "Older versions of ODH must use AppWrapper.")
     void testDistributedWorkloadWithKueue() throws Exception {
         final String projectName = "test-codeflare";
         final String defaultFlavor = "default-flavor";
