@@ -48,7 +48,6 @@ import io.x_k8s.kueue.v1beta1.ResourceFlavorBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIf;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -342,12 +341,12 @@ public class DistributedST extends StandardAbstract {
         CsvUtils.Version maxOdhVersion = CsvUtils.Version.fromString("2.10.0");
         CsvUtils.Version maxRhoaiVersion = CsvUtils.Version.fromString("2.9.0");
 
-        return (Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_ODH)
+        return Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_ODH)
                     && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
-                    && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(maxOdhVersion) < 0)
-                ||
-               (Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_RHOAI)
+                    && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(maxOdhVersion) < 0
+               ||
+               Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_RHOAI)
                        && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
-                       && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(maxRhoaiVersion) < 0);
+                       && CsvUtils.Version.fromString(Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv())).compareTo(maxRhoaiVersion) < 0;
     }
 }
