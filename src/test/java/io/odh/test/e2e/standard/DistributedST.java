@@ -169,8 +169,6 @@ public class DistributedST extends StandardAbstract {
 
             Assertions.assertEquals("7\n", logs);
         });
-
-        httpClient.close();
     }
 
     @TestDoc(
@@ -332,7 +330,5 @@ public class DistributedST extends StandardAbstract {
 
             Assertions.assertEquals("7\n", logs);
         });
-
-        httpClient.close();
     }
 }
