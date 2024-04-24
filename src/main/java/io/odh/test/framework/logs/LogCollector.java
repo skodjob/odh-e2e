@@ -99,7 +99,7 @@ public class LogCollector {
 
     private static void saveClusterState(Path logpath) throws IOException {
         KubeClient kube = ResourceManager.getKubeClient();
-        KubeCmdClient cmdClient = ResourceManager.getKubeCmdClient();
+        KubeCmdClient<?> cmdClient = ResourceManager.getKubeCmdClient();
 
         // Collecting cluster wide resources and CRs
         Files.writeString(logpath.resolve("describe-cluster-nodes.log"), cmdClient.exec(false, false, "describe", "nodes").out());

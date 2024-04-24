@@ -90,7 +90,7 @@ public class BundleInstall {
     public void create() {
         modifyOperatorImage();
         ResourceManager.getInstance().createResourceWithWait(resources.toArray(new HasMetadata[0]));
-        ResourceManager.getInstance().pushToStack(new ResourceItem(KubeUtils::deleteDefaultDSCI, null));
+        ResourceManager.getInstance().pushToStack(new ResourceItem<>(KubeUtils::deleteDefaultDSCI, null));
     }
 
     public void createWithoutResourceManager() {

@@ -68,7 +68,7 @@ public class ServerlessOperator {
                 .build();
 
         ResourceManager.getInstance().createResourceWithWait(subscription);
-        ResourceManager.getInstance().pushToStack(new ResourceItem(() -> deleteOperator(ns), null));
+        ResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> deleteOperator(ns), null));
         isOperatorReady();
     }
 

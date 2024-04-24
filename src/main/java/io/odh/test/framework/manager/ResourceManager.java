@@ -42,12 +42,12 @@ public class ResourceManager {
 
     private static ResourceManager instance;
     private static KubeClient client;
-    private static KubeCmdClient kubeCmdClient;
+    private static KubeCmdClient<?> kubeCmdClient;
 
-    static final Stack<ResourceItem> CLASS_RESOURCE_STACK = new Stack<>();
-    static final Stack<ResourceItem> METHOD_RESOURCE_STACK = new Stack<>();
+    static final Stack<ResourceItem<?>> CLASS_RESOURCE_STACK = new Stack<>();
+    static final Stack<ResourceItem<?>> METHOD_RESOURCE_STACK = new Stack<>();
 
-    static Stack<ResourceItem> resourceStackPointer = CLASS_RESOURCE_STACK;
+    static Stack<ResourceItem<?>> resourceStackPointer = CLASS_RESOURCE_STACK;
 
     static List<String> defaultNamespacesForLogCollect = Arrays.asList(
         "openshift-marketplace",
@@ -70,7 +70,7 @@ public class ResourceManager {
         return client;
     }
 
-    public static KubeCmdClient getKubeCmdClient() {
+    public static KubeCmdClient<?> getKubeCmdClient() {
         return kubeCmdClient;
     }
 
@@ -96,7 +96,7 @@ public class ResourceManager {
         NamespaceResource.labelNamespace(namespace, TestConstants.LOG_COLLECT_LABEL, "true");
     }
 
-    public final void pushToStack(ResourceItem item) {
+    public final void pushToStack(ResourceItem<?> item) {
         resourceStackPointer.push(item);
     }
 
@@ -117,7 +117,7 @@ public class ResourceManager {
 
             synchronized (this) {
                 resourceStackPointer.push(
-                        new ResourceItem<T>(
+                        new ResourceItem<>(
                                 () -> deleteResource(resource),
                                 resource
                         ));
@@ -251,7 +251,7 @@ public class ResourceManager {
 
             while (!resourceStackPointer.empty()) {
                 try {
-                    ResourceItem resourceItem = resourceStackPointer.pop();
+                    ResourceItem<?> resourceItem = resourceStackPointer.pop();
                     resourceItem.getThrowableRunner().run();
                 } catch (Exception e) {
                     e.printStackTrace();

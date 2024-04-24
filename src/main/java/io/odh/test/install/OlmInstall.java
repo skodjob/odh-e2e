@@ -44,7 +44,7 @@ public class OlmInstall {
         createNamespace();
         // Create operator group and subscription
         createOperatorGroup();
-        ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
+        ResourceManager.getInstance().pushToStack(new ResourceItem<>(this::deleteCSV));
         createAndModifySubscription();
 
         // Wait for operator creation
@@ -54,7 +54,7 @@ public class OlmInstall {
     public void createManual() {
         createNamespace();
         createOperatorGroup();
-        ResourceManager.getInstance().pushToStack(new ResourceItem(this::deleteCSV));
+        ResourceManager.getInstance().pushToStack(new ResourceItem<>(this::deleteCSV));
         createAndModifySubscription();
     }
 
@@ -97,7 +97,7 @@ public class OlmInstall {
         Subscription subscription = prepareSubscription();
 
         ResourceManager.getInstance().createResourceWithWait(subscription);
-        ResourceManager.getInstance().pushToStack(new ResourceItem(KubeUtils::deleteDefaultDSCI, null));
+        ResourceManager.getInstance().pushToStack(new ResourceItem<>(KubeUtils::deleteDefaultDSCI, null));
     }
     public void updateSubscription() {
         Subscription subscription = prepareSubscription();
