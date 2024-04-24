@@ -43,7 +43,7 @@ public class PipelinesOperator {
                 .build();
 
         ResourceManager.getInstance().createResourceWithWait(subscription);
-        ResourceManager.getInstance().pushToStack(new ResourceItem(() -> deleteOperator(subscription), null));
+        ResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> deleteOperator(subscription), null));
         isOperatorReady();
     }
 

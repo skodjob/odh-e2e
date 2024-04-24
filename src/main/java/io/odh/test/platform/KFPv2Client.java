@@ -102,7 +102,7 @@ public class KFPv2Client {
     }
 
     @SneakyThrows
-    public PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, Map parameters, String immediate) {
+    public PipelineRun runPipeline(String pipelineTestRunBasename, String pipelineId, Map<?, ?> parameters, String immediate) {
         Assertions.assertEquals(immediate, "Immediate");
 
         PipelineRun pipelineRun = new PipelineRun();

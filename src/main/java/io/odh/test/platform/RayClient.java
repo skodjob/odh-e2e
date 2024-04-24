@@ -56,7 +56,7 @@ public class RayClient {
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
                 .build();
         HttpResponse<String> result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        Map data = objectMapper.readValue(result.body(), Map.class);
+        Map<?, ?> data = objectMapper.readValue(result.body(), Map.class);
 
         return (String) data.get("job_id");
     }
@@ -75,7 +75,7 @@ public class RayClient {
                 throw new RuntimeException(e);
             }
 
-            Map data;
+            Map<?, ?> data;
             try {
                 data = objectMapper.readValue(result.body(), Map.class);
             } catch (JsonProcessingException e) {
@@ -99,7 +99,7 @@ public class RayClient {
                 .GET()
                 .build();
         HttpResponse<String> result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        Map data = objectMapper.readValue(result.body(), Map.class);
+        Map<?, ?> data = objectMapper.readValue(result.body(), Map.class);
         return (String) data.get("logs");
     }
 
