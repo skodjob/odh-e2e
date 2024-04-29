@@ -81,7 +81,7 @@ public class NotebookST extends StandardAbstract {
         steps = {
             @Step(value = "Create namespace for Notebook resources with proper name, labels and annotations", expected = "Namespace is created"),
             @Step(value = "Create PVC with proper labels and data for Notebook", expected = "PVC is created"),
-            @Step(value = "Create Notebook resource with Pytorch image in pre-defined namespace", expected = "Notebook resource is created"),
+            @Step(value = "Create Notebook resource with Jupyter Minimal image in pre-defined namespace", expected = "Notebook resource is created"),
             @Step(value = "Wait for Notebook pods readiness", expected = "Notebook pods are up and running, Notebook is in ready state")
         }
     )
