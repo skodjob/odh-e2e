@@ -33,6 +33,6 @@
 | - | - | - |
 | 1. | Create namespace for Notebook resources with proper name, labels and annotations | Namespace is created |
 | 2. | Create PVC with proper labels and data for Notebook | PVC is created |
-| 3. | Create Notebook resource with Pytorch image in pre-defined namespace | Notebook resource is created |
+| 3. | Create Notebook resource with Jupyter Minimal image in pre-defined namespace | Notebook resource is created |
 | 4. | Wait for Notebook pods readiness | Notebook pods are up and running, Notebook is in ready state |
 
