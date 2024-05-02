@@ -97,3 +97,7 @@ Then use the Allure Maven plugin to open a HTML report with the results in a web
 ```commandline
 GITHUB_TOKEN="your_github_read_token" mvn allure:serve
 ```
+
+## Authors
+* [David Kornel](https://github.com/kornys) <kornys@outlookcom>
+* [Jakub Stejskal](https://github.com/Frawless) <xstejs24@gmail.com>
