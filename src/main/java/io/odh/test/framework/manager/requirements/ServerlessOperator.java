@@ -12,10 +12,9 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.Subscription;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.SubscriptionBuilder;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestConstants;
-import io.odh.test.framework.manager.ResourceItem;
-import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.framework.manager.resources.OperatorGroupResource;
 import io.odh.test.utils.PodUtils;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.resources.ResourceItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +26,7 @@ public class ServerlessOperator {
     public static final String SUBSCRIPTION_NAME = "serverless-operator";
     public static final String OPERATOR_NAME = "serverless-operator";
     public static final String OPERATOR_NAMESPACE = "openshift-serverless";
+
     public static void deployOperator() {
         // Create ns for the operator
         Namespace ns = new NamespaceBuilder()
@@ -35,9 +35,10 @@ public class ServerlessOperator {
                 .withLabels(Collections.singletonMap(OdhAnnotationsLabels.APP_LABEL_KEY, OdhAnnotationsLabels.APP_LABEL_VALUE))
                 .endMetadata()
                 .build();
-        ResourceManager.getInstance().createResourceWithoutWait(ns);
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
         //Create operator group for the operator
-        if (OperatorGroupResource.operatorGroupClient().inNamespace(OPERATOR_NAMESPACE).list().getItems().isEmpty()) {
+        if (KubeResourceManager.getKubeClient().getOpenShiftClient().operatorHub().operatorGroups()
+                .inNamespace(OPERATOR_NAMESPACE).list().getItems().isEmpty()) {
             OperatorGroupBuilder operatorGroup = new OperatorGroupBuilder()
                     .editOrNewMetadata()
                     .withName("odh-group")
@@ -45,7 +46,7 @@ public class ServerlessOperator {
                     .withLabels(Collections.singletonMap(OdhAnnotationsLabels.APP_LABEL_KEY, OdhAnnotationsLabels.APP_LABEL_VALUE))
                     .endMetadata();
 
-            ResourceManager.getInstance().createResourceWithWait(operatorGroup.build());
+            KubeResourceManager.getInstance().createResourceWithWait(operatorGroup.build());
         } else {
             LOGGER.info("OperatorGroup is already exists.");
         }
@@ -67,8 +68,8 @@ public class ServerlessOperator {
                 .endSpec()
                 .build();
 
-        ResourceManager.getInstance().createResourceWithWait(subscription);
-        ResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> deleteOperator(ns), null));
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(subscription);
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> deleteOperator(ns), null));
         isOperatorReady();
     }
 
@@ -80,6 +81,6 @@ public class ServerlessOperator {
     }
 
     public static void deleteOperator(Namespace namespace) {
-        ResourceManager.getKubeClient().delete(Collections.singletonList(namespace));
+        KubeResourceManager.getKubeClient().delete(Collections.singletonList(namespace));
     }
 }

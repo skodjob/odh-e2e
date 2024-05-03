@@ -5,8 +5,8 @@
 package io.odh.test.utils;
 
 import io.odh.test.TestConstants;
-import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceManager;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.wait.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,16 +22,16 @@ public class NamespaceUtils {
     public static void waitForNamespaceReadiness(String name) {
         LOGGER.info("Waiting for Namespace: {} readiness", name);
 
-        TestUtils.waitFor("Namespace: " + name, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, DELETION_TIMEOUT,
-                () -> ResourceManager.getKubeClient().getNamespace(name) != null);
+        Wait.until("Namespace: " + name, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, DELETION_TIMEOUT,
+                () -> KubeResourceManager.getKubeClient().getClient().namespaces().withName(name).get() != null);
         LOGGER.info("Namespace: {} is ready", name);
     }
 
     public static void waitForNamespaceDeletion(String name) {
         LOGGER.info("Waiting for Namespace: {} deletion", name);
 
-        TestUtils.waitFor("Namespace: " + name, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, DELETION_TIMEOUT,
-            () -> ResourceManager.getKubeClient().getNamespace(name) == null);
+        Wait.until("Namespace: " + name, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, DELETION_TIMEOUT,
+            () -> KubeResourceManager.getKubeClient().getClient().namespaces().withName(name).get() == null);
         LOGGER.info("Namespace: {} was deleted", name);
     }
 }

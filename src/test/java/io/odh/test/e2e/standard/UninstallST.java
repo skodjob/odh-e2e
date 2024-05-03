@@ -10,8 +10,6 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
-import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.utils.DscUtils;
 import io.odh.test.utils.NamespaceUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -21,6 +19,8 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.wait.Wait;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ public class UninstallST extends StandardAbstract {
     )
     @Test
     void testUninstallSimpleScenario() {
-        if (ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+        if (KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
                 "configmap").contains(DELETE_CONFIG_MAP_NAME)) {
             Assertions.fail(
                     String.format("The ConfigMap '%s' is present on the cluster before the uninstall test started!",
@@ -87,19 +87,19 @@ public class UninstallST extends StandardAbstract {
                 .withLabels(Map.ofEntries(Map.entry(DELETE_ANNOTATION, "true")))
                 .endMetadata()
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(cm);
+        KubeResourceManager.getInstance().createResourceWithWait(cm);
 
         // Now the product should start to uninstall, let's wait a bit and check the result.
-        TestUtils.waitFor(String.format("the '%s' namespace to be removed as operator is being uninstalled",
+        Wait.until(String.format("the '%s' namespace to be removed as operator is being uninstalled",
                         OdhConstants.CONTROLLERS_NAMESPACE), 2000, 120_000,
-                () -> !ResourceManager.getKubeClient().namespaceExists(OdhConstants.CONTROLLERS_NAMESPACE));
+                () -> !KubeResourceManager.getKubeClient().namespaceExists(OdhConstants.CONTROLLERS_NAMESPACE));
 
         // Operator itself should delete the CSV, Subscription and InstallPlan
-        Assertions.assertTrue(ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+        Assertions.assertTrue(KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
                 "subscriptions").isEmpty(), "The operator Subscription is still present!");
-        Assertions.assertTrue(ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+        Assertions.assertTrue(KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
                 "installplan").isEmpty(), "The operator InstallPlan is still present!");
-        Assertions.assertFalse(ResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+        Assertions.assertFalse(KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
                 "csv").stream().anyMatch(s -> s.toString().contains(OdhConstants.OLM_OPERATOR_NAME)),
                 "The operator CSV is still present!");
 
@@ -117,14 +117,14 @@ public class UninstallST extends StandardAbstract {
             // as it is included in `openshift-operators` which is common namespaces for multiple other operators.
         } else {
             // Check that all other expected resources have been deleted
-            Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.MONITORING_NAMESPACE),
+            Assertions.assertFalse(KubeResourceManager.getKubeClient().namespaceExists(OdhConstants.MONITORING_NAMESPACE),
                     String.format("Namespace '%s' hasn't been removed by the operator uninstall operation!",
                             OdhConstants.MONITORING_NAMESPACE));
-            Assertions.assertFalse(ResourceManager.getKubeClient().namespaceExists(OdhConstants.NOTEBOOKS_NAMESPACE),
+            Assertions.assertFalse(KubeResourceManager.getKubeClient().namespaceExists(OdhConstants.NOTEBOOKS_NAMESPACE),
                     String.format("Namespace '%s' hasn't been removed by the operator uninstall operation!",
                             OdhConstants.NOTEBOOKS_NAMESPACE));
 
-            ResourceManager.getKubeCmdClient().deleteNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE);
+            KubeResourceManager.getKubeCmdClient().deleteNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE);
             NamespaceUtils.waitForNamespaceDeletion(OdhConstants.OLM_OPERATOR_NAMESPACE);
         }
     }
@@ -141,8 +141,8 @@ public class UninstallST extends StandardAbstract {
         DataScienceCluster dsc = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
         // Deploy DSCI,DSC
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(dsc);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 
     static boolean isOdhTested() {

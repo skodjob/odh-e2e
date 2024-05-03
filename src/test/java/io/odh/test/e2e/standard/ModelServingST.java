@@ -28,7 +28,6 @@ import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.utils.DscUtils;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -38,6 +37,7 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
@@ -90,7 +90,7 @@ public class ModelServingST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-model-serving";
 
-    private final OpenShiftClient kubeClient = (OpenShiftClient) ResourceManager.getKubeClient().getClient();
+    private final OpenShiftClient kubeClient = KubeResourceManager.getKubeClient().getOpenShiftClient();
 
     @BeforeAll
     static void deployDataScienceCluster() {
@@ -104,8 +104,8 @@ public class ModelServingST extends StandardAbstract {
         // Create DSC
         DataScienceCluster dsc = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(dsc);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 
     @TestDoc(
@@ -142,7 +142,7 @@ public class ModelServingST extends StandardAbstract {
                 .addToLabels(OdhAnnotationsLabels.ANNO_MODEL_MESH, "true")
                 .endMetadata()
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(ns);
+        KubeResourceManager.getInstance().createResourceWithWait(ns);
 
         // secret must exist for ServingRuntime to start, even though it contains no useful information
         Secret storageConfig = new SecretBuilder()
@@ -153,7 +153,7 @@ public class ModelServingST extends StandardAbstract {
                 .withType("Opaque")
                 .addToStringData("aws-connection-no-such-connection", "{}")
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(storageConfig);
+        KubeResourceManager.getInstance().createResourceWithWait(storageConfig);
 
         // create serving runtime
         ServingRuntime servingRuntime = processModelServerTemplate("ovms");
@@ -182,7 +182,7 @@ public class ModelServingST extends StandardAbstract {
                 .addToVolumes(new VolumesBuilder().withName("shm").withEmptyDir(new EmptyDirBuilder().withMedium("Memory").withSizeLimit(new IntOrString("2Gi")).build()).build())
                 .endSpec()
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(servingRuntimeInstance);
+        KubeResourceManager.getInstance().createResourceWithWait(servingRuntimeInstance);
 
         // create inference service
         InferenceService inferenceService = new InferenceServiceBuilder()
@@ -206,13 +206,13 @@ public class ModelServingST extends StandardAbstract {
                 .endInferenceservicespecPredictor()
                 .endSpec()
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(inferenceService);
+        KubeResourceManager.getInstance().createResourceWithWait(inferenceService);
 
         String namespace = "knative-serving";
         LOGGER.info("Waiting for pods readiness in {}", namespace);
         PodUtils.waitForPodsReady(namespace, true, () -> {
-            ResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "pods");
-            ResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "events");
+            KubeResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "pods");
+            KubeResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "events");
         });
 
         Route route = kubeClient.routes().inNamespace(projectName).withName(modelName).get();

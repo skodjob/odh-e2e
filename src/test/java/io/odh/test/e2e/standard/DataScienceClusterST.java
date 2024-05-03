@@ -6,7 +6,6 @@ package io.odh.test.e2e.standard;
 
 import io.odh.test.Environment;
 import io.odh.test.TestSuite;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
 import io.odh.test.install.InstallTypes;
 import io.odh.test.utils.CsvUtils;
@@ -27,6 +26,7 @@ import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import io.skodjob.annotations.TestTag;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
@@ -80,8 +80,8 @@ public class DataScienceClusterST extends StandardAbstract {
         // Create DSC
         DataScienceCluster c = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(c);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(c);
 
         DataScienceCluster cluster = DataScienceClusterResource.dataScienceCLusterClient().withName(DS_PROJECT_NAME).get();
 

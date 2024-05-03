@@ -9,7 +9,6 @@ import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
@@ -20,6 +19,7 @@ import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import io.skodjob.annotations.TestTag;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -104,7 +104,8 @@ public class BundleUpgradeST extends UpgradeAbstract {
 
         DeploymentUtils.waitTillDepHasRolled(baseBundle.getNamespace(), baseBundle.getDeploymentName(), operatorSnapshot);
 
-        LabelSelector labelSelector = ResourceManager.getKubeClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
+        LabelSelector labelSelector = KubeResourceManager.getKubeClient().getClient().apps().deployments()
+                .inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(OdhConstants.DASHBOARD_CONTROLLER).get().getSpec().getSelector();
         PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
         Date operatorLogCheckTimestamp = new Date();
 

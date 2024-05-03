@@ -8,7 +8,7 @@ package io.odh.test.utils;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.ClusterServiceVersion;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.OdhConstants;
-import io.odh.test.framework.manager.ResourceManager;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.hamcrest.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +27,7 @@ public class CsvUtils {
     public static @Nullable String getOperatorVersionFromCsv() {
         String name = OdhConstants.OLM_OPERATOR_NAME;
         String namespace = OdhConstants.OLM_OPERATOR_NAMESPACE;
-        OpenShiftClient client = (OpenShiftClient) ResourceManager.getKubeClient().getClient();
+        OpenShiftClient client = KubeResourceManager.getKubeClient().getOpenShiftClient();
         List<ClusterServiceVersion> csvs = client.resources(ClusterServiceVersion.class)
                 .inNamespace(namespace)
                 .withLabel("operators.coreos.com/" + name + "." + namespace, "")

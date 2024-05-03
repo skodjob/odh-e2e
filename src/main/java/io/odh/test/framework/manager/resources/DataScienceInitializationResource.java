@@ -6,37 +6,40 @@ package io.odh.test.framework.manager.resources;
 
 import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.framework.manager.ResourceType;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.skodjob.testframe.interfaces.ResourceType;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.wait.Wait;
+
+import java.util.function.Consumer;
 
 public class DataScienceInitializationResource implements ResourceType<DSCInitialization> {
+
+    @Override
+    public NonNamespaceOperation<?, ?, ?> getClient() {
+        return dsciClient();
+    }
 
     @Override
     public String getKind() {
         return "DSCInitialization";
     }
 
-    @Override
-    public DSCInitialization get(String namespace, String name) {
+    public DSCInitialization get(String name) {
         return dsciClient().withName(name).get();
     }
 
     @Override
     public void create(DSCInitialization resource) {
-        if (get("", resource.getMetadata().getName()) == null) {
+        if (get(resource.getMetadata().getName()) == null) {
             TestUtils.runUntilPass(5, () -> dsciClient().resource(resource).create());
         } else {
             TestUtils.runUntilPass(5, () -> dsciClient().resource(resource).update());
         }
-    }
-
-    @Override
-    public void delete(DSCInitialization resource) {
-        dsciClient().withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
@@ -45,9 +48,21 @@ public class DataScienceInitializationResource implements ResourceType<DSCInitia
     }
 
     @Override
+    public void delete(String s) {
+        dsciClient().withName(s).delete();
+    }
+
+    @Override
+    public void replace(String s, Consumer<DSCInitialization> editor) {
+        DSCInitialization toBeUpdated = dsciClient().withName(s).get();
+        editor.accept(toBeUpdated);
+        update(toBeUpdated);
+    }
+
+    @Override
     public boolean waitForReadiness(DSCInitialization resource) {
         String message = String.format("DSCInitialization %s readiness", resource.getMetadata().getName());
-        TestUtils.waitFor(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+        Wait.until(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             boolean dsciReady;
 
             DSCInitialization dsci = dsciClient().withName(resource.getMetadata().getName()).get();
@@ -60,8 +75,13 @@ public class DataScienceInitializationResource implements ResourceType<DSCInitia
         return true;
     }
 
+    @Override
+    public boolean waitForDeletion(DSCInitialization dscInitialization) {
+        return get(dscInitialization.getMetadata().getName()) == null;
+    }
+
     public static MixedOperation<DSCInitialization, KubernetesResourceList<DSCInitialization>, Resource<DSCInitialization>> dsciClient() {
-        return ResourceManager.getKubeClient().getClient().resources(DSCInitialization.class);
+        return KubeResourceManager.getKubeClient().getClient().resources(DSCInitialization.class);
     }
 
 }

@@ -8,8 +8,8 @@ package io.odh.test.unit;
 import com.sun.net.httpserver.HttpServer;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.ExtensionContextParameterResolver;
-import io.odh.test.framework.listeners.TestVisualSeparator;
 import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
+import io.skodjob.testframe.annotations.TestVisualSeparator;
 import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +37,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @Tag(TestSuite.UNIT)
 @ExtendWith(ExtensionContextParameterResolver.class)
-public class MultipartFormDataBodyPublisherTests implements TestVisualSeparator {
+@TestVisualSeparator
+public class MultipartFormDataBodyPublisherTests {
     @Test
     public void testStringPart() throws IOException {
         MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()

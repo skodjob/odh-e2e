@@ -12,7 +12,6 @@ import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesMockServer;
 import io.odh.test.TestSuite;
 import io.odh.test.framework.ExtensionContextParameterResolver;
-import io.odh.test.framework.listeners.TestVisualSeparator;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
@@ -27,6 +26,7 @@ import io.opendatahub.dscinitialization.v1.dscinitializationspec.Monitoring;
 import io.opendatahub.dscinitialization.v1.dscinitializationspec.servicemesh.ControlPlane;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
 import io.opendatahub.v1alpha.OdhDashboardConfigBuilder;
+import io.skodjob.testframe.annotations.TestVisualSeparator;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,8 +37,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Tag(TestSuite.UNIT)
 @ExtendWith(ExtensionContextParameterResolver.class)
+@TestVisualSeparator
 @EnableKubernetesMockClient(crud = true)
-public class UnitTests implements TestVisualSeparator {
+public class UnitTests {
 
     private KubernetesClient kubernetesClient;
 

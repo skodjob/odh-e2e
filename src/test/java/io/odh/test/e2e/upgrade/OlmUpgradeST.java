@@ -10,9 +10,8 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.InstallPlan;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
-import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.TestUtils;
 import io.odh.test.install.OlmInstall;
-import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.PodUtils;
 import io.odh.test.utils.UpgradeUtils;
@@ -22,6 +21,8 @@ import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import io.skodjob.annotations.TestTag;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.utils.KubeUtils;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -78,9 +79,9 @@ public class OlmUpgradeST extends UpgradeAbstract {
         olmInstall.createManual();
 
         // Approve install plan created for older version
-        KubeUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
-        InstallPlan ip = ResourceManager.getKubeClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
-        ResourceManager.getKubeClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
+        TestUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
+        InstallPlan ip = KubeUtils.getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getOperatorName() + "." + startingVersion);
+        KubeUtils.approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
         // Wait for old version readiness
         DeploymentUtils.waitForDeploymentReady(olmInstall.getNamespace(), olmInstall.getDeploymentName());
 
@@ -99,14 +100,15 @@ public class OlmUpgradeST extends UpgradeAbstract {
 
         LOGGER.info("Upgrade to next available version in OLM catalog");
         // Approve upgrade to newer version
-        KubeUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
-        ip = ResourceManager.getKubeClient().getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
-        ResourceManager.getKubeClient().approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
+        TestUtils.waitForInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
+        ip = KubeUtils.getNonApprovedInstallPlan(olmInstall.getNamespace(), olmInstall.getCsvName());
+        KubeUtils.approveInstallPlan(olmInstall.getNamespace(), ip.getMetadata().getName());
         // Wait for operator RU
         DeploymentUtils.waitTillDepHasRolled(olmInstall.getNamespace(), olmInstall.getDeploymentName(), operatorSnapshot);
 
         // Wait for pod stability for Dashboard
-        LabelSelector labelSelector = ResourceManager.getKubeClient().getDeployment(OdhConstants.CONTROLLERS_NAMESPACE, OdhConstants.DASHBOARD_CONTROLLER).getSpec().getSelector();
+        LabelSelector labelSelector = KubeResourceManager.getKubeClient().getClient()
+                .apps().deployments().inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(OdhConstants.DASHBOARD_CONTROLLER).get().getSpec().getSelector();
         PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
         Date operatorLogCheckTimestamp = new Date();
 

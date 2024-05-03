@@ -9,8 +9,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import io.odh.test.TestUtils;
 import io.odh.test.platform.httpClient.MultipartFormDataBodyPublisher;
+import io.skodjob.testframe.wait.Wait;
 import lombok.SneakyThrows;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
@@ -146,7 +146,7 @@ public class KFPv2Client {
                 .build();
 
         AtomicReference<PipelineRun> run = new AtomicReference<>();
-        TestUtils.waitFor("pipelineRun to complete", 5000, 10 * 60 * 1000, () -> {
+        Wait.until("pipelineRun to complete", 5000, 10 * 60 * 1000, () -> {
             try {
                 HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                 Assertions.assertEquals(reply.statusCode(), 200, reply.body());

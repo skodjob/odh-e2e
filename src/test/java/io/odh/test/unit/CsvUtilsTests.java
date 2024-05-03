@@ -7,8 +7,8 @@ package io.odh.test.unit;
 
 import io.odh.test.TestSuite;
 import io.odh.test.framework.ExtensionContextParameterResolver;
-import io.odh.test.framework.listeners.TestVisualSeparator;
 import io.odh.test.utils.CsvUtils;
+import io.skodjob.testframe.annotations.TestVisualSeparator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,8 +16,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 @Tag(TestSuite.UNIT)
+@TestVisualSeparator
 @ExtendWith(ExtensionContextParameterResolver.class)
-public class CsvUtilsTests implements TestVisualSeparator {
+public class CsvUtilsTests {
     @ParameterizedTest(name = "[{index}] Version.fromString({0}) == {1}")
     @CsvSource({
         "2, 2.0.0",

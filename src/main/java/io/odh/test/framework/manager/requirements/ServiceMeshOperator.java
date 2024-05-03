@@ -9,9 +9,9 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.Subscription;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.SubscriptionBuilder;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestConstants;
-import io.odh.test.framework.manager.ResourceItem;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.utils.PodUtils;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.resources.ResourceItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +43,8 @@ public class ServiceMeshOperator {
                 .endSpec()
                 .build();
 
-        ResourceManager.getInstance().createResourceWithWait(subscription);
-        ResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> deleteOperator(subscription), null));
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(subscription);
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(() -> deleteOperator(subscription), null));
         isOperatorReady();
     }
 
@@ -54,6 +54,6 @@ public class ServiceMeshOperator {
     }
 
     public static void deleteOperator(Subscription subscription) {
-        ResourceManager.getKubeClient().delete(Collections.singletonList(subscription));
+        KubeResourceManager.getKubeClient().delete(Collections.singletonList(subscription));
     }
 }

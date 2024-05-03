@@ -23,9 +23,7 @@ import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.install.InstallTypes;
-import io.odh.test.platform.KubeUtils;
 import io.odh.test.platform.RayClient;
 import io.odh.test.platform.TlsUtils;
 import io.odh.test.utils.CsvUtils;
@@ -39,6 +37,7 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import io.x_k8s.kueue.v1beta1.ClusterQueue;
 import io.x_k8s.kueue.v1beta1.ClusterQueueBuilder;
 import io.x_k8s.kueue.v1beta1.LocalQueue;
@@ -90,7 +89,7 @@ public class DistributedST extends StandardAbstract {
                     && c.getStatus().getConditions().stream()
                     .anyMatch(crdc -> crdc.getType().equals("Established") && crdc.getStatus().equals("True"));
 
-    private final OpenShiftClient kubeClient = (OpenShiftClient) ResourceManager.getKubeClient().getClient();
+    private final OpenShiftClient kubeClient = KubeResourceManager.getKubeClient().getOpenShiftClient();
 
     @BeforeAll
     static void deployDataScienceCluster() {
@@ -104,8 +103,8 @@ public class DistributedST extends StandardAbstract {
         // Create DSC
         DataScienceCluster dsc = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(dsc);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 
     @TestDoc(
@@ -132,7 +131,7 @@ public class DistributedST extends StandardAbstract {
                         .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
                         .endMetadata()
                         .build();
-                ResourceManager.getInstance().createResourceWithWait(ns);
+                KubeResourceManager.getInstance().createResourceWithWait(ns);
             });
 
             Allure.step("Wait for AppWrapper CRD to be created", () -> {
@@ -144,13 +143,13 @@ public class DistributedST extends StandardAbstract {
 
             Allure.step("Create AppWrapper from yaml file", () -> {
                 AppWrapper koranteng = kubeClient.resources(AppWrapper.class).load(this.getClass().getResource("/codeflare/koranteng.yaml")).item();
-                ResourceManager.getInstance().createResourceWithWait(koranteng);
+                KubeResourceManager.getInstance().createResourceWithWait(koranteng);
             });
         });
 
         Allure.step("Wait for Ray API endpoint");
         Resource<Endpoints> endpoints = kubeClient.endpoints().inNamespace(projectName).withName("koranteng-head-svc");
-        KubeUtils.waitForEndpoints("ray", endpoints);
+        TestUtils.waitForEndpoints("ray", endpoints);
 
         Allure.step("Determine API route");
         Route route = kubeClient.routes().inNamespace(projectName).withName("ray-dashboard-koranteng").get();
@@ -219,7 +218,7 @@ public class DistributedST extends StandardAbstract {
                     .withGrantMethod("auto")
                     .withAccessTokenInactivityTimeoutSeconds(300)
                     .build();
-            ResourceManager.getInstance().createResourceWithoutWait(client);
+            KubeResourceManager.getInstance().createResourceWithoutWait(client);
 
             OAuthAccessToken token = new OAuthAccessTokenBuilder()
                     .withNewMetadata()
@@ -232,7 +231,7 @@ public class DistributedST extends StandardAbstract {
                     .withUserName(user.getMetadata().getName())
                     .withUserUID(user.getMetadata().getUid())
                     .build();
-            ResourceManager.getInstance().createResourceWithWait(token);
+            KubeResourceManager.getInstance().createResourceWithWait(token);
 
             return privateToken;
         });
@@ -245,7 +244,7 @@ public class DistributedST extends StandardAbstract {
                         .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
                         .endMetadata()
                         .build();
-                ResourceManager.getInstance().createResourceWithWait(ns);
+                KubeResourceManager.getInstance().createResourceWithWait(ns);
             });
 
             Allure.step("Create flavor", () -> {
@@ -254,7 +253,7 @@ public class DistributedST extends StandardAbstract {
                         .withName(defaultFlavor)
                         .endMetadata()
                         .build();
-                ResourceManager.getInstance().createResourceWithWait(flavor);
+                KubeResourceManager.getInstance().createResourceWithWait(flavor);
             });
 
             Allure.step("Create Cluster Queue", () -> {
@@ -287,7 +286,7 @@ public class DistributedST extends StandardAbstract {
                         .endResourceGroup()
                         .endSpec()
                         .build();
-                ResourceManager.getInstance().createResourceWithWait(clusterQueue);
+                KubeResourceManager.getInstance().createResourceWithWait(clusterQueue);
             });
 
             Allure.step("Create Local Queue", () -> {
@@ -301,18 +300,18 @@ public class DistributedST extends StandardAbstract {
                         .withClusterQueue(clusterQueueName)
                         .endSpec()
                         .build();
-                ResourceManager.getInstance().createResourceWithWait(localQueue);
+                KubeResourceManager.getInstance().createResourceWithWait(localQueue);
             });
 
             Allure.step("Create RayServer from yaml file", () -> {
                 RayCluster koranteng = kubeClient.resources(RayCluster.class).load(this.getClass().getResource("/codeflare/koranteng_ray2.yaml")).item();
-                ResourceManager.getInstance().createResourceWithWait(koranteng);
+                KubeResourceManager.getInstance().createResourceWithWait(koranteng);
             });
         });
 
         Allure.step("Wait for Ray API endpoint");
         Resource<Endpoints> endpoints = kubeClient.endpoints().inNamespace(projectName).withName("koranteng-head-svc");
-        KubeUtils.waitForEndpoints("ray", endpoints);
+        TestUtils.waitForEndpoints("ray", endpoints);
 
         Allure.step("Determine API route");
         Route route = kubeClient.routes().inNamespace(projectName).withName("ray-dashboard-koranteng").get();

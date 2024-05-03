@@ -13,11 +13,10 @@ import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
-import io.odh.test.framework.manager.ResourceItem;
-import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.framework.manager.resources.OperatorGroupResource;
-import io.odh.test.platform.KubeUtils;
+import io.odh.test.TestUtils;
 import io.odh.test.utils.DeploymentUtils;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.resources.ResourceItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +43,7 @@ public class OlmInstall {
         createNamespace();
         // Create operator group and subscription
         createOperatorGroup();
-        ResourceManager.getInstance().pushToStack(new ResourceItem<>(this::deleteCSV));
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(this::deleteCSV));
         createAndModifySubscription();
 
         // Wait for operator creation
@@ -54,7 +53,7 @@ public class OlmInstall {
     public void createManual() {
         createNamespace();
         createOperatorGroup();
-        ResourceManager.getInstance().pushToStack(new ResourceItem<>(this::deleteCSV));
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(this::deleteCSV));
         createAndModifySubscription();
     }
 
@@ -68,14 +67,15 @@ public class OlmInstall {
                 .withName(namespace)
                 .endMetadata()
                 .build();
-        ResourceManager.getInstance().createResourceWithoutWait(ns);
+        KubeResourceManager.getInstance().createResourceWithoutWait(ns);
     }
 
     /**
      * Creates OperatorGroup in specific namespace
      */
     private void createOperatorGroup() {
-        if (OperatorGroupResource.operatorGroupClient().inNamespace(namespace).list().getItems().isEmpty()) {
+        if (KubeResourceManager.getKubeClient().getOpenShiftClient().operatorHub().operatorGroups()
+                .inNamespace(namespace).list().getItems().isEmpty()) {
             OperatorGroupBuilder operatorGroup = new OperatorGroupBuilder()
                 .editOrNewMetadata()
                 .withName("odh-group")
@@ -83,7 +83,7 @@ public class OlmInstall {
                 .withLabels(Collections.singletonMap("app", "odh"))
                 .endMetadata();
 
-            ResourceManager.getInstance().createResourceWithWait(operatorGroup.build());
+            KubeResourceManager.getInstance().createResourceWithWait(operatorGroup.build());
         } else {
             LOGGER.info("OperatorGroup is already exists.");
         }
@@ -96,12 +96,13 @@ public class OlmInstall {
     private void createAndModifySubscription() {
         Subscription subscription = prepareSubscription();
 
-        ResourceManager.getInstance().createResourceWithWait(subscription);
-        ResourceManager.getInstance().pushToStack(new ResourceItem<>(KubeUtils::deleteDefaultDSCI, null));
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(TestUtils::clearOdhRemainingResources, null));
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(subscription);
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(TestUtils::deleteDefaultDSCI, null));
     }
     public void updateSubscription() {
         Subscription subscription = prepareSubscription();
-        ResourceManager.getInstance().updateResource(subscription);
+        KubeResourceManager.getInstance().updateResource(subscription);
     }
 
     public Subscription prepareSubscription() {
@@ -125,21 +126,21 @@ public class OlmInstall {
     }
 
     public void deleteCSV() {
-        ResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().inNamespace(namespace)
+        KubeResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().inNamespace(namespace)
             .list().getItems().stream().filter(csv -> csv.getMetadata().getName().contains(olmAppBundlePrefix)).toList()
             .forEach(csv -> {
                 LOGGER.info("Deleting CSV {}", csv.getMetadata().getName());
-                ResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().clusterServiceVersions().resource(csv).delete();
+                KubeResourceManager.getKubeClient().getOpenShiftClient().operatorHub().clusterServiceVersions().resource(csv).delete();
             });
         deleteInstallPlans();
     }
 
     public void deleteInstallPlans() {
-        ResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespace)
+        KubeResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().installPlans().inNamespace(namespace)
             .list().getItems().stream().filter(ip -> ip.getSpec().getClusterServiceVersionNames().stream().toList().toString().contains(olmAppBundlePrefix)).toList()
             .forEach(ip -> {
                 LOGGER.info("Deleting InstallPlan {}", ip.getMetadata().getName());
-                ResourceManager.getKubeClient().getClient().adapt(OpenShiftClient.class).operatorHub().installPlans().resource(ip).delete();
+                KubeResourceManager.getKubeClient().getOpenShiftClient().operatorHub().installPlans().resource(ip).delete();
             });
     }
 

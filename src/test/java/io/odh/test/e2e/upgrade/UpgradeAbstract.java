@@ -12,9 +12,6 @@ import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.listeners.OdhResourceCleaner;
-import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -37,16 +34,16 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ra
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
 import io.opendatahub.dscinitialization.v1.DSCInitialization;
+import io.skodjob.testframe.annotations.ResourceManager;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.kubeflow.v1.Notebook;
 import org.kubeflow.v1.NotebookBuilder;
 
 import java.io.IOException;
 
 @Tag(TestSuite.UPGRADE)
-@ExtendWith(OdhResourceCleaner.class)
-@ExtendWith(ResourceManagerDeleteHandler.class)
+@ResourceManager
 public abstract class UpgradeAbstract extends Abstract {
 
     protected void deployDsc(String name) {
@@ -88,8 +85,8 @@ public abstract class UpgradeAbstract extends Abstract {
             .endSpec()
             .build();
         // Deploy DSC
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(dsc);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
     public void deployNotebook(String namespace, String name) throws IOException {
         Namespace ns = new NamespaceBuilder()
@@ -99,7 +96,7 @@ public abstract class UpgradeAbstract extends Abstract {
                 .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
                 .endMetadata()
                 .build();
-        ResourceManager.getInstance().createResourceWithoutWait(ns);
+        KubeResourceManager.getInstance().createResourceWithoutWait(ns);
 
         PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder()
                 .withNewMetadata()
@@ -115,11 +112,11 @@ public abstract class UpgradeAbstract extends Abstract {
                 .withVolumeMode("Filesystem")
                 .endSpec()
                 .build();
-        ResourceManager.getInstance().createResourceWithoutWait(pvc);
+        KubeResourceManager.getInstance().createResourceWithoutWait(pvc);
 
         String notebookImage = NotebookResource.getNotebookImage(NotebookResource.JUPYTER_MINIMAL_IMAGE, NotebookResource.JUPYTER_MINIMAL_2023_2_TAG);
         Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage)).build();
 
-        ResourceManager.getInstance().createResourceWithoutWait(notebook);
+        KubeResourceManager.getInstance().createResourceWithoutWait(notebook);
     }
 }

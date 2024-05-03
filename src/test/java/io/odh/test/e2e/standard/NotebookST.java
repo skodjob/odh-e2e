@@ -13,7 +13,6 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
 import io.odh.test.utils.DscUtils;
 import io.odh.test.utils.PodUtils;
@@ -42,6 +41,7 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kubeflow.v1.Notebook;
@@ -95,7 +95,7 @@ public class NotebookST extends StandardAbstract {
             .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
             .endMetadata()
             .build();
-        ResourceManager.getInstance().createResourceWithoutWait(ns);
+        KubeResourceManager.getInstance().createResourceWithoutWait(ns);
 
         PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder()
                 .withNewMetadata()
@@ -111,11 +111,11 @@ public class NotebookST extends StandardAbstract {
                 .withVolumeMode("Filesystem")
                 .endSpec()
                 .build();
-        ResourceManager.getInstance().createResourceWithoutWait(pvc);
+        KubeResourceManager.getInstance().createResourceWithoutWait(pvc);
 
         String notebookImage = NotebookResource.getNotebookImage(NotebookResource.JUPYTER_MINIMAL_IMAGE, NotebookResource.JUPYTER_MINIMAL_2023_2_TAG);
         Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME, notebookImage)).build();
-        ResourceManager.getInstance().createResourceWithoutWait(notebook);
+        KubeResourceManager.getInstance().createResourceWithoutWait(notebook);
 
         LabelSelector lblSelector = new LabelSelectorBuilder()
                 .withMatchLabels(Map.of("app", NTB_NAME))
@@ -169,7 +169,7 @@ public class NotebookST extends StandardAbstract {
                 .endSpec()
                 .build();
         // Deploy DSCI,DSC
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(dsc);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 }

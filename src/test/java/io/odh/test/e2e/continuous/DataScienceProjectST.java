@@ -8,10 +8,10 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.TestSuite;
+import io.odh.test.TestUtils;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.NotebookResource;
-import io.odh.test.platform.KubeUtils;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Tag(TestSuite.CONTINUOUS)
 public class DataScienceProjectST extends Abstract {
@@ -48,10 +48,11 @@ public class DataScienceProjectST extends Abstract {
     @ParameterizedTest(name = "checkDataScienceProjects-{0}")
     @MethodSource("getDsProjects")
     void checkDataScienceProjects(String dsProjectName) {
-        assertTrue(ResourceManager.getKubeClient().namespaceExists(dsProjectName));
+        assertNotNull(KubeResourceManager.getKubeClient().getClient().namespaces().withName(dsProjectName).get());
 
         assertEquals("true",
-                ResourceManager.getKubeClient().getNamespace(dsProjectName).getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
+                KubeResourceManager.getKubeClient().getClient().namespaces().withName(dsProjectName).get()
+                        .getMetadata().getLabels().getOrDefault("opendatahub.io/dashboard", "false"));
 
         notebookCli.inNamespace(dsProjectName).list().getItems().forEach(notebook -> {
             LOGGER.info("Found notebook {} in datascience project {}", notebook.getMetadata().getName(), dsProjectName);
@@ -60,8 +61,8 @@ public class DataScienceProjectST extends Abstract {
             assertEquals("true",
                     notebook.getMetadata().getLabels().getOrDefault("opendatahub.io/odh-managed", "false"));
 
-            assertEquals("True", KubeUtils.getNotebookConditionByType(notebook.getStatus().getConditions(), "ContainersReady").getStatus());
-            assertEquals("True", KubeUtils.getNotebookConditionByType(notebook.getStatus().getConditions(), "Ready").getStatus());
+            assertEquals("True", TestUtils.getNotebookConditionByType(notebook.getStatus().getConditions(), "ContainersReady").getStatus());
+            assertEquals("True", TestUtils.getNotebookConditionByType(notebook.getStatus().getConditions(), "Ready").getStatus());
         });
     }
 }
