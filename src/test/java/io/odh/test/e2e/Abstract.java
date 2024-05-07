@@ -5,6 +5,7 @@
 package io.odh.test.e2e;
 
 import io.odh.test.Environment;
+import io.odh.test.TestConstants;
 import io.odh.test.framework.listeners.TestExceptionCallbackListener;
 import io.odh.test.framework.manager.requirements.AuthorinoOperator;
 import io.odh.test.framework.manager.requirements.PipelinesOperator;
@@ -20,6 +21,7 @@ import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.resources.NamespaceResource;
 import io.skodjob.testframe.resources.OperatorGroupResource;
 import io.skodjob.testframe.resources.SubscriptionResource;
+import io.skodjob.testframe.utils.KubeUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,6 +46,11 @@ public abstract class Abstract {
                 new NotebookResource(),
                 new InferenceServiceResource()
         );
+        KubeResourceManager.getInstance().addCreateCallback(r -> {
+            if (r.getKind().equals("Namespace")) {
+                KubeUtils.labelNamespace(r.getMetadata().getName(), TestConstants.LOG_COLLECT_LABEL, "true");
+            }
+        });
     }
 
     @BeforeAll
