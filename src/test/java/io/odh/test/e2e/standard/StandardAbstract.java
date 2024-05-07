@@ -12,6 +12,7 @@ import io.odh.test.framework.listeners.ResourceManagerDeleteHandler;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.install.InstallTypes;
 import io.odh.test.install.OlmInstall;
+import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Tag(TestSuite.STANDARD)
 @ExtendWith(OdhResourceCleaner.class)
 @ExtendWith(ResourceManagerDeleteHandler.class)
+@ExtendWith(SoftAssertionsExtension.class)
 public abstract class StandardAbstract extends Abstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardAbstract.class);
