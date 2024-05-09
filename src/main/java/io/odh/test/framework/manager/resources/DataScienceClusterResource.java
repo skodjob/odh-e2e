@@ -169,8 +169,8 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
         String namespace = OdhConstants.CONTROLLERS_NAMESPACE;
         LOGGER.info("Waiting for pods readiness in {}", namespace);
         PodUtils.waitForPodsReady(namespace, true, () -> {
-            KubeResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "pods");
-            KubeResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "events");
+            KubeResourceManager.getKubeCmdClient().inNamespace(namespace).exec(false, "get", "pods");
+            KubeResourceManager.getKubeCmdClient().inNamespace(namespace).exec(false, "get", "events");
         });
 
         return true;

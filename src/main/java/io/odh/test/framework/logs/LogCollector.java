@@ -76,7 +76,7 @@ public class LogCollector {
         try {
             LOGGER.debug("Get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
             Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + ".describe.log"),
-                    KubeResourceManager.getKubeCmdClient().namespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
+                    KubeResourceManager.getKubeCmdClient().inNamespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
         } catch (Exception e) {
             LOGGER.warn("Cannot get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
         }

@@ -211,8 +211,8 @@ public class ModelServingST extends StandardAbstract {
         String namespace = "knative-serving";
         LOGGER.info("Waiting for pods readiness in {}", namespace);
         PodUtils.waitForPodsReady(namespace, true, () -> {
-            KubeResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "pods");
-            KubeResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "events");
+            KubeResourceManager.getKubeCmdClient().inNamespace(namespace).exec(false, "get", "pods");
+            KubeResourceManager.getKubeCmdClient().inNamespace(namespace).exec(false, "get", "events");
         });
 
         Route route = kubeClient.routes().inNamespace(projectName).withName(modelName).get();

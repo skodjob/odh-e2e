@@ -73,7 +73,7 @@ public class UninstallST extends StandardAbstract {
     )
     @Test
     void testUninstallSimpleScenario() {
-        if (KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+        if (KubeResourceManager.getKubeCmdClient().inNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
                 "configmap").contains(DELETE_CONFIG_MAP_NAME)) {
             Assertions.fail(
                     String.format("The ConfigMap '%s' is present on the cluster before the uninstall test started!",
@@ -95,12 +95,12 @@ public class UninstallST extends StandardAbstract {
                 () -> !KubeResourceManager.getKubeClient().namespaceExists(OdhConstants.CONTROLLERS_NAMESPACE));
 
         // Operator itself should delete the CSV, Subscription and InstallPlan
-        Assertions.assertTrue(KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+        Assertions.assertTrue(KubeResourceManager.getKubeCmdClient().inNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
                 "subscriptions").isEmpty(), "The operator Subscription is still present!");
-        Assertions.assertTrue(KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+        Assertions.assertTrue(KubeResourceManager.getKubeCmdClient().inNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
                 "installplan").isEmpty(), "The operator InstallPlan is still present!");
-        Assertions.assertFalse(KubeResourceManager.getKubeCmdClient().namespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
-                "csv").stream().anyMatch(s -> s.toString().contains(OdhConstants.OLM_OPERATOR_NAME)),
+        Assertions.assertFalse(KubeResourceManager.getKubeCmdClient().inNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE).list(
+                "csv").stream().anyMatch(s -> s.contains(OdhConstants.OLM_OPERATOR_NAME)),
                 "The operator CSV is still present!");
 
         // TODO Check that the config map is deleted also
