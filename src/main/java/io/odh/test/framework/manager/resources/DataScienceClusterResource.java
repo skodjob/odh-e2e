@@ -8,42 +8,48 @@ import io.fabric8.kubernetes.api.model.KubernetesResourceList;
 import io.fabric8.kubernetes.api.model.events.v1.Event;
 import io.fabric8.kubernetes.client.dsl.EventingAPIGroupDSL;
 import io.fabric8.kubernetes.client.dsl.MixedOperation;
+import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.framework.manager.ResourceType;
-import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
+import io.skodjob.testframe.interfaces.ResourceType;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.wait.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class DataScienceClusterResource implements ResourceType<DataScienceCluster> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataScienceClusterResource.class);
+
+    @Override
+    public NonNamespaceOperation<?, ?, ?> getClient() {
+        return dataScienceCLusterClient();
+    }
+
     @Override
     public String getKind() {
         return "DataScienceCluster";
     }
 
-    @Override
-    public DataScienceCluster get(String namespace, String name) {
+    public DataScienceCluster get(String name) {
         return dataScienceCLusterClient().withName(name).get();
     }
 
     @Override
     public void create(DataScienceCluster resource) {
-        dataScienceCLusterClient().resource(resource).create();
-    }
-
-    @Override
-    public void delete(DataScienceCluster resource) {
-        dataScienceCLusterClient().withName(resource.getMetadata().getName()).delete();
+        if (get(resource.getMetadata().getName()) == null) {
+            dataScienceCLusterClient().resource(resource).create();
+        } else {
+            update(resource);
+        }
     }
 
     @Override
@@ -52,18 +58,30 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
     }
 
     @Override
+    public void delete(String s) {
+        dataScienceCLusterClient().withName(s).delete();
+    }
+
+    @Override
+    public void replace(String s, Consumer<DataScienceCluster> editor) {
+        DataScienceCluster toBeUpdated = dataScienceCLusterClient().withName(s).get();
+        editor.accept(toBeUpdated);
+        update(toBeUpdated);
+    }
+
+    @Override
     public boolean waitForReadiness(DataScienceCluster resource) {
         String message = String.format("DataScienceCluster %s readiness", resource.getMetadata().getName());
-        TestUtils.waitFor(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+        Wait.until(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             boolean dscReady;
 
             DataScienceCluster dsc = dataScienceCLusterClient().withName(resource.getMetadata().getName()).get();
 
-            String dashboardStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "dashboardReady").getStatus();
+            String dashboardStatus = TestUtils.getDscConditionByType(dsc.getStatus().getConditions(), "dashboardReady").getStatus();
             LOGGER.debug("DataScienceCluster {} Dashboard status: {}", resource.getMetadata().getName(), dashboardStatus);
             dscReady = dashboardStatus.equals("True");
 
-            String workbenchesStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "workbenchesReady").getStatus();
+            String workbenchesStatus = TestUtils.getDscConditionByType(dsc.getStatus().getConditions(), "workbenchesReady").getStatus();
             LOGGER.debug("DataScienceCluster {} Workbenches status: {}", resource.getMetadata().getName(), workbenchesStatus);
             dscReady = dscReady && workbenchesStatus.equals("True");
 
@@ -124,18 +142,18 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
             for (ConditionExpectation conditionExpectation : conditionExpectations) {
                 String conditionType = conditionExpectation.conditionType;
                 String expectedStatus = conditionExpectation.expectedStatus;
-                String conditionStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), conditionType).getStatus();
+                String conditionStatus = TestUtils.getDscConditionByType(dsc.getStatus().getConditions(), conditionType).getStatus();
                 LOGGER.debug("DataScienceCluster {} {} status: {}", resource.getMetadata().getName(), conditionType, conditionStatus);
                 dscReady = dscReady && Objects.equals(conditionStatus, expectedStatus);
             }
 
             // Wait for ReconcileComplete condition (for the whole DSC)
-            String reconcileStatus = KubeUtils.getDscConditionByType(dsc.getStatus().getConditions(), "ReconcileComplete").getStatus();
+            String reconcileStatus = TestUtils.getDscConditionByType(dsc.getStatus().getConditions(), "ReconcileComplete").getStatus();
             LOGGER.debug("DataScienceCluster {} ReconcileComplete status: {}", resource.getMetadata().getName(), reconcileStatus);
             dscReady = dscReady && reconcileStatus.equals("True");
 
             // Wait for DataScienceClusterCreationSuccessful event
-            EventingAPIGroupDSL eventsClient = ResourceManager.getKubeClient().getClient().events();
+            EventingAPIGroupDSL eventsClient = KubeResourceManager.getKubeClient().getClient().events();
             List<Event> resourceEvents = eventsClient.v1().events().inAnyNamespace().withNewFilter()
                     .withField("regarding.name", resource.getMetadata().getName())
                     .withField("regarding.uid", resource.getMetadata().getUid())
@@ -151,15 +169,19 @@ public class DataScienceClusterResource implements ResourceType<DataScienceClust
         String namespace = OdhConstants.CONTROLLERS_NAMESPACE;
         LOGGER.info("Waiting for pods readiness in {}", namespace);
         PodUtils.waitForPodsReady(namespace, true, () -> {
-            ResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "pods");
-            ResourceManager.getKubeCmdClient().namespace(namespace).exec(false, "get", "events");
+            KubeResourceManager.getKubeCmdClient().inNamespace(namespace).exec(false, "get", "pods");
+            KubeResourceManager.getKubeCmdClient().inNamespace(namespace).exec(false, "get", "events");
         });
 
         return true;
     }
 
-    public static MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceCLusterClient() {
-        return ResourceManager.getKubeClient().getClient().resources(DataScienceCluster.class);
+    @Override
+    public boolean waitForDeletion(DataScienceCluster dataScienceCluster) {
+        return get(dataScienceCluster.getMetadata().getName()) == null;
     }
 
+    public static MixedOperation<DataScienceCluster, KubernetesResourceList<DataScienceCluster>, Resource<DataScienceCluster>> dataScienceCLusterClient() {
+        return KubeResourceManager.getKubeClient().getClient().resources(DataScienceCluster.class);
+    }
 }

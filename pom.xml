@@ -50,7 +50,7 @@
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <junit.platform.version>1.10.2</junit.platform.version>
         <maven.surefire.version>3.2.2</maven.surefire.version>
-        <logback.version>1.4.12</logback.version>
+        <logback.version>1.5.6</logback.version>
         <slf4j.version>2.0.9</slf4j.version>
         <hamcrest.version>2.2</hamcrest.version>
         <opedatahub-crds.version>1.0.44-SNAPSHOT</opedatahub-crds.version>
@@ -63,6 +63,7 @@
         <aspectj.version>1.9.21.2</aspectj.version>
         <allure.version>2.25.0</allure.version>
         <allure.maven.version>2.12.0</allure.maven.version>
+        <test-frame.version>0.1.0-beta3</test-frame.version>
     </properties>
 
     <repositories>
@@ -70,6 +71,12 @@
             <id>opendatahub-crds</id>
             <name>GitHub Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/skodjob/opendatahub-crds</url>
+        </repository>
+        <!-- Used for test-frame SNAPSHOT version if needed (debug only) -->
+        <repository>
+            <id>test-frame</id>
+            <name>GitHub Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/skodjob/test-frame</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -93,6 +100,21 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.skodjob</groupId>
+            <artifactId>test-frame-common</artifactId>
+            <version>${test-frame.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.skodjob</groupId>
+            <artifactId>test-frame-kubernetes</artifactId>
+            <version>${test-frame.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.skodjob</groupId>
+            <artifactId>test-frame-openshift</artifactId>
+            <version>${test-frame.version}</version>
+        </dependency>
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>openshift-client</artifactId>
@@ -240,7 +262,7 @@
                 </executions>
                 <configuration>
                     <skipITs>${it.skip}</skipITs>
-                    <forkCount>0</forkCount>
+                    <forkCount>1</forkCount>
                     <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory"/>
                     <includes>
                         <include>**/IT*.java</include>
@@ -253,6 +275,9 @@
                             junit.jupiter.extensions.autodetection.enabled = true
                         </configurationParameters>
                     </properties>
+                    <environmentVariables>
+                        <CLIENT_TYPE>oc</CLIENT_TYPE>
+                    </environmentVariables>
                 </configuration>
             </plugin>
             <plugin>

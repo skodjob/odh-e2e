@@ -5,7 +5,7 @@
 package io.odh.test.utils;
 
 import io.odh.test.TestConstants;
-import io.odh.test.framework.manager.ResourceManager;
+import io.skodjob.testframe.resources.KubeResourceManager;
 
 import java.util.Date;
 
@@ -16,7 +16,7 @@ public class UpgradeUtils {
 
     public static void deploymentLogIsErrorEmpty(String namespace, String deploymentName, Date sinceTimestamp) {
         // Check that operator doesn't contain errors in logs since sec
-        String operatorLog = ResourceManager.getKubeClient().getClient().apps().deployments()
+        String operatorLog = KubeResourceManager.getKubeClient().getClient().apps().deployments()
                 .inNamespace(namespace).withName(deploymentName).sinceTime(TestConstants.TIMESTAMP_DATE_FORMAT.format(sinceTimestamp)).getLog();
 
         assertThat(operatorLog, logHasNoUnexpectedErrors());
@@ -24,7 +24,7 @@ public class UpgradeUtils {
 
     public static void deploymentLogIsErrorEmpty(String namespace, String deploymentName) {
         // Check that operator doesn't contain errors in logs
-        String operatorLog = ResourceManager.getKubeClient().getClient().apps().deployments()
+        String operatorLog = KubeResourceManager.getKubeClient().getClient().apps().deployments()
                 .inNamespace(namespace).withName(deploymentName).getLog();
 
         assertThat(operatorLog, logHasNoUnexpectedErrors());

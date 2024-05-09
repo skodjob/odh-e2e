@@ -10,11 +10,10 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
+import io.odh.test.TestUtils;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.manager.ResourceManager;
 import io.odh.test.framework.manager.resources.DataScienceClusterResource;
 import io.odh.test.install.InstallTypes;
-import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.CsvUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Codeflare;
@@ -26,6 +25,7 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Mo
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ray;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.v1alpha.OdhDashboardConfig;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ public class DataScienceClusterST extends Abstract {
     @BeforeAll
     void init() {
         dataScienceProjectCli = DataScienceClusterResource.dataScienceCLusterClient();
-        dashboardConfigCli  = ResourceManager.getKubeClient().dashboardConfigClient();
+        dashboardConfigCli  = KubeResourceManager.getKubeClient().getClient().resources(OdhDashboardConfig.class);
     }
 
     @Test
@@ -79,13 +79,13 @@ public class DataScienceClusterST extends Abstract {
         assertEquals("Ready", cluster.getStatus().getPhase());
         assertNull(cluster.getStatus().getErrorMessage());
 
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "dashboardReady").getStatus());
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "workbenchesReady").getStatus());
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "data-science-pipelines-operatorReady").getStatus());
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "kserveReady").getStatus());
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "codeflareReady").getStatus());
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "model-meshReady").getStatus());
-        assertEquals("True", KubeUtils.getDscConditionByType(cluster.getStatus().getConditions(), "kueueReady").getStatus());
+        assertEquals("True", TestUtils.getDscConditionByType(cluster.getStatus().getConditions(), "dashboardReady").getStatus());
+        assertEquals("True", TestUtils.getDscConditionByType(cluster.getStatus().getConditions(), "workbenchesReady").getStatus());
+        assertEquals("True", TestUtils.getDscConditionByType(cluster.getStatus().getConditions(), "data-science-pipelines-operatorReady").getStatus());
+        assertEquals("True", TestUtils.getDscConditionByType(cluster.getStatus().getConditions(), "kserveReady").getStatus());
+        assertEquals("True", TestUtils.getDscConditionByType(cluster.getStatus().getConditions(), "codeflareReady").getStatus());
+        assertEquals("True", TestUtils.getDscConditionByType(cluster.getStatus().getConditions(), "model-meshReady").getStatus());
+        assertEquals("True", TestUtils.getDscConditionByType(cluster.getStatus().getConditions(), "kueueReady").getStatus());
     }
 
     @Test

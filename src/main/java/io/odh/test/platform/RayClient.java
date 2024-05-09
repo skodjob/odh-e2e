@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import io.odh.test.TestConstants;
-import io.odh.test.TestUtils;
+import io.skodjob.testframe.wait.Wait;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class RayClient {
                 .GET()
                 .build();
 
-        TestUtils.waitFor("ray job to finish executing", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
+        Wait.until("ray job to finish executing", TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             HttpResponse<String> result;
             try {
                 result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());

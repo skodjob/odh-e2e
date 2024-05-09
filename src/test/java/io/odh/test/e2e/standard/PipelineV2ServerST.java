@@ -13,7 +13,6 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.LocalPortForward;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.ServiceResource;
@@ -21,9 +20,8 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
-import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.TestUtils;
 import io.odh.test.platform.KFPv2Client;
-import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -56,6 +54,7 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -90,7 +89,7 @@ public class PipelineV2ServerST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-pipelines";
 
-    private final KubernetesClient client = ResourceManager.getKubeClient().getClient();
+    private final OpenShiftClient client = KubeResourceManager.getKubeClient().getOpenShiftClient();
 
     @BeforeAll
     void deployDataScienceCluster() {
@@ -154,8 +153,8 @@ public class PipelineV2ServerST extends StandardAbstract {
                 .endSpec()
                 .build();
 
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(dsc);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 
     /// ODS-2206 - Verify user can create and run a data science pipeline in DS Project
@@ -179,8 +178,6 @@ public class PipelineV2ServerST extends StandardAbstract {
     )
     @Test
     void testUserCanOperateDSv2PipelineFromDSProject() throws IOException {
-        OpenShiftClient ocClient = (OpenShiftClient) client;
-
         final String pipelineTestName = "pipeline-test-name";
         final String pipelineTestDesc = "pipeline-test-desc";
         final String prjTitle = "pipeline-test";
@@ -198,7 +195,7 @@ public class PipelineV2ServerST extends StandardAbstract {
                 .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
                 .endMetadata()
                 .build();
-            ResourceManager.getInstance().createResourceWithWait(ns);
+            KubeResourceManager.getInstance().createResourceWithWait(ns);
 
             Allure.step("Create Minio secret");
             Secret secret = new SecretBuilder()
@@ -212,7 +209,7 @@ public class PipelineV2ServerST extends StandardAbstract {
                     .addToStringData("AWS_SECRET_ACCESS_KEY", "gimmeAccessPlz")
                     .withType("Opaque")
                     .build();
-            ResourceManager.getInstance().createResourceWithWait(secret);
+            KubeResourceManager.getInstance().createResourceWithWait(secret);
 
             Allure.step("Create DataSciencePipelinesApplication instance with build-in Minio enabled");
             DataSciencePipelinesApplication dspa = new DataSciencePipelinesApplicationBuilder()
@@ -277,15 +274,15 @@ public class PipelineV2ServerST extends StandardAbstract {
                         .endScheduledWorkflow()
                     .endSpec()
                     .build();
-            ResourceManager.getInstance().createResourceWithWait(dspa);
+            KubeResourceManager.getInstance().createResourceWithWait(dspa);
         });
 
         Allure.step("Wait for Pipeline API server to come up");
         Resource<Endpoints> endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
-        KubeUtils.waitForEndpoints("pipelines", endpoints);
+        TestUtils.waitForEndpoints("pipelines", endpoints);
 
         Allure.step("Connect to the API server");
-        Resource<Route> route = ocClient.routes()
+        Resource<Route> route = client.routes()
                 .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
 
         // TODO(jdanek) I still don't know how to do oauth, so let's forward a port

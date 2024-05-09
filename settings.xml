@@ -6,6 +6,11 @@
             <password>${env.GITHUB_TOKEN}</password>
         </server>
         <server>
+            <id>test-frame</id>
+            <username>x-access-token</username>
+            <password>${env.GITHUB_TOKEN}</password>
+        </server>
+        <server>
             <id>test-metadata-generator</id>
             <username>x-access-token</username>
             <password>${env.GITHUB_TOKEN}</password>

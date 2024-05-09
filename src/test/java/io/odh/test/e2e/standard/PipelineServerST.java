@@ -13,7 +13,6 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
 import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.LocalPortForward;
 import io.fabric8.kubernetes.client.dsl.Resource;
 import io.fabric8.kubernetes.client.dsl.ServiceResource;
@@ -21,9 +20,8 @@ import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
-import io.odh.test.framework.manager.ResourceManager;
+import io.odh.test.TestUtils;
 import io.odh.test.platform.KFPv1Client;
-import io.odh.test.platform.KubeUtils;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplication;
@@ -37,6 +35,7 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
+import io.skodjob.testframe.resources.KubeResourceManager;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -70,8 +69,8 @@ public class PipelineServerST extends StandardAbstract {
 
     private static final String DS_PROJECT_NAME = "test-pipelines";
 
-    private final ResourceManager resourceManager = ResourceManager.getInstance();
-    private final KubernetesClient client = ResourceManager.getKubeClient().getClient();
+    private final KubeResourceManager resourceManager = KubeResourceManager.getInstance();
+    private final OpenShiftClient client = KubeResourceManager.getKubeClient().getOpenShiftClient();
 
     @BeforeAll
     void deployDataScienceCluster() {
@@ -85,8 +84,8 @@ public class PipelineServerST extends StandardAbstract {
         // Create DSC
         DataScienceCluster dsc = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
-        ResourceManager.getInstance().createResourceWithWait(dsci);
-        ResourceManager.getInstance().createResourceWithWait(dsc);
+        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 
     @Issue("RHODS-5133")
@@ -110,7 +109,6 @@ public class PipelineServerST extends StandardAbstract {
     )
     @Test
     void testUserCanCreateRunAndDeleteADSPipelineFromDSProject() throws IOException {
-        OpenShiftClient ocClient = (OpenShiftClient) client;
 
         final String pipelineTestName = "pipeline-test-name";
         final String pipelineTestDesc = "pipeline-test-desc";
@@ -129,7 +127,7 @@ public class PipelineServerST extends StandardAbstract {
             .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
             .endMetadata()
             .build();
-        ResourceManager.getInstance().createResourceWithWait(ns);
+        KubeResourceManager.getInstance().createResourceWithWait(ns);
 
         // create minio secret
         Secret secret = new SecretBuilder()
@@ -143,7 +141,7 @@ public class PipelineServerST extends StandardAbstract {
                 .addToStringData("AWS_SECRET_ACCESS_KEY", "gimmeAccessPlz")
                 .withType("Opaque")
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(secret);
+        KubeResourceManager.getInstance().createResourceWithWait(secret);
 
         // configure pipeline server (with minio, not AWS bucket)
         DataSciencePipelinesApplication dspa = new DataSciencePipelinesApplicationBuilder()
@@ -203,14 +201,14 @@ public class PipelineServerST extends StandardAbstract {
                     .endScheduledWorkflow()
                 .endSpec()
                 .build();
-        ResourceManager.getInstance().createResourceWithWait(dspa);
+        KubeResourceManager.getInstance().createResourceWithWait(dspa);
 
         // wait for pipeline api server to come up
         Resource<Endpoints> endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
-        KubeUtils.waitForEndpoints("pipelines", endpoints);
+        TestUtils.waitForEndpoints("pipelines", endpoints);
 
         // connect to the api server we just created, route not available unless I enable oauth
-        Resource<Route> route = ocClient.routes()
+        Resource<Route> route = client.routes()
                 .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
 
         // TODO(jdanek) I don't know how to do oauth, so lets forward a port

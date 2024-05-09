@@ -29,7 +29,7 @@ E2E test suite for opendatahub using fabric8 kubernetes client
 * **INSTALL_FILE_PREVIOUS** - yaml definition of operator for upgrade testing (default is downloaded latest released)
 * **OPERATOR_IMAGE_OVERRIDE** - image override in yaml definition
 * **OLM_SOURCE_NAME** - olm source
-* **OLM_SOURCE_NAMESPACE** - olm source namesapce
+* **OLM_SOURCE_NAMESPACE** - olm source namespace
 * **OLM_OPERATOR_VERSION** - install operator version
 * **OLM_OPERATOR_CHANNEL** - channel
 * **OPERATOR_INSTALL_TYPE** - bundle or olm (bundle uses yaml file def, olm uses olm properties)

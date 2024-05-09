@@ -10,9 +10,10 @@ import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.platform.KubeClient;
-import io.odh.test.platform.cmdClient.KubeCmdClient;
+import io.skodjob.testframe.clients.KubeClient;
+import io.skodjob.testframe.clients.cmdClient.KubeCmdClient;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.utils.KubeUtils;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +32,12 @@ public class LogCollector {
         Path logPath = TestUtils.getLogPath(Environment.LOG_DIR.resolve("failedTest").toString(), extensionContext);
         Files.createDirectories(logPath);
         try {
-            ResourceManager.addNamespaceForLogCollect(OdhConstants.BUNDLE_OPERATOR_NAMESPACE);
-            ResourceManager.addNamespaceForLogCollect(OdhConstants.OLM_OPERATOR_NAMESPACE);
-            ResourceManager.addNamespaceForLogCollect(OdhConstants.CONTROLLERS_NAMESPACE);
-            ResourceManager.addNamespaceForLogCollect(OdhConstants.MONITORING_NAMESPACE);
-            ResourceManager.addNamespaceForLogCollect(OdhConstants.ISTIO_SYSTEM_NAMESPACE);
-            ResourceManager.addNamespaceForLogCollect(OdhConstants.KNATIVE_SERVING_NAMESPACE);
+            KubeUtils.labelNamespace(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.CONTROLLERS_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.MONITORING_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.ISTIO_SYSTEM_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.KNATIVE_SERVING_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
         } catch (Exception ignored) {
             LOGGER.warn("Cannot label namespaces for collect logs");
         }
@@ -59,7 +60,7 @@ public class LogCollector {
             try {
                 LOGGER.debug("Get logs from pod {}/{} container {}", pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName());
                 Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + "-" + container.getName() + ".log"),
-                        ResourceManager.getKubeClient().getLogsFromContainer(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName()));
+                        KubeResourceManager.getKubeClient().getLogsFromContainer(pod.getMetadata().getNamespace(), pod.getMetadata().getName(), container.getName()));
             } catch (Exception e) {
                 LOGGER.warn("Cannot get logs for pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
             }
@@ -75,7 +76,7 @@ public class LogCollector {
         try {
             LOGGER.debug("Get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
             Files.writeString(logpath.resolve(pod.getMetadata().getNamespace()).resolve(pod.getMetadata().getName() + ".describe.log"),
-                    ResourceManager.getKubeCmdClient().namespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
+                    KubeResourceManager.getKubeCmdClient().inNamespace(pod.getMetadata().getNamespace()).describe(pod.getKind(), pod.getMetadata().getName()));
         } catch (Exception e) {
             LOGGER.warn("Cannot get description of pod {}/{}", pod.getMetadata().getNamespace(), pod.getMetadata().getName());
         }
@@ -90,7 +91,7 @@ public class LogCollector {
         try {
             LOGGER.debug("Get deployment {}/{}", deployment.getMetadata().getNamespace(), deployment.getMetadata().getName());
             Files.writeString(logpath.resolve(deployment.getMetadata().getNamespace()).resolve("deployment-" + deployment.getMetadata().getName() + ".yaml"),
-                    ResourceManager.getKubeCmdClient().exec(false, false, "get", "deployment", deployment.getMetadata().getName(),
+                    KubeResourceManager.getKubeCmdClient().exec(false, false, "get", "deployment", deployment.getMetadata().getName(),
                             "-n", deployment.getMetadata().getNamespace(), "-o", "yaml").out());
         } catch (Exception e) {
             LOGGER.warn("Cannot get deployment of pod {}/{}", deployment.getMetadata().getNamespace(), deployment.getMetadata().getName());
@@ -98,8 +99,8 @@ public class LogCollector {
     }
 
     private static void saveClusterState(Path logpath) throws IOException {
-        KubeClient kube = ResourceManager.getKubeClient();
-        KubeCmdClient<?> cmdClient = ResourceManager.getKubeCmdClient();
+        KubeClient kube = KubeResourceManager.getKubeClient();
+        KubeCmdClient<?> cmdClient = KubeResourceManager.getKubeCmdClient();
 
         // Collecting cluster wide resources and CRs
         Files.writeString(logpath.resolve("describe-cluster-nodes.log"), cmdClient.exec(false, false, "describe", "nodes").out());
@@ -114,7 +115,7 @@ public class LogCollector {
 
         kube.getClient().namespaces().withLabel(TestConstants.LOG_COLLECT_LABEL).list().getItems().forEach(ns -> {
             LOGGER.debug("Listing pods in {}", ns.getMetadata().getName());
-            kube.listPods(ns.getMetadata().getName()).forEach(pod -> {
+            kube.getClient().pods().inNamespace(ns.getMetadata().getName()).list().getItems().forEach(pod -> {
                 writeLogsFromPods(logpath, pod);
                 writePodsDescription(logpath, pod);
             });

@@ -10,9 +10,8 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.odh.test.Environment;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.framework.manager.ResourceItem;
-import io.odh.test.framework.manager.ResourceManager;
-import io.odh.test.platform.KubeUtils;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.resources.ResourceItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class BundleInstall {
             installFile = new File(installFilePath);
             is = new FileInputStream(installFilePath);
         }
-        resources = ResourceManager.getKubeClient().readResourcesFromYaml(is);
+        resources = KubeResourceManager.getKubeClient().readResourcesFromFile(is);
     }
 
     public BundleInstall() throws IOException {
@@ -89,17 +88,18 @@ public class BundleInstall {
 
     public void create() {
         modifyOperatorImage();
-        ResourceManager.getInstance().createResourceWithWait(resources.toArray(new HasMetadata[0]));
-        ResourceManager.getInstance().pushToStack(new ResourceItem<>(KubeUtils::deleteDefaultDSCI, null));
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(TestUtils::clearOdhRemainingResources, null));
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(resources.toArray(new HasMetadata[0]));
+        KubeResourceManager.getInstance().pushToStack(new ResourceItem<>(TestUtils::deleteDefaultDSCI, null));
     }
 
     public void createWithoutResourceManager() {
         modifyOperatorImage();
-        ResourceManager.getKubeClient().create(resources, r -> r);
+        KubeResourceManager.getKubeClient().createOrUpdate(resources, r -> r);
     }
 
     public void deleteWithoutResourceManager() {
-        KubeUtils.deleteDefaultDSCI();
-        ResourceManager.getKubeClient().delete(resources);
+        TestUtils.deleteDefaultDSCI();
+        KubeResourceManager.getKubeClient().delete(resources);
     }
 }
