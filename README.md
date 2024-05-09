@@ -1,5 +1,5 @@
 # ODH-E2E
-E2E test suite for opendatahub using fabric8 kubernetes client
+E2E test suite for [opendatahub.io](https://github.com/opendatahub-io/opendatahub-operator) operator using fabric8 kubernetes client
 
 [![UnitTest](https://github.com/skodjob/odh-e2e/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/ExcelentProject/odh-e2e/actions/workflows/test.yaml)
 
@@ -101,3 +101,5 @@ GITHUB_TOKEN="your_github_read_token" mvn allure:serve
 ## Authors
 * [David Kornel](https://github.com/kornys) <kornys@outlookcom>
 * [Jakub Stejskal](https://github.com/Frawless) <xstejs24@gmail.com>
+
+This test suite uses [test-frame](https://github.com/skodjob/test-frame) module.
