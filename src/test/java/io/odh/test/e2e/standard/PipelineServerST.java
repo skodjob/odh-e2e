@@ -161,7 +161,7 @@ public class PipelineServerST extends StandardAbstract {
                         .withEnableSamplePipeline(false)
                         .withInjectDefaultScript(true)
                         .withStripEOF(true)
-                        .withTerminateStatus(ApiServer.TerminateStatus.CANCELLED)
+                        .withTerminateStatus(ApiServer.TerminateStatus.Cancelled)
                         .withTrackArtifacts(true)
                     .endApiServer()
                     .withNewDatabase()

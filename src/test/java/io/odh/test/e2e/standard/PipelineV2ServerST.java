@@ -109,24 +109,24 @@ public class PipelineV2ServerST extends StandardAbstract {
                 .withComponents(
                         new ComponentsBuilder()
                                 .withWorkbenches(
-                                        new WorkbenchesBuilder().withManagementState(Workbenches.ManagementState.MANAGED).build()
+                                        new WorkbenchesBuilder().withManagementState(Workbenches.ManagementState.Managed).build()
                                 )
                                 .withDashboard(
-                                        new DashboardBuilder().withManagementState(Dashboard.ManagementState.MANAGED).build()
+                                        new DashboardBuilder().withManagementState(Dashboard.ManagementState.Managed).build()
                                 )
                                 .withKserve(
-                                        new KserveBuilder().withManagementState(Kserve.ManagementState.MANAGED).build()
+                                        new KserveBuilder().withManagementState(Kserve.ManagementState.Managed).build()
                                 )
                                 .withKueue(
-                                        new KueueBuilder().withManagementState(Kueue.ManagementState.MANAGED).build()
+                                        new KueueBuilder().withManagementState(Kueue.ManagementState.Managed).build()
                                 )
                                 .withCodeflare(
-                                        new CodeflareBuilder().withManagementState(Codeflare.ManagementState.MANAGED).build()
+                                        new CodeflareBuilder().withManagementState(Codeflare.ManagementState.Managed).build()
                                 )
                                 // TODO(jdanek): remove devFlags prior to release, when KFPv2 is the default
                                 .withDatasciencepipelines(
                                         new DatasciencepipelinesBuilder()
-                                                .withManagementState(Datasciencepipelines.ManagementState.MANAGED)
+                                                .withManagementState(Datasciencepipelines.ManagementState.Managed)
                                                 // https://github.com/opendatahub-io/data-science-pipelines-operator/blob/main/datasciencecluster/datasciencecluster.yaml
                                                 .withDevFlags(
                                                         new DevFlagsBuilder()
@@ -144,10 +144,10 @@ public class PipelineV2ServerST extends StandardAbstract {
                                                 .build()
                                 )
                                 .withModelmeshserving(
-                                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.MANAGED).build()
+                                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.Managed).build()
                                 )
                                 .withRay(
-                                        new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
+                                        new RayBuilder().withManagementState(Ray.ManagementState.Managed).build()
                                 )
                                 .build())
                 .endSpec()
@@ -235,7 +235,7 @@ public class PipelineV2ServerST extends StandardAbstract {
                             .withEnableSamplePipeline(false)
                             .withInjectDefaultScript(true)
                             .withStripEOF(true)
-                            .withTerminateStatus(ApiServer.TerminateStatus.CANCELLED)
+                            .withTerminateStatus(ApiServer.TerminateStatus.Cancelled)
                             .withTrackArtifacts(true)
                         .endApiServer()
                         .withNewDatabase()
