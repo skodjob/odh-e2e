@@ -58,13 +58,13 @@ public class UnitTests {
                 .withApplicationsNamespace("opendatahub")
                 .withNewMonitoring()
                 .withNamespace("monitoring")
-                .withManagementState(Monitoring.ManagementState.MANAGED)
+                .withManagementState(Monitoring.ManagementState.Managed)
                 .endMonitoring()
                 .withNewServiceMesh()
                 .withNewControlPlane()
                 .withNamespace("istio")
                 .withName("istio")
-                .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
+                .withMetricsCollection(ControlPlane.MetricsCollection.Istio)
                 .endControlPlane()
                 .endServiceMesh()
                 .endSpec()
@@ -92,19 +92,19 @@ public class UnitTests {
                 .withNewSpec()
                 .withNewComponents()
                 .withNewCodeflare()
-                .withManagementState(Codeflare.ManagementState.MANAGED)
+                .withManagementState(Codeflare.ManagementState.Managed)
                 .endCodeflare()
                 .withNewDashboard()
-                .withManagementState(Dashboard.ManagementState.MANAGED)
+                .withManagementState(Dashboard.ManagementState.Managed)
                 .endDashboard()
                 .withNewKserve()
-                .withManagementState(Kserve.ManagementState.REMOVED)
+                .withManagementState(Kserve.ManagementState.Removed)
                 .endKserve()
                 .withNewWorkbenches()
-                .withManagementState(Workbenches.ManagementState.MANAGED)
+                .withManagementState(Workbenches.ManagementState.Managed)
                 .endWorkbenches()
                 .withNewDatasciencepipelines()
-                .withManagementState(Datasciencepipelines.ManagementState.MANAGED)
+                .withManagementState(Datasciencepipelines.ManagementState.Managed)
                 .withNewDevFlags()
                 .withManifests(new ManifestsBuilder().withUri("https://kornys.com").build())
                 .endDatasciencepipelinesDevFlags()
@@ -116,7 +116,7 @@ public class UnitTests {
         dsClient.resource(cluster).create();
 
         DataScienceCluster returned = dsClient.withName(cluster.getMetadata().getName()).get();
-        assertEquals(Codeflare.ManagementState.MANAGED, returned.getSpec().getComponents().getCodeflare().getManagementState());
+        assertEquals(Codeflare.ManagementState.Managed, returned.getSpec().getComponents().getCodeflare().getManagementState());
 
         dsClient.withName(cluster.getMetadata().getName()).delete();
 

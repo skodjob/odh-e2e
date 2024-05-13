@@ -55,21 +55,21 @@ public class DataScienceClusterST extends Abstract {
     void checkDataScienceClusterExists() {
         DataScienceCluster cluster = dataScienceProjectCli.inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(DS_CLUSTER_NAME).get();
 
-        assertEquals(Kserve.ManagementState.MANAGED, cluster.getSpec().getComponents().getKserve().getManagementState());
-        assertEquals(Codeflare.ManagementState.MANAGED, cluster.getSpec().getComponents().getCodeflare().getManagementState());
-        assertEquals(Dashboard.ManagementState.MANAGED, cluster.getSpec().getComponents().getDashboard().getManagementState());
-        assertEquals(Ray.ManagementState.MANAGED, cluster.getSpec().getComponents().getRay().getManagementState());
-        assertEquals(Modelmeshserving.ManagementState.MANAGED, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
-        assertEquals(Datasciencepipelines.ManagementState.MANAGED, cluster.getSpec().getComponents().getDatasciencepipelines().getManagementState());
+        assertEquals(Kserve.ManagementState.Managed, cluster.getSpec().getComponents().getKserve().getManagementState());
+        assertEquals(Codeflare.ManagementState.Managed, cluster.getSpec().getComponents().getCodeflare().getManagementState());
+        assertEquals(Dashboard.ManagementState.Managed, cluster.getSpec().getComponents().getDashboard().getManagementState());
+        assertEquals(Ray.ManagementState.Managed, cluster.getSpec().getComponents().getRay().getManagementState());
+        assertEquals(Modelmeshserving.ManagementState.Managed, cluster.getSpec().getComponents().getModelmeshserving().getManagementState());
+        assertEquals(Datasciencepipelines.ManagementState.Managed, cluster.getSpec().getComponents().getDatasciencepipelines().getManagementState());
         if (!Environment.PRODUCT.equals(Environment.PRODUCT_ODH)
                 && Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())
                 && Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv()).equals("2.7.0")) {
             // https://issues.redhat.com/browse/RHOAIENG-3234 Remove Kueue from RHOAI 2.7
             assertNull(cluster.getSpec().getComponents().getKueue());
         } else {
-            assertEquals(Kueue.ManagementState.MANAGED, cluster.getSpec().getComponents().getKueue().getManagementState());
+            assertEquals(Kueue.ManagementState.Managed, cluster.getSpec().getComponents().getKueue().getManagementState());
         }
-        assertEquals(Workbenches.ManagementState.MANAGED, cluster.getSpec().getComponents().getWorkbenches().getManagementState());
+        assertEquals(Workbenches.ManagementState.Managed, cluster.getSpec().getComponents().getWorkbenches().getManagementState());
     }
 
     @Test

@@ -42,19 +42,19 @@ public class DscUtils {
                 .withNewSpec()
                 .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)
                 .withNewMonitoring()
-                .withManagementState(Monitoring.ManagementState.MANAGED)
+                .withManagementState(Monitoring.ManagementState.Managed)
                 .withNamespace(OdhConstants.MONITORING_NAMESPACE)
                 .endMonitoring()
                 .withNewServiceMesh()
-                .withManagementState(ServiceMesh.ManagementState.MANAGED)
+                .withManagementState(ServiceMesh.ManagementState.Managed)
                 .withNewControlPlane()
                 .withName(ServiceMeshOperator.SERVICE_MESH_NAME)
                 .withNamespace(ServiceMeshOperator.SERVICE_MESH_NAMESPACE)
-                .withMetricsCollection(ControlPlane.MetricsCollection.ISTIO)
+                .withMetricsCollection(ControlPlane.MetricsCollection.Istio)
                 .endControlPlane()
                 .endServiceMesh()
                 .withNewTrustedCABundle()
-                .withManagementState(TrustedCABundle.ManagementState.REMOVED)
+                .withManagementState(TrustedCABundle.ManagementState.Removed)
                 .endTrustedCABundle()
                 .endSpec()
                 .build();
@@ -69,28 +69,28 @@ public class DscUtils {
                 .withComponents(
                         new ComponentsBuilder()
                                 .withWorkbenches(
-                                        new WorkbenchesBuilder().withManagementState(Workbenches.ManagementState.MANAGED).build()
+                                        new WorkbenchesBuilder().withManagementState(Workbenches.ManagementState.Managed).build()
                                 )
                                 .withDashboard(
-                                        new DashboardBuilder().withManagementState(Dashboard.ManagementState.MANAGED).build()
+                                        new DashboardBuilder().withManagementState(Dashboard.ManagementState.Managed).build()
                                 )
                                 .withKserve(
-                                        new KserveBuilder().withManagementState(Kserve.ManagementState.MANAGED).build()
+                                        new KserveBuilder().withManagementState(Kserve.ManagementState.Managed).build()
                                 )
                                 .withKueue(
-                                        new KueueBuilder().withManagementState(Kueue.ManagementState.MANAGED).build()
+                                        new KueueBuilder().withManagementState(Kueue.ManagementState.Managed).build()
                                 )
                                 .withCodeflare(
-                                        new CodeflareBuilder().withManagementState(Codeflare.ManagementState.MANAGED).build()
+                                        new CodeflareBuilder().withManagementState(Codeflare.ManagementState.Managed).build()
                                 )
                                 .withDatasciencepipelines(
-                                        new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.MANAGED).build()
+                                        new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.Managed).build()
                                 )
                                 .withModelmeshserving(
-                                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.MANAGED).build()
+                                        new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.Managed).build()
                                 )
                                 .withRay(
-                                        new RayBuilder().withManagementState(Ray.ManagementState.MANAGED).build()
+                                        new RayBuilder().withManagementState(Ray.ManagementState.Managed).build()
                                 )
                                 .build())
                 .endSpec()
