@@ -61,6 +61,7 @@
         <commons.io.version>2.15.1</commons.io.version>
         <jsr305.version>3.0.2</jsr305.version>
         <docs.generator.version>0.0.4-SNAPSHOT</docs.generator.version>
+        <jackson-dataformat-yaml.version>2.17.1</jackson-dataformat-yaml.version>
         <aspectj.version>1.9.21.2</aspectj.version>
         <allure.version>2.25.0</allure.version>
         <allure.maven.version>2.12.0</allure.maven.version>
@@ -97,6 +98,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-client-bom-with-deps</artifactId>
+                <version>${fabric8.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -119,22 +127,18 @@
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>openshift-client</artifactId>
-            <version>${fabric8.version}</version>
         </dependency>
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-model</artifactId>
-            <version>${fabric8.version}</version>
         </dependency>
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>generator-annotations</artifactId>
-            <version>${fabric8.version}</version>
         </dependency>
         <dependency>
             <groupId>io.fabric8</groupId>
             <artifactId>kubernetes-server-mock</artifactId>
-            <version>${fabric8.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -207,6 +211,12 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson-dataformat-yaml.version}</version>
             <scope>compile</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
