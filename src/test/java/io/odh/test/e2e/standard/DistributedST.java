@@ -4,7 +4,7 @@
  */
 package io.odh.test.e2e.standard;
 
-import dev.codeflare.workload.v1beta1.AppWrapper;
+import dev.codeflare.workload.v1beta2.AppWrapper;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.IntOrString;
 import io.fabric8.kubernetes.api.model.Namespace;
