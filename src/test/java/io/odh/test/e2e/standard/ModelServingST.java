@@ -170,12 +170,12 @@ public class ModelServingST extends StandardAbstract {
                 .editFirstContainer()
                 // with unspecified resources, one would get
                 //  java.lang.Exception: Reported model capacity -0.125GiB too small relative to advertised default model size of 1MiB
-                .editContainersResources()
+                .editServingruntimespecResources()
                 .addToLimits("cpu", new IntOrString("2"))
                 .addToLimits("memory", new IntOrString("8Gi"))
                 .addToRequests("cpu", new IntOrString("1"))
                 .addToRequests("memory", new IntOrString("4Gi"))
-                .endContainersResources()
+                .endServingruntimespecResources()
                 // server would not start without this storage
                 .addToVolumeMounts(new VolumeMountsBuilder().withMountPath("/dev/shm").withName("shm").build())
                 .endServingruntimespecContainer()
