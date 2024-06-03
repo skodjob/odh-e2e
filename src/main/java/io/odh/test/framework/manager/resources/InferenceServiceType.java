@@ -19,9 +19,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class InferenceServiceResource implements NamespacedResourceType<InferenceService> {
+public class InferenceServiceType implements NamespacedResourceType<InferenceService> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InferenceServiceResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InferenceServiceType.class);
 
     @Override
     public String getKind() {

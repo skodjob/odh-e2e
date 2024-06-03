@@ -40,3 +40,5 @@ build/
 **/*.kubeconfig
 *.env
 config.yaml
+
+**.jar

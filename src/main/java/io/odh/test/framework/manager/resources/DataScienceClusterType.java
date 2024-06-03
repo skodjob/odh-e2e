@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class DataScienceClusterResource implements ResourceType<DataScienceCluster> {
+public class DataScienceClusterType implements ResourceType<DataScienceCluster> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataScienceClusterResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataScienceClusterType.class);
 
     @Override
     public NonNamespaceOperation<?, ?, ?> getClient() {

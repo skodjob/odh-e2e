@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 
 
-public class NotebookResource implements NamespacedResourceType<Notebook> {
+public class NotebookType implements NamespacedResourceType<Notebook> {
 
     private static final String REGISTRY_PATH = "image-registry.openshift-image-registry.svc:5000";
     public static final String JUPYTER_MINIMAL_IMAGE = "jupyter-minimal-notebook";
