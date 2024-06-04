@@ -9,9 +9,9 @@ import io.fabric8.openshift.api.model.operatorhub.v1alpha1.Subscription;
 import io.fabric8.openshift.api.model.operatorhub.v1alpha1.SubscriptionBuilder;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestConstants;
-import io.odh.test.utils.PodUtils;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.resources.ResourceItem;
+import io.skodjob.testframe.utils.PodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

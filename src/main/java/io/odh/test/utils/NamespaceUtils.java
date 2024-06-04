@@ -19,14 +19,6 @@ public class NamespaceUtils {
 
     private NamespaceUtils() { }
 
-    public static void waitForNamespaceReadiness(String name) {
-        LOGGER.info("Waiting for Namespace: {} readiness", name);
-
-        Wait.until("Namespace: " + name, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, DELETION_TIMEOUT,
-                () -> KubeResourceManager.getKubeClient().getClient().namespaces().withName(name).get() != null);
-        LOGGER.info("Namespace: {} is ready", name);
-    }
-
     public static void waitForNamespaceDeletion(String name) {
         LOGGER.info("Waiting for Namespace: {} deletion", name);
 

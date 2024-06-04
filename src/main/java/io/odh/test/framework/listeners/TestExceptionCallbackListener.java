@@ -70,7 +70,7 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
         }
         LogCollector logCollector = new LogCollectorBuilder()
                 .withNamespacedResources("secret", "deployment", "subscription", "operatorgroup", "configmaps")
-                .withClusterWideResources("dsci", "dsc", "nodes")
+                .withClusterWideResources("dsci", "dsc", "nodes", "pv")
                 .withKubeClient(KubeResourceManager.getKubeClient())
                 .withKubeCmdClient(KubeResourceManager.getKubeCmdClient())
                 .withRootFolderPath(TestUtils.getLogPath(
