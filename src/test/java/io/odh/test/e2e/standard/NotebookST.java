@@ -13,9 +13,8 @@ import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
-import io.odh.test.framework.manager.resources.NotebookResource;
+import io.odh.test.framework.manager.resources.NotebookType;
 import io.odh.test.utils.DscUtils;
-import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.ComponentsBuilder;
@@ -42,6 +41,7 @@ import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.utils.PodUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kubeflow.v1.Notebook;
@@ -113,8 +113,8 @@ public class NotebookST extends StandardAbstract {
                 .build();
         KubeResourceManager.getInstance().createResourceWithoutWait(pvc);
 
-        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.JUPYTER_MINIMAL_IMAGE, NotebookResource.JUPYTER_MINIMAL_2023_2_TAG);
-        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME, notebookImage)).build();
+        String notebookImage = NotebookType.getNotebookImage(NotebookType.JUPYTER_MINIMAL_IMAGE, NotebookType.JUPYTER_MINIMAL_2023_2_TAG);
+        Notebook notebook = new NotebookBuilder(NotebookType.loadDefaultNotebook(NTB_NAMESPACE, NTB_NAME, notebookImage)).build();
         KubeResourceManager.getInstance().createResourceWithoutWait(notebook);
 
         LabelSelector lblSelector = new LabelSelectorBuilder()

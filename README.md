@@ -4,7 +4,6 @@ E2E test suite for [opendatahub.io](https://github.com/opendatahub-io/opendatahu
 [![UnitTest](https://github.com/skodjob/odh-e2e/actions/workflows/test.yaml/badge.svg?branch=main)](https://github.com/ExcelentProject/odh-e2e/actions/workflows/test.yaml)
 
 ### Requirements
-* maven >= 3.6
 * java jdk >= 17
 * oc
 
@@ -38,27 +37,27 @@ E2E test suite for [opendatahub.io](https://github.com/opendatahub-io/opendatahu
 
 ### Run continuous suite
 ```commandline
-GITHUB_TOKEN="your_github_read_token" mvn verify -Pcontinuous
+GITHUB_TOKEN="your_github_read_token" ./mvnw verify -Pcontinuous
 ```
 
 ### Run standard (CRUD) suite
 * Running all tests from standard test suite
 ```commandline
-GITHUB_TOKEN="your_github_read_token" mvn verify -Pstandard
+GITHUB_TOKEN="your_github_read_token" ./mvnw verify -Pstandard
 ```
 * Select single test from standard test suite
 ```commandline
-GITHUB_TOKEN="your_github_read_token" mvn verify -Pstandard -Dit.test=DataScienceClusterST#createDataScienceCluster
+GITHUB_TOKEN="your_github_read_token" ./mvnw verify -Pstandard -Dit.test=DataScienceClusterST#createDataScienceCluster
 ```
 
 ### Run upgrade suite
 ```commandline
-GITHUB_TOKEN="your_github_read_token" mvn verify -Pupgrade
+GITHUB_TOKEN="your_github_read_token" ./mvnw verify -Pupgrade
 ```
 
 ### RUN Unit test of the suite
 ```commandline
-GITHUB_TOKEN="your_github_read_token" mvn test
+GITHUB_TOKEN="your_github_read_token" ./mvnw test
 ```
 
 ## Reproducing test run
@@ -68,7 +67,7 @@ is `$LOG_DIR/test-run-YYYY-MM-DD_HH-mm/config.yaml` where `$LOG_DIR` is by
 default `${repo_root}/target/logs`.
 
 ```commandline
-GITHUB_TOKEN="your_github_read_token" ENV_FILE=path_to_file/config.yaml mvn verify -Psmoke
+GITHUB_TOKEN="your_github_read_token" ENV_FILE=path_to_file/config.yaml ./mvnw verify -Psmoke
 ```
 
 ## Debug
@@ -89,13 +88,13 @@ For more info see the plugin repository on GitHub.
 Enable the `-Pallure` Maven profile to collect testrun data for Allure reporting.
 
 ```commandline
-GITHUB_TOKEN="your_github_read_token" mvn verify -Pstandard -Pallure
+GITHUB_TOKEN="your_github_read_token" ./mvnw verify -Pstandard -Pallure
 ```
 
 Then use the Allure Maven plugin to open a HTML report with the results in a web browser.
 
 ```commandline
-GITHUB_TOKEN="your_github_read_token" mvn allure:serve
+GITHUB_TOKEN="your_github_read_token" ./mvnw allure:serve
 ```
 
 ## Authors

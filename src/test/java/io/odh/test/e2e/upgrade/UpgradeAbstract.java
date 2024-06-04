@@ -12,7 +12,7 @@ import io.fabric8.kubernetes.api.model.Quantity;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestSuite;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.manager.resources.NotebookResource;
+import io.odh.test.framework.manager.resources.NotebookType;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -114,8 +114,8 @@ public abstract class UpgradeAbstract extends Abstract {
                 .build();
         KubeResourceManager.getInstance().createResourceWithoutWait(pvc);
 
-        String notebookImage = NotebookResource.getNotebookImage(NotebookResource.JUPYTER_MINIMAL_IMAGE, NotebookResource.JUPYTER_MINIMAL_2023_2_TAG);
-        Notebook notebook = new NotebookBuilder(NotebookResource.loadDefaultNotebook(namespace, name, notebookImage)).build();
+        String notebookImage = NotebookType.getNotebookImage(NotebookType.JUPYTER_MINIMAL_IMAGE, NotebookType.JUPYTER_MINIMAL_2023_2_TAG);
+        Notebook notebook = new NotebookBuilder(NotebookType.loadDefaultNotebook(namespace, name, notebookImage)).build();
 
         KubeResourceManager.getInstance().createResourceWithoutWait(notebook);
     }

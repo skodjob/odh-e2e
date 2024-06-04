@@ -10,18 +10,18 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.kserve.serving.v1beta1.InferenceService;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.utils.PodUtils;
 import io.skodjob.testframe.interfaces.NamespacedResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.utils.PodUtils;
 import io.skodjob.testframe.wait.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class InferenceServiceResource implements NamespacedResourceType<InferenceService> {
+public class InferenceServiceType implements NamespacedResourceType<InferenceService> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InferenceServiceResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(InferenceServiceType.class);
 
     @Override
     public String getKind() {

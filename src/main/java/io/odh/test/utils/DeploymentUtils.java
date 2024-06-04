@@ -11,6 +11,7 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
 import io.odh.test.TestConstants;
 import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.utils.PodUtils;
 import io.skodjob.testframe.wait.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -12,7 +12,7 @@ import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.TestUtils;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.manager.resources.DataScienceClusterResource;
+import io.odh.test.framework.manager.resources.DataScienceClusterType;
 import io.odh.test.install.InstallTypes;
 import io.odh.test.utils.CsvUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -47,7 +47,7 @@ public class DataScienceClusterST extends Abstract {
 
     @BeforeAll
     void init() {
-        dataScienceProjectCli = DataScienceClusterResource.dataScienceCLusterClient();
+        dataScienceProjectCli = DataScienceClusterType.dataScienceCLusterClient();
         dashboardConfigCli  = KubeResourceManager.getKubeClient().getClient().resources(OdhDashboardConfig.class);
     }
 

@@ -13,10 +13,10 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
-import io.odh.test.utils.PodUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.utils.PodUtils;
 import io.skodjob.testframe.wait.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class DataScienceClusterResource implements ResourceType<DataScienceCluster> {
+public class DataScienceClusterType implements ResourceType<DataScienceCluster> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataScienceClusterResource.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataScienceClusterType.class);
 
     @Override
     public NonNamespaceOperation<?, ?, ?> getClient() {

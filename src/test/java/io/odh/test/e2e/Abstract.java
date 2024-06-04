@@ -11,16 +11,16 @@ import io.odh.test.framework.manager.requirements.AuthorinoOperator;
 import io.odh.test.framework.manager.requirements.PipelinesOperator;
 import io.odh.test.framework.manager.requirements.ServerlessOperator;
 import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
-import io.odh.test.framework.manager.resources.DataScienceClusterResource;
-import io.odh.test.framework.manager.resources.DataScienceInitializationResource;
-import io.odh.test.framework.manager.resources.InferenceServiceResource;
-import io.odh.test.framework.manager.resources.NotebookResource;
+import io.odh.test.framework.manager.resources.DataScienceClusterType;
+import io.odh.test.framework.manager.resources.DataScienceInitializationType;
+import io.odh.test.framework.manager.resources.InferenceServiceType;
+import io.odh.test.framework.manager.resources.NotebookType;
 import io.skodjob.testframe.annotations.ResourceManager;
 import io.skodjob.testframe.annotations.TestVisualSeparator;
 import io.skodjob.testframe.resources.KubeResourceManager;
-import io.skodjob.testframe.resources.NamespaceResource;
-import io.skodjob.testframe.resources.OperatorGroupResource;
-import io.skodjob.testframe.resources.SubscriptionResource;
+import io.skodjob.testframe.resources.NamespaceType;
+import io.skodjob.testframe.resources.OperatorGroupType;
+import io.skodjob.testframe.resources.SubscriptionType;
 import io.skodjob.testframe.utils.KubeUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -38,13 +38,13 @@ public abstract class Abstract {
 
     static {
         KubeResourceManager.getInstance().setResourceTypes(
-                new NamespaceResource(),
-                new SubscriptionResource(),
-                new OperatorGroupResource(),
-                new DataScienceClusterResource(),
-                new DataScienceInitializationResource(),
-                new NotebookResource(),
-                new InferenceServiceResource()
+                new NamespaceType(),
+                new SubscriptionType(),
+                new OperatorGroupType(),
+                new DataScienceClusterType(),
+                new DataScienceInitializationType(),
+                new NotebookType(),
+                new InferenceServiceType()
         );
         KubeResourceManager.getInstance().addCreateCallback(r -> {
             if (r.getKind().equals("Namespace")) {

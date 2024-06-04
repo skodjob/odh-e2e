@@ -6,7 +6,7 @@ package io.odh.test.e2e.standard;
 
 import io.odh.test.Environment;
 import io.odh.test.TestSuite;
-import io.odh.test.framework.manager.resources.DataScienceClusterResource;
+import io.odh.test.framework.manager.resources.DataScienceClusterType;
 import io.odh.test.install.InstallTypes;
 import io.odh.test.utils.CsvUtils;
 import io.odh.test.utils.DscUtils;
@@ -83,7 +83,7 @@ public class DataScienceClusterST extends StandardAbstract {
         KubeResourceManager.getInstance().createResourceWithWait(dsci);
         KubeResourceManager.getInstance().createResourceWithWait(c);
 
-        DataScienceCluster cluster = DataScienceClusterResource.dataScienceCLusterClient().withName(DS_PROJECT_NAME).get();
+        DataScienceCluster cluster = DataScienceClusterType.dataScienceCLusterClient().withName(DS_PROJECT_NAME).get();
 
         assertEquals(Kserve.ManagementState.Managed, cluster.getSpec().getComponents().getKserve().getManagementState());
         assertEquals(Codeflare.ManagementState.Managed, cluster.getSpec().getComponents().getCodeflare().getManagementState());

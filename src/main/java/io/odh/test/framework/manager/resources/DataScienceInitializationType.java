@@ -17,7 +17,7 @@ import io.skodjob.testframe.wait.Wait;
 
 import java.util.function.Consumer;
 
-public class DataScienceInitializationResource implements ResourceType<DSCInitialization> {
+public class DataScienceInitializationType implements ResourceType<DSCInitialization> {
 
     @Override
     public NonNamespaceOperation<?, ?, ?> getClient() {

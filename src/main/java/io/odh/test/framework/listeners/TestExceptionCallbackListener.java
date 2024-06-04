@@ -4,12 +4,22 @@
  */
 package io.odh.test.framework.listeners;
 
-import io.odh.test.framework.logs.LogCollector;
+import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
+import io.odh.test.Environment;
+import io.odh.test.OdhConstants;
+import io.odh.test.TestConstants;
+import io.odh.test.TestUtils;
+import io.skodjob.testframe.LogCollector;
+import io.skodjob.testframe.LogCollectorBuilder;
+import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.utils.KubeUtils;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.LifecycleMethodExecutionExceptionHandler;
 import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
 
 /**
  * jUnit5 specific class which listening on test exception callbacks
@@ -20,30 +30,60 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
     @Override
     public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
         LOGGER.error("Test failed at {} : {}", "Test execution", throwable.getMessage(), throwable);
-        LogCollector.saveKubernetesState(context, throwable);
+        saveKubernetesState(context, throwable);
     }
 
     @Override
     public void handleBeforeAllMethodExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
         LOGGER.error("Test failed at {} : {}", "Test before all", throwable.getMessage(), throwable);
-        LogCollector.saveKubernetesState(context, throwable);
+        saveKubernetesState(context, throwable);
     }
 
     @Override
     public void handleBeforeEachMethodExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
         LOGGER.error("Test failed at {} : {}", "Test before each", throwable.getMessage(), throwable);
-        LogCollector.saveKubernetesState(context, throwable);
+        saveKubernetesState(context, throwable);
     }
 
     @Override
     public void handleAfterEachMethodExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
         LOGGER.error("Test failed at {} : {}", "Test after each", throwable.getMessage(), throwable);
-        LogCollector.saveKubernetesState(context, throwable);
+        saveKubernetesState(context, throwable);
     }
 
     @Override
     public void handleAfterAllMethodExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
         LOGGER.error("Test failed at {} : {}", "Test after all", throwable.getMessage(), throwable);
-        LogCollector.saveKubernetesState(context, throwable);
+        saveKubernetesState(context, throwable);
+    }
+
+    private void saveKubernetesState(ExtensionContext context, Throwable throwable) throws Throwable {
+        try {
+            KubeUtils.labelNamespace(OdhConstants.BUNDLE_OPERATOR_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.OLM_OPERATOR_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.CONTROLLERS_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.MONITORING_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.ISTIO_SYSTEM_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+            KubeUtils.labelNamespace(OdhConstants.KNATIVE_SERVING_NAMESPACE, TestConstants.LOG_COLLECT_LABEL, "true");
+        } catch (Exception ignored) {
+            LOGGER.warn("Cannot label namespaces for collect logs");
+        }
+        LogCollector logCollector = new LogCollectorBuilder()
+                .withNamespacedResources("deployment", "subscription", "operatorgroup", "configmaps", "secret")
+                .withClusterWideResources("dsci", "dsc", "nodes", "pv")
+                .withKubeClient(KubeResourceManager.getKubeClient())
+                .withKubeCmdClient(KubeResourceManager.getKubeCmdClient())
+                .withRootFolderPath(TestUtils.getLogPath(
+                        Environment.LOG_DIR.resolve("failedTest").toString(), context).toString())
+                .build();
+        try {
+            logCollector.collectFromNamespacesWithLabels(new LabelSelectorBuilder()
+                    .withMatchLabels(Collections.singletonMap(TestConstants.LOG_COLLECT_LABEL, "true"))
+                    .build());
+        } catch (Exception ignored) {
+            LOGGER.warn("Failed to collect");
+        }
+        logCollector.collectClusterWideResources();
+        throw throwable;
     }
 }

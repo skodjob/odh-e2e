@@ -10,7 +10,7 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.odh.test.TestSuite;
 import io.odh.test.TestUtils;
 import io.odh.test.e2e.Abstract;
-import io.odh.test.framework.manager.resources.NotebookResource;
+import io.odh.test.framework.manager.resources.NotebookType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -42,7 +42,7 @@ public class DataScienceProjectST extends Abstract {
 
     @BeforeAll
     void init() {
-        notebookCli = NotebookResource.notebookClient();
+        notebookCli = NotebookType.notebookClient();
     }
 
     @ParameterizedTest(name = "checkDataScienceProjects-{0}")
