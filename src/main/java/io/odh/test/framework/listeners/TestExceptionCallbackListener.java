@@ -69,16 +69,20 @@ public class TestExceptionCallbackListener implements TestExecutionExceptionHand
             LOGGER.warn("Cannot label namespaces for collect logs");
         }
         LogCollector logCollector = new LogCollectorBuilder()
-                .withNamespacedResources("secret", "deployment", "subscription", "operatorgroup", "configmaps")
+                .withNamespacedResources("deployment", "subscription", "operatorgroup", "configmaps", "secret")
                 .withClusterWideResources("dsci", "dsc", "nodes", "pv")
                 .withKubeClient(KubeResourceManager.getKubeClient())
                 .withKubeCmdClient(KubeResourceManager.getKubeCmdClient())
                 .withRootFolderPath(TestUtils.getLogPath(
                         Environment.LOG_DIR.resolve("failedTest").toString(), context).toString())
                 .build();
-        logCollector.collectFromNamespacesWithLabels(new LabelSelectorBuilder()
-                .withMatchLabels(Collections.singletonMap(TestConstants.LOG_COLLECT_LABEL, "true"))
-                .build());
+        try {
+            logCollector.collectFromNamespacesWithLabels(new LabelSelectorBuilder()
+                    .withMatchLabels(Collections.singletonMap(TestConstants.LOG_COLLECT_LABEL, "true"))
+                    .build());
+        } catch (Exception ignored) {
+            LOGGER.warn("Failed to collect");
+        }
         logCollector.collectClusterWideResources();
         throw throwable;
     }
