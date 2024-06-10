@@ -65,7 +65,7 @@
         <aspectj.version>1.9.21.2</aspectj.version>
         <allure.version>2.25.0</allure.version>
         <allure.maven.version>2.12.0</allure.maven.version>
-        <test-frame.version>0.1.0</test-frame.version>
+        <test-frame.version>0.1.1</test-frame.version>
     </properties>
 
     <repositories>
