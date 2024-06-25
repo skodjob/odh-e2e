@@ -4,6 +4,7 @@
  */
 package io.odh.test.utils;
 
+import io.odh.test.Environment;
 import io.odh.test.OdhConstants;
 import io.odh.test.framework.manager.requirements.ServiceMeshOperator;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
@@ -37,7 +38,7 @@ public class DscUtils {
     public static DSCInitialization getBasicDSCI() {
         return new DSCInitializationBuilder()
                 .withNewMetadata()
-                .withName(OdhConstants.DEFAULT_DSCI_NAME)
+                .withName(Environment.DEFAULT_DSCI_NAME)
                 .endMetadata()
                 .withNewSpec()
                 .withApplicationsNamespace(OdhConstants.CONTROLLERS_NAMESPACE)

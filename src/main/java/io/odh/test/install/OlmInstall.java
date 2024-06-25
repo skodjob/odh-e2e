@@ -27,13 +27,13 @@ public class OlmInstall {
 
     private String namespace = OdhConstants.OLM_OPERATOR_NAMESPACE;
     private String channel = Environment.OLM_OPERATOR_CHANNEL;
-    private String name = OdhConstants.OLM_OPERATOR_NAME;
-    private String operatorName = OdhConstants.OLM_OPERATOR_NAME;
+    private String name = Environment.OLM_OPERATOR_NAME;
+    private String operatorName = Environment.OLM_OPERATOR_NAME;
     private String sourceName = Environment.OLM_SOURCE_NAME;
     private String sourceNamespace = Environment.OLM_SOURCE_NAMESPACE;
     private String startingCsv;
     private String deploymentName = OdhConstants.OLM_OPERATOR_DEPLOYMENT_NAME;
-    private String olmAppBundlePrefix  = OdhConstants.OLM_OPERATOR_NAME;
+    private String olmAppBundlePrefix  = Environment.OLM_OPERATOR_NAME;
     private String operatorVersion  = Environment.OLM_OPERATOR_VERSION;
     private String csvName = operatorName + "." + operatorVersion;
 
@@ -62,7 +62,7 @@ public class OlmInstall {
      */
     private void createNamespace() {
         if (!KubeResourceManager.getKubeClient().namespaceExists(namespace)) {
-            // Create namespace at first because operator-group and subscription could you specific namespace
+            // Create a namespace first because operator-group and subscription could use specific namespace
             Namespace ns = new NamespaceBuilder()
                 .withNewMetadata()
                 .withName(namespace)

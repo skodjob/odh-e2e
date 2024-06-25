@@ -80,7 +80,8 @@ public class DataScienceClusterST extends StandardAbstract {
         // Create DSC
         DataScienceCluster c = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
-        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        // odh-nightly gives us a default DSCi, update that
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dsci);
         KubeResourceManager.getInstance().createResourceWithWait(c);
 
         DataScienceCluster cluster = DataScienceClusterType.dataScienceCLusterClient().withName(DS_PROJECT_NAME).get();
