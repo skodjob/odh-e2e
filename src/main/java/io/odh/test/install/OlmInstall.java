@@ -68,7 +68,7 @@ public class OlmInstall {
                 .withName(namespace)
                 .endMetadata()
                 .build();
-            KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
+            KubeResourceManager.getInstance().createResourceWithoutWait(ns);
         }
     }
 
