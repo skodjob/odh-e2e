@@ -61,13 +61,15 @@ public class OlmInstall {
      * Creates namespace for operator-group and subscription
      */
     private void createNamespace() {
-        // Create namespace at first because operator-group and subscription could you specific namespace
-        Namespace ns = new NamespaceBuilder()
+        if (!KubeResourceManager.getKubeClient().namespaceExists(namespace)) {
+            // Create namespace at first because operator-group and subscription could you specific namespace
+            Namespace ns = new NamespaceBuilder()
                 .withNewMetadata()
                 .withName(namespace)
                 .endMetadata()
                 .build();
-        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(ns);
+            KubeResourceManager.getInstance().createResourceWithWait(ns);
+        }
     }
 
     /**
