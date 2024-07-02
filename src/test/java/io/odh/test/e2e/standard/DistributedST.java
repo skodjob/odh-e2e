@@ -38,6 +38,7 @@ import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
 import io.skodjob.testframe.resources.KubeResourceManager;
+import io.skodjob.testframe.wait.Wait;
 import io.x_k8s.kueue.v1beta1.ClusterQueue;
 import io.x_k8s.kueue.v1beta1.ClusterQueueBuilder;
 import io.x_k8s.kueue.v1beta1.LocalQueue;
@@ -62,6 +63,8 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
+import static io.odh.test.TestConstants.GLOBAL_POLL_INTERVAL_1_SEC;
+import static io.odh.test.TestConstants.GLOBAL_STABILITY_TIME;
 import static io.odh.test.TestConstants.GLOBAL_TIMEOUT;
 
 @SuiteDoc(
@@ -325,11 +328,15 @@ public class DistributedST extends StandardAbstract {
                 .sslContext(TlsUtils.getSSLContextFromSecret(signingKey))
                 .build();
 
-        Allure.step("Wait for service availability");
+        Allure.step("Wait for OpenShift service availability");
         TestUtils.waitForServiceNotUnavailable(httpClient, url);
 
+        RayClient ray = new RayClient(httpClient, url, oauthToken);
+
+        Allure.step("Wait for Ray API availability");
+        Wait.until("Ray API is available", GLOBAL_POLL_INTERVAL_1_SEC, GLOBAL_STABILITY_TIME, ray::isLive);
+
         Allure.step("Run workload through Ray API", () -> {
-            RayClient ray = new RayClient(httpClient, url, oauthToken);
             String jobId = ray.submitJob("expr 3 + 4");
             ray.waitForJob(jobId);
             String logs = ray.getJobLogs(jobId);
