@@ -17,7 +17,7 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
-import io.skodjob.annotations.TestTag;
+import io.skodjob.annotations.Label;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.utils.PodUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -40,8 +40,8 @@ import java.util.Map;
     afterTestSteps = {
         @Step(value = "Delete all ODH related resources in the cluster", expected = "All ODH related resources are gone")
     },
-    tags = {
-        @TestTag(value = TestSuite.BUNDLE_UPGRADE)
+    labels = {
+        @Label(value = TestSuite.BUNDLE_UPGRADE)
     }
 )
 @Tag(TestSuite.BUNDLE_UPGRADE)
@@ -72,8 +72,8 @@ public class BundleUpgradeST extends UpgradeAbstract {
             @Step(value = "Verify that Notebook pods are stable for 2 minutes", expected = "Notebook pods are stable por 2 minutes after upgrade"),
             @Step(value = "Check that ODH operator doesn't contain any error logs", expected = "ODH operator log is error free")
         },
-        tags = {
-            @TestTag(value = TestSuite.BUNDLE_UPGRADE)
+        labels = {
+            @Label(value = TestSuite.BUNDLE_UPGRADE)
         }
     )
     @Test

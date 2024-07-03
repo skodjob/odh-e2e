@@ -60,7 +60,7 @@
         <maven.download.plugin.version>1.7.1</maven.download.plugin.version>
         <commons.io.version>2.16.1</commons.io.version>
         <jsr305.version>3.0.2</jsr305.version>
-        <docs.generator.version>0.1.0</docs.generator.version>
+        <docs.generator.version>0.2.0</docs.generator.version>
         <jackson-dataformat-yaml.version>2.17.1</jackson-dataformat-yaml.version>
         <aspectj.version>1.9.21.2</aspectj.version>
         <allure.version>2.27.0</allure.version>
@@ -389,6 +389,7 @@
                 <configuration>
                     <testsPath>./src/test/java/io/odh/test</testsPath>
                     <docsPath>./docs/</docsPath>
+                    <generateDirs>true</generateDirs>
                     <generateFmf>false</generateFmf>
                 </configuration>
             </plugin>

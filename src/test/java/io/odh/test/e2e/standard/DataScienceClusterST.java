@@ -25,7 +25,7 @@ import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
 import io.skodjob.annotations.SuiteDoc;
 import io.skodjob.annotations.TestDoc;
-import io.skodjob.annotations.TestTag;
+import io.skodjob.annotations.Label;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -47,8 +47,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
     afterTestSteps = {
         @Step(value = "Delete ODH operator and all created resources", expected = "Operator is removed and all other resources as well")
     },
-    tags = {
-        @TestTag(value = TestSuite.SMOKE)
+    labels = {
+        @Label(value = TestSuite.SMOKE)
     }
 )
 @Tag(TestSuite.SMOKE)
@@ -68,8 +68,8 @@ public class DataScienceClusterST extends StandardAbstract {
             @Step(value = "Create default DSC", expected = "DSC is created and ready"),
             @Step(value = "Check that DSC has expected states for all components", expected = "DSC status is set properly based on configuration")
         },
-        tags = {
-            @TestTag(value = TestSuite.SMOKE)
+        labels = {
+            @Label(value = TestSuite.SMOKE)
         }
     )
     @Test

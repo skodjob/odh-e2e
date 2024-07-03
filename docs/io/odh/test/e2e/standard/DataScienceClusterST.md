@@ -17,9 +17,9 @@
 | - | - | - |
 | 1. | Delete ODH operator and all created resources | Operator is removed and all other resources as well |
 
-**Tags:**
+**Labels:**
 
-* `smoke`
+* `smoke` (description file doesn't exist)
 
 <hr style="border:1px solid">
 
@@ -37,7 +37,7 @@
 | 2. | Create default DSC | DSC is created and ready |
 | 3. | Check that DSC has expected states for all components | DSC status is set properly based on configuration |
 
-**Tags:**
+**Labels:**
 
-* `smoke`
+* `smoke` (description file doesn't exist)
 
