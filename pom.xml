@@ -389,6 +389,7 @@
                 <configuration>
                     <testsPath>./src/test/java/io/odh/test</testsPath>
                     <docsPath>./docs/</docsPath>
+                    <generateDirs>true</generateDirs>
                     <generateFmf>false</generateFmf>
                 </configuration>
             </plugin>
