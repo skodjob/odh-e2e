@@ -48,6 +48,7 @@ public class Environment {
     private static final String SKIP_INSTALL_OPERATOR_DEPS_ENV = "SKIP_INSTALL_OPERATOR_DEPS";
     private static final String SKIP_INSTALL_OPERATOR_ENV = "SKIP_INSTALL_OPERATOR";
     public static final String SKIP_DEPLOY_DSCI_DSC_ENV = "SKIP_DEPLOY_DSCI_DSC";
+    public static final String DEFAULT_DSCI_NAME_ENV = "DEFAULT_DSCI_NAME";
 
     /**
      * Install bundle files
@@ -62,6 +63,7 @@ public class Environment {
     private static final String OLM_SOURCE_NAME_ENV = "OLM_SOURCE_NAME";
     private static final String OLM_SOURCE_NAMESPACE_ENV = "OLM_SOURCE_NAMESPACE";
     private static final String OLM_OPERATOR_VERSION_ENV = "OLM_OPERATOR_VERSION";
+    private static final String OLM_OPERATOR_NAME_ENV = "OLM_OPERATOR_NAME";
     private static final String OLM_OPERATOR_CHANNEL_ENV = "OLM_OPERATOR_CHANNEL";
     private static final String OPERATOR_INSTALL_TYPE_ENV = "OPERATOR_INSTALL_TYPE";
     private static final String OLM_UPGRADE_STARTING_VERSION_ENV = "OLM_UPGRADE_STARTING_VERSION";
@@ -78,6 +80,7 @@ public class Environment {
     public static final boolean SKIP_INSTALL_OPERATOR_DEPS = getOrDefault(SKIP_INSTALL_OPERATOR_DEPS_ENV, Boolean::valueOf, false);
     public static final boolean SKIP_INSTALL_OPERATOR = getOrDefault(SKIP_INSTALL_OPERATOR_ENV, Boolean::valueOf, false);
     public static final boolean SKIP_DEPLOY_DSCI_DSC = getOrDefault(SKIP_DEPLOY_DSCI_DSC_ENV, Boolean::valueOf, false);
+    public static final String DEFAULT_DSCI_NAME = getOrDefault(DEFAULT_DSCI_NAME_ENV, String::valueOf, OdhConstants.DEFAULT_DSCI_NAME);
 
     // YAML Bundle
     public static final String INSTALL_FILE_PATH = getOrDefault(INSTALL_FILE_ENV, TestConstants.LATEST_BUNDLE_DEPLOY_FILE);
@@ -90,6 +93,7 @@ public class Environment {
     public static final String OLM_OPERATOR_CHANNEL = getOrDefault(OLM_OPERATOR_CHANNEL_ENV, OdhConstants.OLM_OPERATOR_CHANNEL);
     public static final String OLM_OPERATOR_VERSION = getOrDefault(OLM_OPERATOR_VERSION_ENV, OdhConstants.OLM_OPERATOR_VERSION);
     public static final String OLM_UPGRADE_STARTING_VERSION = getOrDefault(OLM_UPGRADE_STARTING_VERSION_ENV, OdhConstants.OLM_UPGRADE_STARTING_OPERATOR_VERSION);
+    public static final String OLM_OPERATOR_NAME = getOrDefault(OLM_OPERATOR_NAME_ENV, OdhConstants.OLM_OPERATOR_NAME);
 
     public static final String OPERATOR_INSTALL_TYPE = getOrDefault(OPERATOR_INSTALL_TYPE_ENV, InstallTypes.BUNDLE.toString());
 
