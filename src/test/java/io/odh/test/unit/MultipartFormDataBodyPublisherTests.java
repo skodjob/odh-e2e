@@ -110,7 +110,11 @@ public class MultipartFormDataBodyPublisherTests {
     @Test
     public void testMultipartFormData() throws Exception {
         HttpServer httpd = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
-        new Thread(() -> httpd.start()).start();
+        httpd.createContext("/", httpExchange -> {
+            httpExchange.sendResponseHeaders(200, 0);
+            httpExchange.getResponseBody().close();
+        });
+        httpd.start();
         try {
             MultipartFormDataBodyPublisher publisher = new MultipartFormDataBodyPublisher()
                     .add("key", "value")
