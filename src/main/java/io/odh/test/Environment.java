@@ -5,7 +5,7 @@
 package io.odh.test;
 
 import io.odh.test.install.InstallTypes;
-import io.skodjob.testframe.LoggerUtils;
+import io.skodjob.testframe.utils.LoggerUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
