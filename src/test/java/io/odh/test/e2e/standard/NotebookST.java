@@ -169,7 +169,7 @@ public class NotebookST extends StandardAbstract {
                 .endSpec()
                 .build();
         // Deploy DSCI,DSC
-        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dsci);
         KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 }

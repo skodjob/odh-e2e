@@ -141,7 +141,7 @@ public class UninstallST extends StandardAbstract {
         DataScienceCluster dsc = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
         // Deploy DSCI,DSC
-        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dsci);
         KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 

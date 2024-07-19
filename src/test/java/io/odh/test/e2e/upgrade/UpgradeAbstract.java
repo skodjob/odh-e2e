@@ -85,7 +85,7 @@ public abstract class UpgradeAbstract extends Abstract {
             .endSpec()
             .build();
         // Deploy DSC
-        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dsci);
         KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
     public void deployNotebook(String namespace, String name) throws IOException {
