@@ -84,7 +84,7 @@ public class PipelineServerST extends StandardAbstract {
         // Create DSC
         DataScienceCluster dsc = DscUtils.getBasicDSC(DS_PROJECT_NAME);
 
-        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dsci);
         KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 

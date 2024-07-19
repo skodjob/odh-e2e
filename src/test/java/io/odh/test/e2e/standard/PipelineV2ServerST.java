@@ -153,7 +153,7 @@ public class PipelineV2ServerST extends StandardAbstract {
                 .endSpec()
                 .build();
 
-        KubeResourceManager.getInstance().createResourceWithWait(dsci);
+        KubeResourceManager.getInstance().createOrUpdateResourceWithWait(dsci);
         KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
 
