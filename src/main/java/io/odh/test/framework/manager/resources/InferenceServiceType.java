@@ -10,7 +10,7 @@ import io.fabric8.kubernetes.client.dsl.Resource;
 import io.kserve.serving.v1beta1.InferenceService;
 import io.odh.test.TestConstants;
 import io.odh.test.TestUtils;
-import io.skodjob.testframe.interfaces.NamespacedResourceType;
+import io.skodjob.testframe.interfaces.ResourceType;
 import io.skodjob.testframe.resources.KubeResourceManager;
 import io.skodjob.testframe.utils.PodUtils;
 import io.skodjob.testframe.wait.Wait;
@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
 
-public class InferenceServiceType implements NamespacedResourceType<InferenceService> {
+public class InferenceServiceType implements ResourceType<InferenceService> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InferenceServiceType.class);
 
@@ -34,28 +34,30 @@ public class InferenceServiceType implements NamespacedResourceType<InferenceSer
 
     @Override
     public void create(InferenceService resource) {
-        inferenceServiceClient().resource(resource).create();
+        inferenceServiceClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).create();
     }
 
     @Override
     public void update(InferenceService resource) {
-        inferenceServiceClient().resource(resource).update();
+        inferenceServiceClient().inNamespace(resource.getMetadata().getNamespace()).resource(resource).update();
     }
 
     @Override
-    public void delete(String resource) {
-        inferenceServiceClient().withName(resource).delete();
+    public void delete(InferenceService resource) {
+        inferenceServiceClient().inNamespace(resource.getMetadata().getNamespace())
+            .withName(resource.getMetadata().getName()).delete();
     }
 
     @Override
-    public void replace(String s, Consumer<InferenceService> editor) {
-        InferenceService toBeUpdated = inferenceServiceClient().withName(s).get();
+    public void replace(InferenceService s, Consumer<InferenceService> editor) {
+        InferenceService toBeUpdated = inferenceServiceClient().inNamespace(s.getMetadata().getNamespace())
+            .withName(s.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(InferenceService resource) {
+    public boolean isReady(InferenceService resource) {
         String message = String.format("InferenceService %s readiness", resource.getMetadata().getName());
         Wait.until(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             boolean isReady;
@@ -71,7 +73,8 @@ public class InferenceServiceType implements NamespacedResourceType<InferenceSer
             isReady = isReady && readyStatus.equals("True");
 
             return isReady;
-        }, () -> { });
+        }, () -> {
+        });
 
         String namespace = resource.getMetadata().getNamespace();
         LOGGER.info("Waiting for pods readiness in {}", namespace);
@@ -84,7 +87,7 @@ public class InferenceServiceType implements NamespacedResourceType<InferenceSer
     }
 
     @Override
-    public boolean waitForDeletion(InferenceService inferenceService) {
+    public boolean isDeleted(InferenceService inferenceService) {
         return get(inferenceService.getMetadata().getNamespace(), inferenceService.getMetadata().getName()) == null;
     }
 
@@ -95,27 +98,5 @@ public class InferenceServiceType implements NamespacedResourceType<InferenceSer
     @Override
     public MixedOperation<?, ?, ?> getClient() {
         return inferenceServiceClient();
-    }
-
-    @Override
-    public void createInNamespace(String namespace, InferenceService inferenceService) {
-        inferenceServiceClient().inNamespace(namespace).resource(inferenceService).create();
-    }
-
-    @Override
-    public void updateInNamespace(String namespace, InferenceService inferenceService) {
-        inferenceServiceClient().inNamespace(namespace).resource(inferenceService).update();
-    }
-
-    @Override
-    public void deleteFromNamespace(String namespace, String resource) {
-        inferenceServiceClient().inNamespace(namespace).withName(resource).delete();
-    }
-
-    @Override
-    public void replaceInNamespace(String namespace, String s, Consumer<InferenceService> editor) {
-        InferenceService toBeUpdated = inferenceServiceClient().inNamespace(namespace).withName(s).get();
-        editor.accept(toBeUpdated);
-        update(toBeUpdated);
     }
 }

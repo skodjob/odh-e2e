@@ -48,19 +48,19 @@ public class DataScienceInitializationType implements ResourceType<DSCInitializa
     }
 
     @Override
-    public void delete(String s) {
-        dsciClient().withName(s).delete();
+    public void delete(DSCInitialization s) {
+        dsciClient().withName(s.getMetadata().getName()).delete();
     }
 
     @Override
-    public void replace(String s, Consumer<DSCInitialization> editor) {
-        DSCInitialization toBeUpdated = dsciClient().withName(s).get();
+    public void replace(DSCInitialization s, Consumer<DSCInitialization> editor) {
+        DSCInitialization toBeUpdated = dsciClient().withName(s.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(DSCInitialization resource) {
+    public boolean isReady(DSCInitialization resource) {
         String message = String.format("DSCInitialization %s readiness", resource.getMetadata().getName());
         Wait.until(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             boolean dsciReady;
@@ -76,7 +76,7 @@ public class DataScienceInitializationType implements ResourceType<DSCInitializa
     }
 
     @Override
-    public boolean waitForDeletion(DSCInitialization dscInitialization) {
+    public boolean isDeleted(DSCInitialization dscInitialization) {
         return get(dscInitialization.getMetadata().getName()) == null;
     }
 
