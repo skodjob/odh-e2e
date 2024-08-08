@@ -58,19 +58,19 @@ public class DataScienceClusterType implements ResourceType<DataScienceCluster> 
     }
 
     @Override
-    public void delete(String s) {
-        dataScienceCLusterClient().withName(s).delete();
+    public void delete(DataScienceCluster s) {
+        dataScienceCLusterClient().withName(s.getMetadata().getName()).delete();
     }
 
     @Override
-    public void replace(String s, Consumer<DataScienceCluster> editor) {
-        DataScienceCluster toBeUpdated = dataScienceCLusterClient().withName(s).get();
+    public void replace(DataScienceCluster s, Consumer<DataScienceCluster> editor) {
+        DataScienceCluster toBeUpdated = dataScienceCLusterClient().withName(s.getMetadata().getName()).get();
         editor.accept(toBeUpdated);
         update(toBeUpdated);
     }
 
     @Override
-    public boolean waitForReadiness(DataScienceCluster resource) {
+    public boolean isReady(DataScienceCluster resource) {
         String message = String.format("DataScienceCluster %s readiness", resource.getMetadata().getName());
         Wait.until(message, TestConstants.GLOBAL_POLL_INTERVAL_SHORT, TestConstants.GLOBAL_TIMEOUT, () -> {
             boolean dscReady;
@@ -132,12 +132,13 @@ public class DataScienceClusterType implements ResourceType<DataScienceCluster> 
             // https://github.com/red-hat-data-services/rhods-operator/blob/rhoai-2.8/controllers/datasciencecluster/datasciencecluster_controller.go#L257
 
             // Wait for standard Kubernetes condition types (status for the whole DSC)
-            record ConditionExpectation(String conditionType, String expectedStatus) { }
+            record ConditionExpectation(String conditionType, String expectedStatus) {
+            }
             List<ConditionExpectation> conditionExpectations = List.of(
-                    new ConditionExpectation("Available", "True"),
-                    new ConditionExpectation("Progressing", "False"),
-                    new ConditionExpectation("Degraded", "False"),
-                    new ConditionExpectation("Upgradeable", "True")
+                new ConditionExpectation("Available", "True"),
+                new ConditionExpectation("Progressing", "False"),
+                new ConditionExpectation("Degraded", "False"),
+                new ConditionExpectation("Upgradeable", "True")
             );
             for (ConditionExpectation conditionExpectation : conditionExpectations) {
                 String conditionType = conditionExpectation.conditionType;
@@ -155,16 +156,17 @@ public class DataScienceClusterType implements ResourceType<DataScienceCluster> 
             // Wait for DataScienceClusterCreationSuccessful event
             EventingAPIGroupDSL eventsClient = KubeResourceManager.getKubeClient().getClient().events();
             List<Event> resourceEvents = eventsClient.v1().events().inAnyNamespace().withNewFilter()
-                    .withField("regarding.name", resource.getMetadata().getName())
-                    .withField("regarding.uid", resource.getMetadata().getUid())
-                    .endFilter().list().getItems();
+                .withField("regarding.name", resource.getMetadata().getName())
+                .withField("regarding.uid", resource.getMetadata().getUid())
+                .endFilter().list().getItems();
             LOGGER.debug("DataScienceCluster {} events: {}", resource.getMetadata().getName(), resourceEvents.stream().map(Event::getReason).toList());
             boolean hasCreationSuccessfulEvent = resourceEvents.stream()
-                    .anyMatch(resourceEvent -> Objects.equals(resourceEvent.getReason(), OdhConstants.DSC_CREATION_SUCCESSFUL_EVENT_NAME));
+                .anyMatch(resourceEvent -> Objects.equals(resourceEvent.getReason(), OdhConstants.DSC_CREATION_SUCCESSFUL_EVENT_NAME));
             dscReady = dscReady && hasCreationSuccessfulEvent;
 
             return dscReady;
-        }, () -> { });
+        }, () -> {
+        });
 
         String namespace = OdhConstants.CONTROLLERS_NAMESPACE;
         LOGGER.info("Waiting for pods readiness in {}", namespace);
@@ -177,7 +179,7 @@ public class DataScienceClusterType implements ResourceType<DataScienceCluster> 
     }
 
     @Override
-    public boolean waitForDeletion(DataScienceCluster dataScienceCluster) {
+    public boolean isDeleted(DataScienceCluster dataScienceCluster) {
         return get(dataScienceCluster.getMetadata().getName()) == null;
     }
 
