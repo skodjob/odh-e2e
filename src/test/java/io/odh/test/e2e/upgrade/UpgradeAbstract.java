@@ -4,8 +4,6 @@
  */
 package io.odh.test.e2e.upgrade;
 
-import io.fabric8.kubernetes.api.model.Namespace;
-import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaim;
 import io.fabric8.kubernetes.api.model.PersistentVolumeClaimBuilder;
 import io.fabric8.kubernetes.api.model.Quantity;
@@ -89,15 +87,6 @@ public abstract class UpgradeAbstract extends Abstract {
         KubeResourceManager.getInstance().createResourceWithWait(dsc);
     }
     public void deployNotebook(String namespace, String name) throws IOException {
-        Namespace ns = new NamespaceBuilder()
-                .withNewMetadata()
-                .withName(namespace)
-                .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
-                .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
-                .endMetadata()
-                .build();
-        KubeResourceManager.getInstance().createResourceWithoutWait(ns);
-
         PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder()
                 .withNewMetadata()
                 .withName(name)

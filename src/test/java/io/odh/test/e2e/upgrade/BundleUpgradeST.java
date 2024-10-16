@@ -6,12 +6,16 @@ package io.odh.test.e2e.upgrade;
 
 import io.fabric8.kubernetes.api.model.LabelSelector;
 import io.fabric8.kubernetes.api.model.LabelSelectorBuilder;
+import io.fabric8.kubernetes.api.model.Namespace;
+import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.odh.test.Environment;
+import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.OdhConstants;
 import io.odh.test.TestSuite;
 import io.odh.test.install.BundleInstall;
 import io.odh.test.utils.DeploymentUtils;
 import io.odh.test.utils.UpgradeUtils;
+import io.qameta.allure.Allure;
 import io.skodjob.annotations.Contact;
 import io.skodjob.annotations.Desc;
 import io.skodjob.annotations.Step;
@@ -88,6 +92,17 @@ public class BundleUpgradeST extends UpgradeAbstract {
         String ntbNamespace = "test-odh-notebook-upgrade";
 
         deployDsc(dsProjectName);
+
+        Allure.step("Deploy notebook before upgrade");
+        Namespace ns = new NamespaceBuilder()
+                .withNewMetadata()
+                .withName(ntbNamespace)
+                .addToLabels(OdhAnnotationsLabels.LABEL_DASHBOARD, "true")
+                .addToAnnotations(OdhAnnotationsLabels.ANNO_SERVICE_MESH, "false")
+                .endMetadata()
+                .build();
+        KubeResourceManager.getInstance().createResourceWithoutWait(ns);
+
         deployNotebook(ntbNamespace, ntbName);
 
         Map<String, String> operatorSnapshot = DeploymentUtils.depSnapshot(baseBundle.getNamespace(), baseBundle.getDeploymentName());
