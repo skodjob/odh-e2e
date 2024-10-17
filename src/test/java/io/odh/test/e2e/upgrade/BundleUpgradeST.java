@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
 
 @SuiteDoc(
@@ -107,7 +107,7 @@ public class BundleUpgradeST extends UpgradeAbstract {
         LabelSelector labelSelector = KubeResourceManager.getKubeClient().getClient().apps().deployments()
                 .inNamespace(OdhConstants.CONTROLLERS_NAMESPACE).withName(OdhConstants.DASHBOARD_CONTROLLER).get().getSpec().getSelector();
         PodUtils.verifyThatPodsAreStable(OdhConstants.CONTROLLERS_NAMESPACE, labelSelector);
-        Date operatorLogCheckTimestamp = new Date();
+        Instant operatorLogCheckTimestamp = Instant.now();
 
         // Verify that NTB pods are stable
         PodUtils.waitForPodsReady(ntbNamespace, lblSelector, 1, true, () -> { });

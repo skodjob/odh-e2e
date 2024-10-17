@@ -4,8 +4,8 @@
  */
 package io.odh.test;
 
-import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.format.DateTimeFormatter;
 
 public class TestConstants {
     public static final String DEFAULT_NAMESPACE = "default";
@@ -35,7 +35,7 @@ public class TestConstants {
     public static final String CHANNEL_STABLE = "stable";
     public static final String CHANNEL_LATEST = "latest";
 
-    public static final SimpleDateFormat TIMESTAMP_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+    public static final DateTimeFormatter TIMESTAMP_DATE_FORMAT = DateTimeFormatter.ISO_INSTANT;
 
     private TestConstants() {
     }
