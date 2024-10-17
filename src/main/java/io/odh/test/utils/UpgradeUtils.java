@@ -7,14 +7,14 @@ package io.odh.test.utils;
 import io.odh.test.TestConstants;
 import io.skodjob.testframe.resources.KubeResourceManager;
 
-import java.util.Date;
+import java.time.Instant;
 
 import static io.odh.test.framework.matchers.Matchers.logHasNoUnexpectedErrors;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class UpgradeUtils {
 
-    public static void deploymentLogIsErrorEmpty(String namespace, String deploymentName, Date sinceTimestamp) {
+    public static void deploymentLogIsErrorEmpty(String namespace, String deploymentName, Instant sinceTimestamp) {
         // Check that operator doesn't contain errors in logs since sec
         String operatorLog = KubeResourceManager.getKubeClient().getClient().apps().deployments()
                 .inNamespace(namespace).withName(deploymentName).sinceTime(TestConstants.TIMESTAMP_DATE_FORMAT.format(sinceTimestamp)).getLog();
