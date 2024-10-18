@@ -170,6 +170,6 @@ public class OlmUpgradeST extends UpgradeAbstract {
         Notebook ntbResourcePreAfter = KubeResourceManager.getKubeClient().getClient().resources(Notebook.class).inNamespace(ntbNamespace).withName(ntbNamePre).get();
         Assertions.assertEquals(ntbResourcePre.getMetadata().getUid(), ntbResourcePreAfter.getMetadata().getUid());
         Assertions.assertEquals(ntbResourcePre.getSpec(), ntbResourcePreAfter.getSpec());
-        Assertions.assertEquals(ntbResourcePre.getMetadata().getResourceVersion(), ntbResourcePreAfter.getMetadata().getResourceVersion());
+        // notebook status (and therefore resourceVersion) is expected to change as lastProbeTime status condition is periodically updated
     }
 }
