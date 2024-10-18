@@ -517,6 +517,10 @@
                     <groupId>io.qameta.allure</groupId>
                     <artifactId>allure-okhttp3</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>io.qameta.allure</groupId>
+                    <artifactId>allure-descriptions-javadoc</artifactId>
+                </dependency>
             </dependencies>
             <build>
                 <plugins>
