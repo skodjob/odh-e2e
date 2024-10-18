@@ -44,27 +44,27 @@
         <maven.compiler.target>17</maven.compiler.target>
         <maven.compiler.release>17</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <fabric8.version>6.13.0</fabric8.version>
+        <fabric8.version>6.13.4</fabric8.version>
         <sundrio.version>0.200.0</sundrio.version>
         <lobbok.version>1.18.30</lobbok.version>
-        <maven.compiler.version>3.11.0</maven.compiler.version>
-        <junit.jupiter.version>5.10.2</junit.jupiter.version>
-        <junit.platform.version>1.10.2</junit.platform.version>
-        <maven.surefire.version>3.3.0</maven.surefire.version>
-        <logback.version>1.5.6</logback.version>
-        <slf4j.version>2.0.9</slf4j.version>
-        <hamcrest.version>2.2</hamcrest.version>
+        <maven.compiler.version>3.13.0</maven.compiler.version>
+        <junit.jupiter.version>5.11.2</junit.jupiter.version>
+        <junit.platform.version>1.11.2</junit.platform.version>
+        <maven.surefire.version>3.5.1</maven.surefire.version>
+        <logback.version>1.5.11</logback.version>
+        <slf4j.version>2.0.16</slf4j.version>
+        <hamcrest.version>3.0</hamcrest.version>
         <opedatahub-crds.version>1.0.74-SNAPSHOT</opedatahub-crds.version>
-        <checkstyle.version>10.17.0</checkstyle.version>
-        <maven.checkstyle.version>3.3.1</maven.checkstyle.version>
-        <maven.download.plugin.version>1.7.1</maven.download.plugin.version>
-        <commons.io.version>2.16.1</commons.io.version>
+        <checkstyle.version>10.18.2</checkstyle.version>
+        <maven.checkstyle.version>3.5.0</maven.checkstyle.version>
+        <maven.download.plugin.version>1.11.0</maven.download.plugin.version>
+        <commons.io.version>2.17.0</commons.io.version>
         <jsr305.version>3.0.2</jsr305.version>
         <docs.generator.version>0.2.0</docs.generator.version>
         <jackson-dataformat-yaml.version>2.17.1</jackson-dataformat-yaml.version>
-        <aspectj.version>1.9.21.2</aspectj.version>
-        <allure.version>2.27.0</allure.version>
-        <allure.maven.version>2.12.0</allure.maven.version>
+        <aspectj.version>1.9.22.1</aspectj.version>
+        <allure.version>2.29.0</allure.version>
+        <allure.maven.version>2.14.0</allure.maven.version>
         <test-frame.version>0.7.0</test-frame.version>
     </properties>
 
