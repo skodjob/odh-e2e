@@ -38,15 +38,15 @@ public class KFPv2Client {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             .enable(JsonParser.Feature.INCLUDE_SOURCE_IN_LOCATION)
             .setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
 
+    private final HttpClient httpClient;
     private final String baseUrl;
+    private final String oauthToken;
 
-    public KFPv2Client(String baseUrl) {
+    public KFPv2Client(HttpClient httpClient, String baseUrl, String oauthToken) {
+        this.httpClient = httpClient;
         this.baseUrl = baseUrl;
+        this.oauthToken = oauthToken;
     }
 
     @SneakyThrows
@@ -54,11 +54,10 @@ public class KFPv2Client {
         MultipartFormDataBodyPublisher requestBody = new MultipartFormDataBodyPublisher()
                 .addFile("uploadfile", Path.of(filePath), "application/yaml");
 
-        HttpRequest createPipelineRequest = HttpRequest.newBuilder()
+        HttpRequest createPipelineRequest = buildRequest()
                 .uri(new URI(baseUrl + "/apis/v2beta1/pipelines/upload?name=%s&description=%s".formatted(name, description)))
                 .header("Content-Type", requestBody.contentType())
                 .POST(requestBody)
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> responseCreate = httpClient.send(createPipelineRequest, HttpResponse.BodyHandlers.ofString());
 
@@ -69,10 +68,9 @@ public class KFPv2Client {
 
     @SneakyThrows
     public @Nonnull List<Pipeline> listPipelines() {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/pipelines"))
                 .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
 
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -86,10 +84,9 @@ public class KFPv2Client {
 
     @SneakyThrows
     public @Nonnull List<PipelineVersion> listPipelineVersions(String pipelineId) {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/pipelines/" + pipelineId + "/versions"))
                 .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
 
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -113,10 +110,9 @@ public class KFPv2Client {
             pipelineRun.runtimeConfig = new RuntimeConfig();
             pipelineRun.runtimeConfig.parameters = parameters;
         }
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/runs"))
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(pipelineRun)))
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -126,10 +122,9 @@ public class KFPv2Client {
 
     @SneakyThrows
     public List<PipelineRun> getPipelineRunStatus() {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/runs"))
                 .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -139,10 +134,9 @@ public class KFPv2Client {
 
     @SneakyThrows
     public PipelineRun waitForPipelineRun(String pipelineRunId) {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/runs/" + pipelineRunId))
                 .GET()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
 
         AtomicReference<PipelineRun> run = new AtomicReference<>();
@@ -177,10 +171,9 @@ public class KFPv2Client {
 
     @SneakyThrows
     public void deletePipelineRun(String runId) {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/runs/" + runId))
                 .DELETE()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(200, reply.statusCode(), reply.body());
@@ -188,10 +181,9 @@ public class KFPv2Client {
 
     @SneakyThrows
     public void deletePipeline(String pipelineId) {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/pipelines/" + pipelineId))
                 .DELETE()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(200, reply.statusCode(), reply.body());
@@ -199,10 +191,9 @@ public class KFPv2Client {
 
     @SneakyThrows
     public void deletePipelineVersion(String pipelineId, String pipelineVersionId) {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = buildRequest()
                 .uri(URI.create(baseUrl + "/apis/v2beta1/pipelines/" + pipelineId + "/versions/" + pipelineVersionId))
                 .DELETE()
-                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()))
                 .build();
         HttpResponse<String> reply = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         Assertions.assertEquals(200, reply.statusCode(), reply.body());
@@ -269,5 +260,14 @@ public class KFPv2Client {
     public static class RuntimeConfig {
         public Object parameters;
         public String pipelineRoot;
+    }
+
+    private HttpRequest.Builder buildRequest() {
+        HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                .timeout(Duration.of(DEFAULT_TIMEOUT_DURATION, DEFAULT_TIMEOUT_UNIT.toChronoUnit()));
+        if (oauthToken != null) {
+            requestBuilder.header("Authorization", "Bearer " + oauthToken);
+        }
+        return requestBuilder;
     }
 }
