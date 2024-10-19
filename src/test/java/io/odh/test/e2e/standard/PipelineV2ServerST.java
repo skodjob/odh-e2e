@@ -12,16 +12,17 @@ import io.fabric8.kubernetes.api.model.NamespaceBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.api.model.SecretBuilder;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.client.LocalPortForward;
 import io.fabric8.kubernetes.client.dsl.Resource;
-import io.fabric8.kubernetes.client.dsl.ServiceResource;
 import io.fabric8.openshift.api.model.Route;
 import io.fabric8.openshift.client.OpenShiftClient;
 import io.odh.test.Environment;
 import io.odh.test.OdhAnnotationsLabels;
 import io.odh.test.TestUtils;
+import io.odh.test.install.InstallTypes;
 import io.odh.test.platform.KFPv2Client;
+import io.odh.test.platform.TlsUtils;
+import io.odh.test.platform.httpClient.OAuthToken;
+import io.odh.test.utils.CsvUtils;
 import io.odh.test.utils.DscUtils;
 import io.opendatahub.datasciencecluster.v1.DataScienceCluster;
 import io.opendatahub.datasciencecluster.v1.DataScienceClusterBuilder;
@@ -42,8 +43,6 @@ import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Ra
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.RayBuilder;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.Workbenches;
 import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.WorkbenchesBuilder;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.datasciencepipelines.DevFlagsBuilder;
-import io.opendatahub.datasciencecluster.v1.datascienceclusterspec.components.datasciencepipelines.devflags.ManifestsBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplication;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.DataSciencePipelinesApplicationBuilder;
 import io.opendatahub.datasciencepipelinesapplications.v1alpha1.datasciencepipelinesapplicationspec.ApiServer;
@@ -59,12 +58,14 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -84,6 +85,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
         @Step(value = "Delete ODH operator and all created resources", expected = "Operator is removed and all other resources as well")
     }
 )
+@DisabledIf(value = "isDSPv1Only", disabledReason = "Old versions of ODH don't support DSPv2.")
 public class PipelineV2ServerST extends StandardAbstract {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineV2ServerST.class);
 
@@ -123,25 +125,8 @@ public class PipelineV2ServerST extends StandardAbstract {
                                 .withCodeflare(
                                         new CodeflareBuilder().withManagementState(Codeflare.ManagementState.Managed).build()
                                 )
-                                // TODO(jdanek): remove devFlags prior to release, when KFPv2 is the default
                                 .withDatasciencepipelines(
-                                        new DatasciencepipelinesBuilder()
-                                                .withManagementState(Datasciencepipelines.ManagementState.Managed)
-                                                // https://github.com/opendatahub-io/data-science-pipelines-operator/blob/main/datasciencecluster/datasciencecluster.yaml
-                                                .withDevFlags(
-                                                        new DevFlagsBuilder()
-                                                                .withManifests(
-                                                                        List.of(
-                                                                                new ManifestsBuilder()
-                                                                                        .withUri("https://github.com/opendatahub-io/data-science-pipelines-operator/tarball/main")
-                                                                                        .withContextDir("config")
-                                                                                        .withSourcePath("overlays/odh")
-                                                                                        .build()
-                                                                        )
-                                                                )
-                                                                .build()
-                                                )
-                                                .build()
+                                        new DatasciencepipelinesBuilder().withManagementState(Datasciencepipelines.ManagementState.Managed).build()
                                 )
                                 .withModelmeshserving(
                                         new ModelmeshservingBuilder().withManagementState(Modelmeshserving.ManagementState.Managed).build()
@@ -178,7 +163,7 @@ public class PipelineV2ServerST extends StandardAbstract {
         }
     )
     @Test
-    void testUserCanOperateDSv2PipelineFromDSProject() throws IOException {
+    void testUserCanOperateDSv2PipelineFromDSProject() throws Exception {
         final String pipelineTestName = "pipeline-test-name";
         final String pipelineTestDesc = "pipeline-test-desc";
         final String prjTitle = "pipeline-test";
@@ -221,9 +206,6 @@ public class PipelineV2ServerST extends StandardAbstract {
                     .withNewSpec()
                         // https://github.com/opendatahub-io/data-science-pipelines-operator/blob/main/config/samples/v2/dspa-simple/dspa_simple.yaml
                         .withDspVersion("v2")
-                        .withNewMlpipelineUI()
-                            .withImage("quay.io/opendatahub/ds-pipelines-frontend:latest")
-                        .endMlpipelineUI()
                         // TODO(jdanek): v1 values below, this will need review and updating closer to release
                         .withNewApiServer()
                             .withApplyTektonCustomResource(true)
@@ -282,46 +264,55 @@ public class PipelineV2ServerST extends StandardAbstract {
         Resource<Endpoints> endpoints = client.endpoints().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
         TestUtils.waitForEndpoints("pipelines", endpoints);
 
-        Allure.step("Connect to the API server");
-        Resource<Route> route = client.routes()
-                .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
+        Allure.step("Fetch OpenShift's ingress CA for a HTTPS client");
+        Secret ingressCaCerts = client.secrets().inNamespace("openshift-ingress").withName("router-certs-default").get();
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .sslContext(TlsUtils.getSSLContextFromSecret(ingressCaCerts))
+                .build();
 
-        // TODO(jdanek) I still don't know how to do oauth, so let's forward a port
-        ServiceResource<Service> svc = client.services().inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition");
-        try (LocalPortForward portForward = svc.portForward(8888, 0)) {
-            KFPv2Client kfpClient = new KFPv2Client("http://localhost:%d".formatted(portForward.getLocalPort()));
+        Allure.step("Connect to the Pipeline API server");
+        Route route = client.routes()
+                .inNamespace(prjTitle).withName("ds-pipeline-pipelines-definition").get();
 
-            // WORKAROUND(RHOAIENG-3250): delete sample pipeline present on ODH
-            deletePreexistingPipelinesAndVersions(kfpClient);
+        String url = "https://" + route.getStatus().getIngress().get(0).getHost();
+        String redirectUrl = url + "/oauth/callback";
+        String oauthToken = Allure.step("Create OAuth Token",
+                () -> new OAuthToken().getToken(redirectUrl));
 
-            KFPv2Client.Pipeline importedPipeline = kfpClient.importPipeline(pipelineTestName, pipelineTestDesc, pipelineTestFilepath);
+        KFPv2Client kfpClient = new KFPv2Client(httpClient, url, oauthToken);
 
-            List<KFPv2Client.Pipeline> pipelines = kfpClient.listPipelines();
-            assertThat(pipelines.stream().map(p -> p.displayName).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
+        // WORKAROUND(RHOAIENG-3250): delete sample pipeline present on ODH
+        deletePreexistingPipelinesAndVersions(kfpClient);
 
-            Map<String, Object> parameters = Map.of(
-                    "min_max_scaler", false,
-                    "neighbors", 1,
-                    "standard_scaler", true
-            );
-            KFPv2Client.PipelineRun pipelineRun = kfpClient.runPipeline(pipelineTestRunBasename, importedPipeline.pipelineId, parameters, "Immediate");
+        KFPv2Client.Pipeline importedPipeline = kfpClient.importPipeline(pipelineTestName, pipelineTestDesc, pipelineTestFilepath);
 
-            kfpClient.waitForPipelineRun(pipelineRun.runId);
+        List<KFPv2Client.Pipeline> pipelines = kfpClient.listPipelines();
+        assertThat(pipelines.stream().map(p -> p.displayName).collect(Collectors.toList()), Matchers.contains(pipelineTestName));
 
-            List<KFPv2Client.PipelineRun> statuses = kfpClient.getPipelineRunStatus();
-            assertThat(statuses.stream()
-                    .filter(run -> run.runId.equals(pipelineRun.runId))
-                    .map(run -> run.state)
-                    .findFirst().orElseThrow(), Matchers.is("SUCCEEDED"));
+        Map<String, Object> parameters = Map.of(
+                "min_max_scaler", false,
+                "neighbors", 1,
+                "standard_scaler", true
+        );
+        KFPv2Client.PipelineRun pipelineRun = kfpClient.runPipeline(pipelineTestRunBasename, importedPipeline.pipelineId, parameters, "Immediate");
 
-            checkPipelineRunK8sDeployments(prjTitle, pipelineRun.runId);
+        kfpClient.waitForPipelineRun(pipelineRun.runId);
 
-            kfpClient.deletePipelineRun(pipelineRun.runId);
-            for (KFPv2Client.PipelineVersion pipelineVersion : kfpClient.listPipelineVersions(importedPipeline.pipelineId)) {
-                kfpClient.deletePipelineVersion(importedPipeline.pipelineId, pipelineVersion.pipelineVersionId);
-            }
-            kfpClient.deletePipeline(importedPipeline.pipelineId);
+        List<KFPv2Client.PipelineRun> statuses = kfpClient.getPipelineRunStatus();
+        assertThat(statuses.stream()
+                .filter(run -> run.runId.equals(pipelineRun.runId))
+                .map(run -> run.state)
+                .findFirst().orElseThrow(), Matchers.is("SUCCEEDED"));
+
+        checkPipelineRunK8sDeployments(prjTitle, pipelineRun.runId);
+
+        kfpClient.deletePipelineRun(pipelineRun.runId);
+        for (KFPv2Client.PipelineVersion pipelineVersion : kfpClient.listPipelineVersions(importedPipeline.pipelineId)) {
+            kfpClient.deletePipelineVersion(importedPipeline.pipelineId, pipelineVersion.pipelineVersionId);
         }
+        kfpClient.deletePipeline(importedPipeline.pipelineId);
     }
 
     @io.qameta.allure.Step
@@ -365,5 +356,28 @@ public class PipelineV2ServerST extends StandardAbstract {
                 .map(pod -> pod.getMetadata().getAnnotations().get("workflows.argoproj.io/node-name"))
                 .toList();
         Assertions.assertIterableEquals(expectedNodeNames.stream().sorted().toList(), argoNodeNames.stream().sorted().toList(), argoNodeNames.toString());
+    }
+
+    static boolean isDSPv1Only() {
+        final CsvUtils.Version maxOdhVersion = CsvUtils.Version.fromString("2.10.0");
+        final CsvUtils.Version maxRhoaiVersion = CsvUtils.Version.fromString("2.9.0");
+
+        // can't tell, but since it's likely a recent ODH, then `return false;` is probably correct
+        if (!Environment.OPERATOR_INSTALL_TYPE.equalsIgnoreCase(InstallTypes.OLM.toString())) {
+            return false;
+        }
+
+        String operatorVersionString = Objects.requireNonNull(CsvUtils.getOperatorVersionFromCsv());
+        if (operatorVersionString.isEmpty()) {
+            // if csv has not yet been installed in the cluster
+            operatorVersionString = Environment.OLM_OPERATOR_VERSION;
+        }
+        CsvUtils.Version operatorVersion = CsvUtils.Version.fromString(operatorVersionString);
+
+        if (Environment.PRODUCT.equalsIgnoreCase(Environment.PRODUCT_ODH)) {
+            return operatorVersion.compareTo(maxOdhVersion) < 0;
+        } else {
+            return operatorVersion.compareTo(maxRhoaiVersion) < 0;
+        }
     }
 }
