@@ -160,6 +160,7 @@ public class PipelineV2ServerST extends StandardAbstract {
     /// ODS-2206 - Verify user can create and run a data science pipeline in DS Project
     /// ODS-2226 - Verify user can delete components of data science pipeline from DS Pipelines page
     /// https://issues.redhat.com/browse/RHODS-5133
+    @SuppressWarnings({"checkstyle:MethodLength"})
     @TestDoc(
         description = @Desc("Check that user can create, run and deleted DataSciencePipeline from a DataScience project"),
         contact = @Contact(name = "Jiri Danek", email = "jdanek@redhat.com"),
