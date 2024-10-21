@@ -70,7 +70,7 @@
 
         <opedatahub-crds.version>1.0.74-SNAPSHOT</opedatahub-crds.version>
         <docs.generator.version>0.2.0</docs.generator.version>
-        <test-frame.version>0.7.0</test-frame.version>
+        <test-frame.version>0.4.0</test-frame.version>
     </properties>
 
     <repositories>
