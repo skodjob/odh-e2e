@@ -29,7 +29,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ExtendWith(TestExceptionCallbackListener.class)
-@ResourceManager(cleanResources = false)
+@ResourceManager(
+    cleanResources = false,
+    asyncDeletion = false
+)
 @TestVisualSeparator
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class Abstract {
