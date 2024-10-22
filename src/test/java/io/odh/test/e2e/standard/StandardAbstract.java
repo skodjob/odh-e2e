@@ -22,7 +22,7 @@ import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag(TestSuite.STANDARD)
-@ResourceManager
+@ResourceManager(asyncDeletion = false)
 public abstract class StandardAbstract extends Abstract {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardAbstract.class);

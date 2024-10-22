@@ -41,7 +41,7 @@ import org.kubeflow.v1.NotebookBuilder;
 import java.io.IOException;
 
 @Tag(TestSuite.UPGRADE)
-@ResourceManager
+@ResourceManager(asyncDeletion = false)
 public abstract class UpgradeAbstract extends Abstract {
 
     protected void deployDsc(String name) {
