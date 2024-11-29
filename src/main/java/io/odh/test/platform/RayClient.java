@@ -14,6 +14,7 @@ import io.skodjob.testframe.wait.Wait;
 import lombok.SneakyThrows;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -40,6 +41,20 @@ public class RayClient {
         this.httpClient = httpClient;
         this.baseUrl = baseUrl;
         this.oauthToken = oauthToken;
+    }
+
+    /**
+     * Check that the API server is responsive and ready to accept jobs
+     */
+    @SneakyThrows
+    public boolean isLive() {
+        HttpRequest request = buildRequest()
+                .uri(URI.create(baseUrl + "/api/jobs/"))
+                .method("HEAD", HttpRequest.BodyPublishers.noBody())
+                .build();
+        HttpResponse<Void> result = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
+
+        return result.statusCode() == HttpURLConnection.HTTP_OK;
     }
 
     /**
